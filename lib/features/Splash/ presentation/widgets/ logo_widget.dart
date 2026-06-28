@@ -17,6 +17,7 @@ class LogoWidget extends StatelessWidget {
           width: 220,
           height: 220,
 
+
           decoration: const BoxDecoration(
 
             shape: BoxShape.circle,
@@ -25,10 +26,11 @@ class LogoWidget extends StatelessWidget {
 
           ),
 
-          child: const Icon(
-            Icons.pets,
-            size: 110,
-            color: Colors.white,
+      child: Image.asset(
+        'assets/fokin.png',
+        width: 110,
+        height: 110,
+        fit: BoxFit.contain,
           ),
 
         ),

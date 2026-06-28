@@ -1,54 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../shared/widgets/app_bottom_navigation.dart';
+import '../../../../shared/widgets/app_drawer.dart';
+
 import '../providers/ history_provider.dart';
+
+
+import '../widgets/search_history.dart';
 import '../widgets/history_filters.dart';
 import '../widgets/history_table.dart';
-import '../widgets/search_history.dart';
+import '../widgets/history_statistics.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<HistoryProvider>(context);
+    return Consumer<HistoryProvider>(
+      builder: (context, provider, child) {
+        return Scaffold(
+          drawer: const AppDrawer(),
 
-    return Scaffold(
-      backgroundColor: const Color(0xffB56A1F),
+          appBar: AppBar(
+            title: const Text("Historial"),
+            centerTitle: true,
+          ),
 
-      appBar: AppBar(
-        backgroundColor: const Color(0xff6A3C18),
-        title: const Text("Historial"),
-        centerTitle: true,
-      ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
 
-            SearchHistory(provider: provider),
+                /// Buscador
+                SearchHistory(
+                  provider: provider,
+                ),
 
-            const SizedBox(height: 15),
+                const SizedBox(height: 20),
 
-            const HistoryFilters(),
+                /// Filtros
+                const HistoryFilters(),
 
-            const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-            Expanded(
-              child: HistoryTable(
-                provider: provider,
-              ),
+                /// Tabla
+                HistoryTable(
+                  provider: provider,
+                ),
+
+                const SizedBox(height: 20),
+
+                /// Estadísticas
+                HistoryStatistics(
+                  provider: provider,
+                ),
+              ],
             ),
-
-          ],
-        ),
-      ),
-
-      bottomNavigationBar: const AppBottomNavigation(
-        currentIndex: 3,
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -1,66 +1,75 @@
 import 'package:flutter/material.dart';
 
-class HistoryModel {
-  final String lote;
-  final String fecha;
-  final String temperatura;
-  final String humedad;
-  final String estado;
-
-  HistoryModel({
-    required this.lote,
-    required this.fecha,
-    required this.temperatura,
-    required this.humedad,
-    required this.estado,
-  });
-}
+import '../../data/models/history_model.dart';
 
 class HistoryProvider extends ChangeNotifier {
-  final TextEditingController searchController = TextEditingController();
 
-  List<HistoryModel> historial = [
+  final TextEditingController searchController =
+  TextEditingController();
+
+  final List<HistoryModel> _todos = [
+
     HistoryModel(
-      lote: "Lote A",
-      fecha: "10/07/2026",
-      temperatura: "26°C",
-      humedad: "42%",
-      estado: "Finalizado",
+      lote: "Lote Norte",
+      fecha: "18 Jul 2026",
+      temperatura: 26,
+      humedad: 42,
+      estado: "Óptimo",
     ),
+
     HistoryModel(
-      lote: "Lote B",
-      fecha: "11/07/2026",
-      temperatura: "28°C",
-      humedad: "39%",
-      estado: "En proceso",
+      lote: "Lote Centro",
+      fecha: "17 Jul 2026",
+      temperatura: 25,
+      humedad: 41,
+      estado: "Bueno",
     ),
+
     HistoryModel(
-      lote: "Lote C",
-      fecha: "12/07/2026",
-      temperatura: "25°C",
-      humedad: "45%",
-      estado: "Finalizado",
+      lote: "Lote Sur",
+      fecha: "16 Jul 2026",
+      temperatura: 28,
+      humedad: 45,
+      estado: "Alerta",
     ),
-    HistoryModel(
-      lote: "Lote D",
-      fecha: "13/07/2026",
-      temperatura: "27°C",
-      humedad: "41%",
-      estado: "En proceso",
-    ),
+
   ];
 
-  List<HistoryModel> get resultados {
-    if (searchController.text.isEmpty) return historial;
+  List<HistoryModel> historial = [];
 
-    return historial.where((element) {
-      return element.lote.toLowerCase().contains(
-        searchController.text.toLowerCase(),
-      );
-    }).toList();
+  String filtro = "Todos";
+
+  HistoryProvider() {
+    historial = List.from(_todos);
   }
 
-  void buscar(String value) {
+  void buscar(String texto) {
+
+    historial = _todos.where((item) {
+
+      return item.lote
+          .toLowerCase()
+          .contains(texto.toLowerCase());
+
+    }).toList();
+
     notifyListeners();
+  }
+
+  void cambiarFiltro(String nuevo) {
+
+    filtro = nuevo;
+
+    notifyListeners();
+
+  }
+
+  @override
+  void dispose() {
+
+    searchController.dispose();
+
+    super.dispose();
+
   }
 }

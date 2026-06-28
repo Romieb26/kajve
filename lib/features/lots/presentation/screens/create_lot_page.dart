@@ -1,148 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../../shared/widgets/app_drawer.dart';
+
+import '../providers/lot_provider.dart';
+import '../widgets/create_lot_form.dart';
+import '../widgets/sensor_card.dart';
+import '../widgets/qr_preview.dart';
 
 class CreateLotPage extends StatelessWidget {
   const CreateLotPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return Consumer<LotProvider>(
+      builder: (context, provider, child) {
+        return Scaffold(
+          drawer: const AppDrawer(),
 
-    return Scaffold(
-      backgroundColor: const Color(0xffB65F08),
+          appBar: AppBar(
+            title: const Text("Registrar Lote"),
+            centerTitle: true,
+          ),
 
-      appBar: AppBar(
-        title: const Text("Nuevo lote"),
-        backgroundColor: Colors.brown,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 10),
-            child: CircleAvatar(
-              child: Icon(Icons.person),
-            ),
-          )
-        ],
-      ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
 
-        child: Column(
+                /// Formulario
+                const CreateLotForm(),
 
-          children: [
+                const SizedBox(height: 20),
 
-            Container(
-              padding: const EdgeInsets.all(15),
+                /// Sensores
+                const SensorCard(),
 
-              decoration: BoxDecoration(
-                color: Colors.white70,
-                borderRadius: BorderRadius.circular(20),
-              ),
+                const SizedBox(height: 20),
 
-              child: Column(
-
-                children: [
-
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: "Nombre del lote",
-                    ),
+                /// QR
+                Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: "Tipo de café",
-                    ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: QrPreview(),
                   ),
-
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: "Fecha de inicio",
-                    ),
-                  ),
-
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: "Ubicación",
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height:20),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(15),
-
-              decoration: BoxDecoration(
-                color: Colors.white70,
-                borderRadius: BorderRadius.circular(20),
-              ),
-
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  Text(
-                    "Asociar sensores",
-                    style: TextStyle(
-                      fontSize:20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  CheckboxListTile(
-                    value: true,
-                    onChanged: null,
-                    title: Text("Humedad de suelo #1"),
-                  ),
-
-                  CheckboxListTile(
-                    value: false,
-                    onChanged: null,
-                    title: Text("Temperatura Aire #1"),
-                  ),
-
-                ],
-              ),
-            ),
-
-            const SizedBox(height:25),
-
-            const Text(
-              "QR",
-              style: TextStyle(
-                fontSize:22,
-                color: Colors.white,
-              ),
-            ),
-
-            const SizedBox(height:10),
-
-            Container(
-              height: 180,
-              width: 180,
-              color: Colors.white,
-              child: const Center(
-                child: Icon(
-                  Icons.qr_code,
-                  size:120,
                 ),
-              ),
+
+                const SizedBox(height: 25),
+
+                FilledButton.icon(
+                  onPressed: () {
+                    provider.registrarLote(context);
+                  },
+                  icon: const Icon(Icons.save),
+                  label: const Text("Guardar lote"),
+                ),
+
+                const SizedBox(height: 20),
+
+              ],
             ),
-
-            const SizedBox(height:20),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {},
-                child: const Text("Guardar"),
-              ),
-            )
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

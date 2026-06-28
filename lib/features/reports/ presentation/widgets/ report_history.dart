@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../providers/ report_provider.dart';
-import ' report_item.dart';
+import '../widgets/ report_item.dart';
 
 class ReportHistory extends StatelessWidget {
   final ReportProvider provider;
@@ -13,13 +13,9 @@ class ReportHistory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
-
       crossAxisAlignment: CrossAxisAlignment.start,
-
       children: [
-
         const Text(
           "Reportes generados",
           style: TextStyle(
@@ -34,15 +30,12 @@ class ReportHistory extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: provider.reportes.length,
-          itemBuilder: (_, index) {
-
+          itemBuilder: (context, index) {
             return ReportItem(
               reporte: provider.reportes[index],
             );
-
           },
         ),
-
       ],
     );
   }

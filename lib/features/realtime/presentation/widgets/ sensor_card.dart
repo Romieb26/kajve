@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class SensorCard extends StatelessWidget {
-
   final String titulo;
   final String valor;
   final IconData icono;
@@ -15,54 +14,48 @@ class SensorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Card(
-
       elevation: 4,
 
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
       ),
 
       child: Padding(
         padding: const EdgeInsets.all(18),
 
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
 
           children: [
 
             CircleAvatar(
               radius: 28,
-              child: Icon(icono,size:28),
+              child: Icon(
+                icono,
+                size: 30,
+              ),
             ),
 
-            const SizedBox(width:18),
+            const SizedBox(height: 15),
 
-            Expanded(
-              child: Column(
-
-                crossAxisAlignment: CrossAxisAlignment.start,
-
-                children: [
-
-                  Text(
-                    titulo,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize:17,
-                    ),
-                  ),
-
-                  Text(
-                    valor,
-                    style: const TextStyle(
-                      fontSize:16,
-                    ),
-                  ),
-
-                ],
+            Text(
+              titulo,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
               ),
-            )
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              valor,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
 
           ],
         ),

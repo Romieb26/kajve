@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/routes/ app_routes.dart';
+import '../../../../shared/widgets/app_drawer.dart';
+
 import '../providers/lot_provider.dart';
 import '../widgets/lot_card.dart';
 import '../widgets/search_bar_widget.dart';
@@ -13,48 +16,28 @@ class LotsPage extends StatelessWidget {
     return Consumer<LotProvider>(
       builder: (context, provider, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFFB86A1B),
+          drawer: const AppDrawer(),
 
           appBar: AppBar(
-            backgroundColor: const Color(0xFF6D3A1C),
-            elevation: 0,
+            title: const Text("Lista de Lotes"),
             centerTitle: true,
-            title: const Text(
-              "Lotes",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            actions: const [
-              Padding(
-                padding: EdgeInsets.only(right: 15),
-                child: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-            ],
           ),
 
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: Colors.black,
+          floatingActionButton: FloatingActionButton.extended(
+            icon: const Icon(Icons.add),
+            label: const Text("Nuevo"),
             onPressed: () {
-              // Navegar a Registrar Lote
+              Navigator.pushNamed(
+                context,
+                AppRoutes.createLot,
+              );
             },
-            child: const Icon(Icons.add),
           ),
 
           body: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-
-                /// Buscador
                 SearchBarWidget(
                   controller: provider.searchController,
                   onChanged: provider.buscar,
@@ -62,7 +45,6 @@ class LotsPage extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                /// Lista de lotes
                 Expanded(
                   child: ListView.separated(
                     itemCount: provider.lotes.length,
@@ -71,11 +53,19 @@ class LotsPage extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final lote = provider.lotes[index];
 
-                      return LotCard(
-                        nombre: lote.nombre,
-                        fecha: lote.fecha,
-                        estado: lote.estado,
-                        colorEstado: lote.colorEstado,
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.lotDetail,
+                          );
+                        },
+                        child: LotCard(
+                          nombre: lote.nombre,
+                          fecha: lote.fecha,
+                          estado: lote.estado,
+                          colorEstado: lote.colorEstado,
+                        ),
                       );
                     },
                   ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../providers/ report_provider.dart';
+
+import '../../data/models/report_model.dart';
 
 class ReportItem extends StatelessWidget {
   final ReportModel reporte;

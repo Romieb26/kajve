@@ -10,12 +10,30 @@ class HistoryTable extends StatelessWidget {
     required this.provider,
   });
 
+  Color _estadoColor(String estado) {
+    switch (estado) {
+      case "Óptimo":
+        return Colors.green.shade100;
+
+      case "Bueno":
+        return Colors.blue.shade100;
+
+      case "Alerta":
+        return Colors.orange.shade100;
+
+      default:
+        return Colors.grey.shade200;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 4,
+
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+
         child: DataTable(
           columns: const [
 
@@ -54,7 +72,8 @@ class HistoryTable extends StatelessWidget {
               ),
             ),
           ],
-          rows: provider.resultados.map((item) {
+
+          rows: provider.historial.map((item) {
             return DataRow(
               cells: [
 
@@ -62,18 +81,17 @@ class HistoryTable extends StatelessWidget {
 
                 DataCell(Text(item.fecha)),
 
-                DataCell(Text(item.temperatura)),
+                DataCell(Text("${item.temperatura} °C")),
 
-                DataCell(Text(item.humedad)),
+                DataCell(Text("${item.humedad} %")),
 
                 DataCell(
                   Chip(
                     label: Text(item.estado),
-                    backgroundColor: item.estado == "Finalizado"
-                        ? Colors.green.shade100
-                        : Colors.orange.shade100,
+                    backgroundColor: _estadoColor(item.estado),
                   ),
                 ),
+
               ],
             );
           }).toList(),

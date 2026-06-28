@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../providers/monitoring_provider.dart';
 import '../widgets/ sensor_status_card.dart';
 
-class InfoCard extends StatelessWidget {
 
+class InfoCard extends StatelessWidget {
   final MonitoringProvider provider;
 
   const InfoCard({
@@ -14,73 +14,68 @@ class InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
 
-    return Container(
-      padding: const EdgeInsets.all(15),
-
-      decoration: BoxDecoration(
-        color: Colors.white70,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
 
-      child: Column(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
 
-        children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
 
-          const Text(
-            "Información general",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize:18,
+            const Text(
+              "Información del lote",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
 
-          const SizedBox(height:15),
+            const Divider(height: 30),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("Etapa"),
-              Text(provider.etapa),
-            ],
-          ),
+            _fila("Etapa", provider.etapa),
+            _fila("Calidad SCA", provider.calidad),
+            _fila("Días de secado", provider.diasSecado),
+            _fila("Rendimiento", provider.rendimiento),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("Calidad SCA"),
-              Text(provider.calidad),
-            ],
-          ),
+            const SizedBox(height: 20),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("Días de Secado"),
-              Text(provider.diasSecado),
-            ],
-          ),
+            SensorStatusCard(
+              titulo: "Humedad",
+              valor: "${provider.humedad} %",
+              icono: Icons.water_drop,
+            ),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("Rendimiento"),
-              Text(provider.rendimiento),
-            ],
-          ),
+            const SizedBox(height: 12),
 
-          const SizedBox(height:20),
+            SensorStatusCard(
+              titulo: "Temperatura",
+              valor: "${provider.temperatura} °C",
+              icono: Icons.thermostat,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-          SensorStatusCard(
-            titulo: "Humedad del suelo",
-            valor: "${provider.humedad} %",
-          ),
-
-          const SizedBox(height:10),
-
-          SensorStatusCard(
-            titulo: "Temperatura del aire",
-            valor: "${provider.temperatura} °C",
+  Widget _fila(String titulo, String valor) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(titulo),
+          Text(
+            valor,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),

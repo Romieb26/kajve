@@ -1,65 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../shared/widgets/app_drawer.dart';
+
 import '../providers/realtime_provider.dart';
+
+import '../widgets/realtime_header.dart';
+import '../widgets/sensor_grid.dart';
+import '../widgets/environment_card.dart';
 import '../widgets/ chart_card.dart';
-import '../widgets/ sensor_card.dart';
 
 class RealtimePage extends StatelessWidget {
   const RealtimePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return Consumer<RealtimeProvider>(
+      builder: (context, provider, child) {
+        return Scaffold(
+          drawer: const AppDrawer(),
 
-    final provider = Provider.of<RealtimeProvider>(context);
+          appBar: AppBar(
+            title: const Text("Tiempo Real"),
+            centerTitle: true,
+          ),
 
-    return Scaffold(
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
 
-      backgroundColor: const Color(0xffB56A1F),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
 
-      appBar: AppBar(
-        backgroundColor: const Color(0xff6A3C18),
-        title: const Text("Monitoreo en Tiempo Real"),
-        centerTitle: true,
-      ),
+                RealtimeHeader(
+                  provider: provider,
+                ),
 
-      body: SingleChildScrollView(
+                const SizedBox(height: 20),
 
-        padding: const EdgeInsets.all(16),
+                SensorGrid(
+                  provider: provider,
+                ),
 
-        child: Column(
+                const SizedBox(height: 20),
 
-          children: [
+                ChartCard(
+                  provider: provider,
+                ),
 
-            SensorCard(
-              titulo: "Temperatura",
-              valor: "${provider.temperatura} °C",
-              icono: Icons.thermostat,
+                const SizedBox(height: 20),
+
+                EnvironmentCard(
+                  provider: provider,
+                ),
+
+              ],
             ),
-
-            const SizedBox(height:15),
-
-            SensorCard(
-              titulo: "Humedad Ambiente",
-              valor: "${provider.humedad} %",
-              icono: Icons.water_drop,
-            ),
-
-            const SizedBox(height:15),
-
-            SensorCard(
-              titulo: "Humedad del Grano",
-              valor: "${provider.humedadGrano} %",
-              icono: Icons.grass,
-            ),
-
-            const SizedBox(height:20),
-
-            ChartCard(provider: provider),
-
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

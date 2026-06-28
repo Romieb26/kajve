@@ -10,8 +10,26 @@ class PredictionCard extends StatelessWidget {
     required this.provider,
   });
 
+  Color getStatusColor() {
+    switch (provider.estado.toLowerCase()) {
+      case "óptimo":
+        return Colors.green;
+
+      case "en proceso":
+        return Colors.orange;
+
+      case "riesgo":
+        return Colors.red;
+
+      default:
+        return Colors.blueGrey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final color = getStatusColor();
+
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(
@@ -23,9 +41,9 @@ class PredictionCard extends StatelessWidget {
           children: [
 
             const Text(
-              "Predicción del Secado",
+              "Predicción IA",
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -33,8 +51,8 @@ class PredictionCard extends StatelessWidget {
             const SizedBox(height: 25),
 
             SizedBox(
-              width: 150,
-              height: 150,
+              width: 170,
+              height: 170,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -51,12 +69,12 @@ class PredictionCard extends StatelessWidget {
                       Text(
                         "${provider.porcentajeSecado.toInt()}%",
                         style: const TextStyle(
-                          fontSize: 28,
+                          fontSize: 34,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
 
-                      const Text("Completado"),
+                      const Text("Secado"),
 
                     ],
                   )
@@ -68,13 +86,21 @@ class PredictionCard extends StatelessWidget {
             const SizedBox(height: 20),
 
             Chip(
-              avatar: const Icon(
+              avatar: Icon(
                 Icons.check_circle,
-                color: Colors.green,
+                color: color,
               ),
               label: Text(provider.estado),
             ),
 
+            const SizedBox(height: 15),
+
+            Text(
+              "Confianza IA: ${provider.confianza}%",
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),

@@ -3,23 +3,33 @@ import 'package:provider/provider.dart';
 
 // Core
 import 'core/theme/app_theme.dart';
-
-// Menu
-import 'menu.dart';
+import 'core/routes/app_pages.dart';
+import 'core/routes/ app_routes.dart';
 
 // Providers
-import 'features/lots/presentation/providers/lot_provider.dart';
-import 'features/monitoring/presentation/providers/monitoring_provider.dart';
-import 'features/qr/presentation/providers/qr_provider.dart';
-import 'features/predictions/presentation/providers/prediction_provider.dart';
-import 'features/realtime/presentation/providers/realtime_provider.dart';
-import 'features/ history/presentation/providers/ history_provider.dart';
-import 'features/alerts/presentation/providers/alerts_provider.dart';
-import 'features/reports/ presentation/providers/ report_provider.dart';
-import 'features/profile/presentation/ providers/profile_provider.dart';
+import 'features/Splash/ presentation/ providers/splash_provider.dart';
+
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/dashboard/presentation/providers/dashboard_provider.dart';
-import 'features/Splash/ presentation/ providers/splash_provider.dart';
+
+import 'features/lots/presentation/providers/lot_provider.dart';
+
+import 'features/monitoring/presentation/providers/monitoring_provider.dart';
+
+import 'features/qr/presentation/providers/qr_provider.dart';
+
+import 'features/predictions/presentation/providers/prediction_provider.dart';
+
+import 'features/realtime/presentation/providers/realtime_provider.dart';
+
+import 'features/ history/presentation/providers/ history_provider.dart';
+
+import 'features/alerts/presentation/providers/alerts_provider.dart';
+
+import 'features/reports/ presentation/providers/ report_provider.dart';
+
+import 'features/profile/presentation/ providers/profile_provider.dart';
+
 
 void main() {
   runApp(const KajveApp());
@@ -32,7 +42,6 @@ class KajveApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-
         /// Splash
         ChangeNotifierProvider(
           create: (_) => SplashProvider(),
@@ -85,7 +94,7 @@ class KajveApp extends StatelessWidget {
 
         /// Reportes
         ChangeNotifierProvider(
-          create: (_) => reportProvider(),
+          create: (_) => ReportProvider(),
         ),
 
         /// Perfil
@@ -93,19 +102,19 @@ class KajveApp extends StatelessWidget {
           create: (_) => ProfileProvider(),
         ),
       ],
-
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
 
         title: 'KAJVE',
 
-        // Material 3
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: ThemeMode.system,
 
-        // Pantalla inicial
-        home: const MenuPage(),
+        // Rutas
+        initialRoute: AppRoutes.splash,
+
+        routes: AppPages.routes,
       ),
     );
   }

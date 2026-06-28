@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../shared/widgets/app_drawer.dart';
+
 import '../providers/qr_provider.dart';
-import '../ widgets/ scanner_overlay.dart';
-import '../ widgets/bottom_navigation.dart';
+
+import '../widgets/camera_preview.dart';
+import '../widgets/scan_button.dart';
+import '../widgets/scan_result_card.dart';
 
 class ScanQrPage extends StatelessWidget {
   const ScanQrPage({super.key});
@@ -13,13 +17,14 @@ class ScanQrPage extends StatelessWidget {
     return Consumer<QrProvider>(
       builder: (context, provider, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFFB86A1B),
+          drawer: const AppDrawer(),
 
           appBar: AppBar(
-            backgroundColor: const Color(0xFF6D3A1C),
-            elevation: 0,
             title: const Text("Escanear QR"),
+            centerTitle: true,
+
             actions: [
+
               IconButton(
                 icon: Icon(
                   provider.flash
@@ -28,26 +33,31 @@ class ScanQrPage extends StatelessWidget {
                 ),
                 onPressed: provider.toggleFlash,
               ),
-              const Padding(
-                padding: EdgeInsets.only(right: 12),
-                child: CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person),
-                ),
-              )
+
             ],
           ),
 
-          body: const Column(
-            children: [
-              Expanded(
-                child: Center(
-                  child: ScannerOverlay(),
-                ),
-              ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
 
-              BottomNavigation(),
-            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+
+                const CameraPreviewWidget(),
+
+                const SizedBox(height: 20),
+
+                const ScanButton(),
+
+                const SizedBox(height: 20),
+
+                ScanResultCard(
+                  provider: provider,
+                ),
+
+              ],
+            ),
           ),
         );
       },

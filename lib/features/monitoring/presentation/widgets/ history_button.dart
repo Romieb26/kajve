@@ -5,17 +5,12 @@ class HistoryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-
-        },
-        child: const Text(
-          "Historial resumido",
-        ),
-      ),
+    return FilledButton.icon(
+      onPressed: () {
+        // TODO: Navegar al historial del lote
+      },
+      icon: const Icon(Icons.history),
+      label: const Text("Ver historial"),
     );
   }
 }

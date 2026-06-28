@@ -1,50 +1,46 @@
 import 'package:flutter/material.dart';
-
-class AlertModel {
-  final String titulo;
-  final String descripcion;
-  final String prioridad;
-  bool revisada;
-
-  AlertModel({
-    required this.titulo,
-    required this.descripcion,
-    required this.prioridad,
-    this.revisada = false,
-  });
-}
+import '../../data/models/alert_model.dart';
 
 class AlertsProvider extends ChangeNotifier {
-  final List<AlertModel> alerts = [
+
+  final List<AlertModel> _alertas = [
     AlertModel(
-      titulo: "Alta prioridad",
-      descripcion:
-      "Humedad elevada detectada en el lote A. Revisar inmediatamente.",
-      prioridad: "Alta",
+      titulo: "Temperatura alta",
+      descripcion: "El lote Norte superó los 30°C",
+      fecha: "18 Jul 2026",
+      nivel: "alta",
     ),
     AlertModel(
-      titulo: "Alta prioridad",
-      descripcion:
-      "Temperatura superior a 35°C durante más de 15 minutos.",
-      prioridad: "Alta",
+      titulo: "Humedad baja",
+      descripcion: "Posible secado acelerado",
+      fecha: "17 Jul 2026",
+      nivel: "media",
     ),
     AlertModel(
-      titulo: "Media prioridad",
-      descripcion:
-      "Disminución de humedad detectada.",
-      prioridad: "Media",
-    ),
-    AlertModel(
-      titulo: "Baja prioridad",
-      descripcion:
-      "Sensor reconectado correctamente.",
-      prioridad: "Baja",
-      revisada: true,
+      titulo: "Sensor desconectado",
+      descripcion: "No hay datos del sensor 2",
+      fecha: "16 Jul 2026",
+      nivel: "alta",
     ),
   ];
 
-  void marcarRevisada(int index) {
-    alerts[index].revisada = true;
+  List<AlertModel> alertas = [];
+
+  String filtro = "Todas";
+
+  AlertsProvider() {
+    alertas = List.from(_alertas);
+  }
+
+  void filtrar(String nivel) {
+    filtro = nivel;
+
+    if (nivel == "Todas") {
+      alertas = List.from(_alertas);
+    } else {
+      alertas = _alertas.where((a) => a.nivel == nivel).toList();
+    }
+
     notifyListeners();
   }
 }

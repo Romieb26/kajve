@@ -1,0 +1,32 @@
+import 'package:flutter/material.dart';
+
+class CustomDialog {
+  static Future<void> show({
+    required BuildContext context,
+    required String title,
+    required String content,
+    String buttonText = "Aceptar",
+  }) async {
+    return showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: Text(title),
+
+          content: Text(content),
+
+          actions: [
+
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(buttonText),
+            ),
+
+          ],
+        );
+      },
+    );
+  }
+}
