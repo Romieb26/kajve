@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../ providers/profile_provider.dart';
 
-
 class ProfileCard extends StatelessWidget {
-
   final ProfileProvider provider;
 
   const ProfileCard({
@@ -14,50 +12,65 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Card(
-
       elevation: 4,
-
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-
       child: Padding(
         padding: const EdgeInsets.all(20),
-
         child: Column(
-
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Text(
+              "Información personal",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 20),
 
             TextField(
               controller: provider.nombreController,
-              decoration: const InputDecoration(
+              keyboardType: TextInputType.name,
+              decoration: InputDecoration(
                 labelText: "Nombre",
-                prefixIcon: Icon(Icons.person),
+                prefixIcon: const Icon(Icons.person),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 20),
 
             TextField(
               controller: provider.correoController,
-              decoration: const InputDecoration(
-                labelText: "Correo",
-                prefixIcon: Icon(Icons.email),
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: "Correo electrónico",
+                prefixIcon: const Icon(Icons.email),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 20),
 
             TextField(
               controller: provider.telefonoController,
-              decoration: const InputDecoration(
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
                 labelText: "Teléfono",
-                prefixIcon: Icon(Icons.phone),
+                prefixIcon: const Icon(Icons.phone),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
-
           ],
         ),
       ),

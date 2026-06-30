@@ -5,6 +5,8 @@ class AppRoutes {
 
   static const String login = "/login";
 
+  static const String register = "/register";
+
   static const String dashboard = "/dashboard";
 
   static const String lots = "/lots";
@@ -26,4 +28,10 @@ class AppRoutes {
   static const String reports = "/reports";
 
   static const String profile = "/profile";
+
+  static const String sensors = "/sensors";
+
+  static const String createSensor = "/create-sensor";
+
+  static const String sensorDetail = "/sensor-detail";
 }

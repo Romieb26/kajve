@@ -22,37 +22,41 @@ class SensorCard extends StatelessWidget {
       ),
 
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(12),
 
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
 
           children: [
 
             CircleAvatar(
-              radius: 28,
+              radius: 20,
               child: Icon(
                 icono,
-                size: 30,
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            Text(
-              titulo,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
+                size: 20,
               ),
             ),
 
             const SizedBox(height: 8),
 
             Text(
+              titulo,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+            Text(
               valor,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),

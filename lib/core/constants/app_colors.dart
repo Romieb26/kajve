@@ -3,25 +3,35 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Colores principales
-  static const Color primary = Color(0xff6A301A);
-  static const Color secondary = Color(0xffB56A1F);
-  static const Color accent = Color(0xffD89B5D);
+  // Café principal
+  static const Color primary = Color(0xFF6F4E37);
 
-  // Fondos
-  static const Color background = Color(0xffF7F5F2);
-  static const Color surface = Colors.white;
+  // Café claro
+  static const Color secondary = Color(0xFFB7791F);
 
-  // Estados
-  static const Color success = Colors.green;
-  static const Color warning = Colors.orange;
-  static const Color error = Colors.red;
-  static const Color info = Colors.blue;
+  // Fondo principal
+  static const Color background = Color(0xFFF7F3EE);
 
-  // Texto
-  static const Color textPrimary = Colors.black87;
-  static const Color textSecondary = Colors.grey;
+  // Tarjetas
+  static const Color card = Colors.white;
 
-  // Otros
-  static const Color divider = Color(0xffE0E0E0);
+  // Texto principal
+  static const Color textPrimary = Color(0xFF2F2F2F);
+
+  // Texto secundario
+  static const Color textSecondary = Color(0xFF6B6B6B);
+
+  // Colores de estado
+  static const Color success = Color(0xFF2E7D32);
+  static const Color warning = Color(0xFFF9A825);
+  static const Color error = Color(0xFFC62828);
+
+  // Iconos
+  static const Color icon = Color(0xFF6F4E37);
+
+  // Bordes
+  static const Color border = Color(0xFFE0E0E0);
+
+  // Sombras
+  static const Color shadow = Color(0x22000000);
 }

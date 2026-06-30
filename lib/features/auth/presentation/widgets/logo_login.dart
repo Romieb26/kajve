@@ -15,10 +15,10 @@ class LogoLogin extends StatelessWidget {
             shape: BoxShape.circle,
             color: Colors.white,
           ),
-          child: const Icon(
-            Icons.agriculture,
-            size: 80,
-            color: Color(0xff6A301A),
+          child: Image.asset(
+            'assets/fokin2.png',
+            width: 80,
+            height: 80,
           ),
         ),
 

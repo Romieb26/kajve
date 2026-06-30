@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-
 import '../../data/models/report_model.dart';
+import '../../../../core/services/pdf_service.dart';
+import '../../../../core/services/excel_service.dart';
 
 class ReportItem extends StatelessWidget {
   final ReportModel reporte;
@@ -45,29 +46,23 @@ class ReportItem extends StatelessWidget {
 
             const PopupMenuItem(
               value: 1,
-              child: Text("Descargar"),
+              child: Text("Descargar PDF"),
             ),
 
             const PopupMenuItem(
               value: 2,
-              child: Text("Compartir"),
+              child: Text("Exportar Excel"),
             ),
 
           ],
 
-          onSelected: (value) {
+          onSelected: (value) async {
 
-            ScaffoldMessenger.of(context).showSnackBar(
-
-              SnackBar(
-                content: Text(
-                  value == 1
-                      ? "Descargando..."
-                      : "Compartiendo...",
-                ),
-              ),
-
-            );
+            if (value == 1) {
+              await PdfService.generarReportePdf(reporte);
+            } else if (value == 2) {
+              await ExcelService.exportarReportes([reporte]);
+            }
 
           },
 

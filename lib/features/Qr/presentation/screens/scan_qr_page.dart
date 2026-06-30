@@ -4,8 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../shared/widgets/app_drawer.dart';
 
 import '../providers/qr_provider.dart';
-
-import '../widgets/camera_preview.dart';
+import '../widgets/camera_scanner.dart';
 import '../widgets/scan_button.dart';
 import '../widgets/scan_result_card.dart';
 
@@ -22,9 +21,7 @@ class ScanQrPage extends StatelessWidget {
           appBar: AppBar(
             title: const Text("Escanear QR"),
             centerTitle: true,
-
             actions: [
-
               IconButton(
                 icon: Icon(
                   provider.flash
@@ -33,7 +30,6 @@ class ScanQrPage extends StatelessWidget {
                 ),
                 onPressed: provider.toggleFlash,
               ),
-
             ],
           ),
 
@@ -44,7 +40,22 @@ class ScanQrPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
 
-                const CameraPreviewWidget(),
+                /// Cámara
+                SizedBox(
+                  height: 350,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: CameraScanner(
+                      flash: provider.flash,
+                      onDetect: (codigo) {
+                        provider.detectarCodigo(
+                          context,
+                          codigo,
+                        );
+                      },
+                    ),
+                  ),
+                ),
 
                 const SizedBox(height: 20),
 
@@ -55,7 +66,6 @@ class ScanQrPage extends StatelessWidget {
                 ScanResultCard(
                   provider: provider,
                 ),
-
               ],
             ),
           ),

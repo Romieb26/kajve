@@ -12,74 +12,85 @@ class ScanResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!provider.codigoEscaneado) {
+    if (provider.ultimoCodigo == null) {
       return const SizedBox();
     }
 
     return Card(
-      elevation: 4,
-
+      elevation: 5,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-
       child: Padding(
         padding: const EdgeInsets.all(20),
-
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Icon(
+              Icons.check_circle,
+              color: Colors.green,
+              size: 70,
+            ),
+
+            const SizedBox(height: 15),
 
             const Text(
-              "Información del QR",
+              "Código QR detectado",
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const Divider(),
+            const SizedBox(height: 20),
 
-            ListTile(
-              leading: const Icon(Icons.grass),
-              title: const Text("Lote"),
-              subtitle: Text(provider.lote),
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text("Productor"),
-              subtitle: Text(provider.productor),
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.analytics),
-              title: const Text("Estado"),
-              subtitle: Text(provider.estado),
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.calendar_month),
-              title: const Text("Fecha"),
-              subtitle: Text(provider.fecha),
-            ),
-
-            const SizedBox(height: 10),
-
-            SizedBox(
+            Container(
               width: double.infinity,
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.brown.shade50,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    "Contenido del QR",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
 
-              child: FilledButton.icon(
-                onPressed: () {
-                  // Más adelante navegará al detalle del lote
-                },
+                  const SizedBox(height: 10),
 
-                icon: const Icon(Icons.visibility),
-
-                label: const Text("Ver detalle"),
+                  SelectableText(
+                    provider.ultimoCodigo!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
 
+            const SizedBox(height: 25),
+
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        "Próximamente se mostrará la información del lote.",
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.visibility),
+                label: const Text("Ver información"),
+              ),
+            ),
           ],
         ),
       ),

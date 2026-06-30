@@ -2,34 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 // Core
-import 'core/theme/app_theme.dart';
 import 'core/routes/app_pages.dart';
 import 'core/routes/ app_routes.dart';
+import 'core/theme/app_theme.dart';
 
 // Providers
 import 'features/Splash/ presentation/ providers/splash_provider.dart';
-
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/dashboard/presentation/providers/dashboard_provider.dart';
-
 import 'features/lots/presentation/providers/lot_provider.dart';
-
 import 'features/monitoring/presentation/providers/monitoring_provider.dart';
-
 import 'features/qr/presentation/providers/qr_provider.dart';
-
 import 'features/predictions/presentation/providers/prediction_provider.dart';
-
 import 'features/realtime/presentation/providers/realtime_provider.dart';
-
 import 'features/ history/presentation/providers/ history_provider.dart';
-
 import 'features/alerts/presentation/providers/alerts_provider.dart';
-
 import 'features/reports/ presentation/providers/ report_provider.dart';
-
 import 'features/profile/presentation/ providers/profile_provider.dart';
-
+import 'features/sensors/presentation/providers/sensor_provider.dart';
+import 'features/auth/presentation/providers/register_provider.dart';
 
 void main() {
   runApp(const KajveApp());
@@ -42,12 +33,18 @@ class KajveApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+
+        /// Registro
+        ChangeNotifierProvider(
+          create: (_) => RegisterProvider(),
+        ),
+
         /// Splash
         ChangeNotifierProvider(
           create: (_) => SplashProvider(),
         ),
 
-        /// Login
+        /// Autenticación
         ChangeNotifierProvider(
           create: (_) => AuthProvider(),
         ),
@@ -67,7 +64,7 @@ class KajveApp extends StatelessWidget {
           create: (_) => MonitoringProvider(),
         ),
 
-        /// QR
+        /// Escáner QR
         ChangeNotifierProvider(
           create: (_) => QrProvider(),
         ),
@@ -77,7 +74,7 @@ class KajveApp extends StatelessWidget {
           create: (_) => PredictionProvider(),
         ),
 
-        /// Tiempo Real
+        /// Tiempo real
         ChangeNotifierProvider(
           create: (_) => RealtimeProvider(),
         ),
@@ -101,7 +98,13 @@ class KajveApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => ProfileProvider(),
         ),
+
+        /// Sensores
+        ChangeNotifierProvider(
+          create: (_) => SensorProvider(),
+        ),
       ],
+
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
 
@@ -111,7 +114,6 @@ class KajveApp extends StatelessWidget {
         darkTheme: AppTheme.dark,
         themeMode: ThemeMode.system,
 
-        // Rutas
         initialRoute: AppRoutes.splash,
 
         routes: AppPages.routes,

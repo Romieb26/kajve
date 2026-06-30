@@ -1,55 +1,57 @@
 import 'package:flutter/material.dart';
 
 class QrProvider extends ChangeNotifier {
-  ///=========================
-  /// Flash
-  ///=========================
-
+  /// Estado del flash
   bool flash = false;
 
+  /// Evita múltiples lecturas del mismo QR
+  bool procesando = false;
+
+  /// Último código leído
+  String? ultimoCodigo;
+
+  /// Activa o desactiva el flash
   void toggleFlash() {
     flash = !flash;
     notifyListeners();
   }
 
-  ///=========================
-  /// Resultado del QR
-  ///=========================
-
-  bool codigoEscaneado = false;
-
-  String lote = "";
-  String productor = "";
-  String estado = "";
-  String fecha = "";
-
-  ///=========================
-  /// Simulación del escaneo
-  ///=========================
-
-  void scanQr() {
-    codigoEscaneado = true;
-
-    lote = "Lote Norte";
-    productor = "Finca Sibaca";
-    estado = "Secado";
-    fecha = "18/06/2026";
-
+  /// Reinicia el escaneo
+  void reiniciarEscaneo() {
+    procesando = false;
+    ultimoCodigo = null;
     notifyListeners();
   }
 
-  ///=========================
-  /// Limpiar información
-  ///=========================
+  /// Procesa el código QR detectado
+  void detectarCodigo(
+      BuildContext context,
+      String codigo,
+      ) {
+    if (procesando) return;
 
-  void limpiar() {
-    codigoEscaneado = false;
-
-    lote = "";
-    productor = "";
-    estado = "";
-    fecha = "";
+    procesando = true;
+    ultimoCodigo = codigo;
 
     notifyListeners();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("QR detectado: $codigo"),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+
+    // Aquí más adelante consultaremos la API o Base de Datos
+    // para obtener la información del lote usando el código QR.
+
+    /*
+    Navigator.pushNamed(
+      context,
+      AppRoutes.lotDetail,
+      arguments: codigo,
+    );
+    */
   }
 }

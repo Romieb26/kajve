@@ -21,12 +21,15 @@ class LoginForm extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-
             TextField(
-              controller: provider.usernameController,
-              decoration: const InputDecoration(
+              controller: provider.usuarioController,
+              keyboardType: TextInputType.text,
+              decoration: InputDecoration(
                 labelText: "Usuario",
-                prefixIcon: Icon(Icons.person),
+                prefixIcon: const Icon(Icons.person),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
 
@@ -35,9 +38,14 @@ class LoginForm extends StatelessWidget {
             TextField(
               controller: provider.passwordController,
               obscureText: provider.ocultarPassword,
+              enableSuggestions: false,
+              autocorrect: false,
               decoration: InputDecoration(
                 labelText: "Contraseña",
                 prefixIcon: const Icon(Icons.lock),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 suffixIcon: IconButton(
                   icon: Icon(
                     provider.ocultarPassword
@@ -48,7 +56,6 @@ class LoginForm extends StatelessWidget {
                 ),
               ),
             ),
-
           ],
         ),
       ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../data/models/alert_model.dart';
+import 'priority_chip.dart';
 
 class AlertCard extends StatelessWidget {
   final AlertModel alert;
@@ -10,7 +12,7 @@ class AlertCard extends StatelessWidget {
   });
 
   Color _color() {
-    switch (alert.nivel) {
+    switch (alert.nivel.toLowerCase()) {
       case "alta":
         return Colors.red;
 
@@ -22,24 +24,90 @@ class AlertCard extends StatelessWidget {
     }
   }
 
+  IconData _icon() {
+    switch (alert.nivel.toLowerCase()) {
+      case "alta":
+        return Icons.warning;
+
+      case "media":
+        return Icons.error_outline;
+
+      default:
+        return Icons.check_circle;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-
-      child: ListTile(
-        leading: Icon(
-          Icons.warning,
-          color: _color(),
-        ),
-
-        title: Text(alert.titulo),
-
-        subtitle: Column(
+      elevation: 4,
+      margin: const EdgeInsets.only(bottom: 15),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
+            Row(
+              children: [
+
+                CircleAvatar(
+                  backgroundColor: _color().withOpacity(.15),
+                  child: Icon(
+                    _icon(),
+                    color: _color(),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Text(
+                    alert.titulo,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                    ),
+                  ),
+                ),
+
+                PriorityChip(
+                  prioridad: alert.nivel,
+                ),
+
+              ],
+            ),
+
+            const SizedBox(height: 15),
+
             Text(alert.descripcion),
-            Text(alert.fecha),
+
+            const SizedBox(height: 10),
+
+            Row(
+              children: [
+
+                const Icon(
+                  Icons.calendar_today,
+                  size: 18,
+                  color: Colors.grey,
+                ),
+
+                const SizedBox(width: 8),
+
+                Text(
+                  alert.fecha,
+                  style: const TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
+
+              ],
+            ),
+
           ],
         ),
       ),

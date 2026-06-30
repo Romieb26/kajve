@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../providers/alerts_provider.dart';
 
 class AlertFilter extends StatelessWidget {
@@ -11,25 +12,31 @@ class AlertFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
 
-        _btn("Todas"),
-        const SizedBox(width: 8),
-        _btn("alta"),
-        const SizedBox(width: 8),
-        _btn("media"),
+    final filtros = [
+      "Todas",
+      "alta",
+      "media",
+      "baja",
+    ];
 
-      ],
-    );
-  }
+    return Wrap(
+      spacing: 10,
+      children: filtros.map((filtro) {
 
-  Widget _btn(String texto) {
-    return Expanded(
-      child: ElevatedButton(
-        onPressed: () => provider.filtrar(texto),
-        child: Text(texto),
-      ),
+        return ChoiceChip(
+
+          label: Text(filtro),
+
+          selected: provider.filtro == filtro,
+
+          onSelected: (_) {
+            provider.filtrar(filtro);
+          },
+
+        );
+
+      }).toList(),
     );
   }
 }

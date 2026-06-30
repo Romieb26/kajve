@@ -8,14 +8,26 @@ class ScanButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton.icon(
-      onPressed: () {
-        context.read<QrProvider>().scanQr();
+    return Consumer<QrProvider>(
+      builder: (context, provider, child) {
+        return FilledButton.icon(
+          onPressed: provider.procesando
+              ? null
+              : () {
+            provider.reiniciarEscaneo();
+          },
+          icon: Icon(
+            provider.procesando
+                ? Icons.hourglass_top
+                : Icons.qr_code_scanner,
+          ),
+          label: Text(
+            provider.procesando
+                ? "Escaneando..."
+                : "Escanear nuevamente",
+          ),
+        );
       },
-
-      icon: const Icon(Icons.qr_code_scanner),
-
-      label: const Text("Escanear QR"),
     );
   }
 }

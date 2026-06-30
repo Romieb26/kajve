@@ -88,17 +88,24 @@ class RecentPredictionCard extends StatelessWidget {
 
           ],
         ),
-        trailing: FilledButton(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("Mostrando detalles de $lote"),
-              ),
-            );
-          },
-          child: const Text("Ver"),
+        trailing: SizedBox(
+          width: 70,
+          child: FilledButton(
+            style: FilledButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 36),
+            ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Mostrando detalles de $lote"),
+                ),
+              );
+            },
+            child: const Text("Ver"),
+          ),
         ),
-      ),
+        ),
     );
   }
 }

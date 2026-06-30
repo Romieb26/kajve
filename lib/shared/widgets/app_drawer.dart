@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../core/routes/ app_routes.dart';
 
-
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
@@ -91,6 +90,14 @@ class AppDrawer extends StatelessWidget {
             icon: Icons.sensors,
             title: "Tiempo Real",
             route: AppRoutes.realtime,
+          ),
+
+          /// NUEVO MÓDULO
+          _item(
+            context,
+            icon: Icons.sensors_outlined,
+            title: "Sensores",
+            route: AppRoutes.sensors,
           ),
 
           _item(

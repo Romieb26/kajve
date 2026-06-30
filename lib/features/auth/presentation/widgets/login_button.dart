@@ -16,12 +16,27 @@ class LoginButton extends StatelessWidget {
       width: double.infinity,
       height: 55,
       child: FilledButton.icon(
-        icon: const Icon(Icons.login),
-        label: const Text(
-          "Iniciar sesión",
-          style: TextStyle(fontSize: 18),
+        icon: provider.cargando
+            ? const SizedBox(
+          width: 22,
+          height: 22,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Colors.white,
+          ),
+        )
+            : const Icon(Icons.login),
+        label: Text(
+          provider.cargando
+              ? "Verificando..."
+              : "Iniciar sesión",
+          style: const TextStyle(
+            fontSize: 18,
+          ),
         ),
-        onPressed: () {
+        onPressed: provider.cargando
+            ? null
+            : () {
           provider.iniciarSesion(context);
         },
       ),

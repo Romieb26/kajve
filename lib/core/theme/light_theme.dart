@@ -20,11 +20,18 @@ class LightTheme {
       appBarTheme: const AppBarTheme(
         centerTitle: true,
         elevation: 0,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+      ),
+
+      drawerTheme: const DrawerThemeData(
+        backgroundColor: Colors.white,
       ),
 
       cardTheme: CardThemeData(
-        elevation: 3,
-        color: Colors.white,
+        elevation: 6,
+        shadowColor: AppColors.shadow,
+        color: AppColors.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -33,9 +40,38 @@ class LightTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(double.infinity, 55),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
+        ),
+      ),
+
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 2,
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+      ),
+
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.secondary,
+        foregroundColor: Colors.white,
+      ),
+
+      chipTheme: ChipThemeData(
+        backgroundColor: Colors.grey.shade100,
+        selectedColor: AppColors.secondary,
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.w600,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
       ),
 
@@ -43,22 +79,38 @@ class LightTheme {
         filled: true,
         fillColor: Colors.white,
 
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 18,
+        ),
+
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
         ),
 
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(
+            color: AppColors.border,
+          ),
         ),
 
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(
+            color: AppColors.primary,
+            width: 2,
+          ),
         ),
       ),
 
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.white,
-        indicatorColor: colorScheme.primaryContainer,
+        indicatorColor: AppColors.secondary.withOpacity(.15),
+      ),
+
+      dividerTheme: const DividerThemeData(
+        thickness: 1,
       ),
     );
   }

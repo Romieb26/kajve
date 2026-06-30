@@ -25,6 +25,12 @@ import '../../features/reports/ presentation/screens/reports_page.dart';
 
 import '../../features/profile/presentation/screens/profile_page.dart';
 
+import '../../features/auth/presentation/screens/ register_page.dart';
+
+import '../../features/sensors/presentation/pages/sensors_page.dart';
+
+import '../../features/sensors/presentation/pages/create_sensor_page.dart';
+
 import '../routes/ app_routes.dart';
 
 
@@ -57,5 +63,12 @@ class AppPages {
     AppRoutes.reports: (_) => const ReportsPage(),
 
     AppRoutes.profile: (_) => const ProfilePage(),
+
+    AppRoutes.register: (_) => const RegisterPage(),
+
+    AppRoutes.sensors: (_) => const SensorsPage(),
+
+    AppRoutes.createSensor: (_) => const CreateSensorPage(),
+
   };
 }

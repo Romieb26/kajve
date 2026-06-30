@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/routes/ app_routes.dart';
+
 import '../providers/auth_provider.dart';
 import '../widgets/logo_login.dart';
 import '../widgets/login_form.dart';
@@ -11,43 +13,26 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final provider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-
       body: Container(
-
         width: double.infinity,
-
         decoration: const BoxDecoration(
-
           gradient: LinearGradient(
-
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-
             colors: [
-
               Color(0xff6A301A),
               Color(0xffC96A00),
-
             ],
-
           ),
-
         ),
-
         child: SafeArea(
-
           child: SingleChildScrollView(
-
             padding: const EdgeInsets.all(24),
-
             child: Column(
-
               children: [
-
                 const SizedBox(height: 20),
 
                 const LogoLogin(),
@@ -60,16 +45,29 @@ class LoginPage extends StatelessWidget {
 
                 LoginButton(provider: provider),
 
-                const SizedBox(height: 35),
+                const SizedBox(height: 30),
+
+                if (provider.cargando)
+                  const CircularProgressIndicator(
+                    color: Colors.white,
+                  ),
+
+                const SizedBox(height: 20),
 
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.register,
+                    );
+                  },
                   child: const Text(
                     "¿No tienes cuenta? Regístrate",
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-
               ],
             ),
           ),
