@@ -1,33 +1,54 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/network/api_client.dart';
 import '../../../../core/routes/app_routes.dart';
-
+import '../../../../core/storage/secure_storage.dart';
+import '../../data/datasources/auth_remote_datasource.dart';
+import '../../data/repositories/auth_repository_impl.dart';
+import '../../domain/entities/usuario_entity.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../../domain/usecases/login_usecase.dart';
 
 class AuthProvider extends ChangeNotifier {
-  final TextEditingController usuarioController =
-  TextEditingController();
-
-  final TextEditingController passwordController =
-  TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   bool ocultarPassword = true;
   bool cargando = false;
+
+  UsuarioEntity? usuario;
+
+  final SecureStorage _secureStorage = SecureStorage();
+
+  late final LoginUseCase _loginUseCase = LoginUseCase(
+    AuthRepositoryImpl(
+      AuthRemoteDataSourceImpl(ApiClient()),
+      _secureStorage,
+    ),
+  );
 
   void cambiarVisibilidad() {
     ocultarPassword = !ocultarPassword;
     notifyListeners();
   }
 
+  bool _esEmailValido(String email) =>
+      email.contains('@') && email.contains('.');
+
   Future<void> iniciarSesion(BuildContext context) async {
-    final usuario = usuarioController.text.trim();
+    final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    if (usuario.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Completa todos los campos."),
-          backgroundColor: Colors.orange,
-        ),
+    if (email.isEmpty || password.isEmpty) {
+      _mostrarSnackBar(context, "Completa todos los campos.", Colors.orange);
+      return;
+    }
+
+    if (!_esEmailValido(email)) {
+      _mostrarSnackBar(
+        context,
+        "Ingresa un correo electrónico válido.",
+        Colors.orange,
       );
       return;
     }
@@ -35,40 +56,45 @@ class AuthProvider extends ChangeNotifier {
     cargando = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final AuthSession session = await _loginUseCase(
+        email: email,
+        password: password,
+      );
 
-    const usuarioAdmin = "admin";
-    const passwordAdmin = "123456";
+      await _secureStorage.saveSession(
+        accessToken: session.accessToken,
+        refreshToken: session.refreshToken,
+        idUsuario: session.usuario.id,
+      );
 
-    if (usuario == usuarioAdmin &&
-        password == passwordAdmin) {
-
-      if (context.mounted) {
-        Navigator.pushReplacementNamed(
-          context,
-          AppRoutes.dashboard,
-        );
-      }
-
-    } else {
+      usuario = session.usuario;
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Usuario o contraseña incorrectos."),
-            backgroundColor: Colors.red,
-          ),
-        );
+        Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
       }
+    } on ApiException catch (e) {
+      if (context.mounted) {
+        final mensaje = e.statusCode == 401
+            ? "Correo o contraseña incorrectos"
+            : "No se pudo conectar. Intenta de nuevo";
+        _mostrarSnackBar(context, mensaje, Colors.red);
+      }
+    } finally {
+      cargando = false;
+      notifyListeners();
     }
+  }
 
-    cargando = false;
-    notifyListeners();
+  void _mostrarSnackBar(BuildContext context, String mensaje, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje), backgroundColor: color),
+    );
   }
 
   @override
   void dispose() {
-    usuarioController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     super.dispose();
   }

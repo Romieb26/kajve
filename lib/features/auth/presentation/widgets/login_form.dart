@@ -22,11 +22,11 @@ class LoginForm extends StatelessWidget {
         child: Column(
           children: [
             TextField(
-              controller: provider.usuarioController,
-              keyboardType: TextInputType.text,
+              controller: provider.emailController,
+              keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
-                labelText: "Usuario",
-                prefixIcon: const Icon(Icons.person),
+                labelText: "Correo electrónico",
+                prefixIcon: const Icon(Icons.email),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

@@ -34,6 +34,7 @@ class RegisterForm extends StatelessWidget {
 
             TextField(
               controller: provider.correoController,
+              keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
                 labelText: "Correo electrónico",
                 prefixIcon: Icon(Icons.email),
@@ -43,10 +44,11 @@ class RegisterForm extends StatelessWidget {
             const SizedBox(height: 18),
 
             TextField(
-              controller: provider.usuarioController,
+              controller: provider.telefonoController,
+              keyboardType: TextInputType.phone,
               decoration: const InputDecoration(
-                labelText: "Usuario",
-                prefixIcon: Icon(Icons.account_circle),
+                labelText: "Teléfono",
+                prefixIcon: Icon(Icons.phone),
               ),
             ),
 

@@ -1,27 +1,37 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/network/api_client.dart';
+import '../../../../core/storage/secure_storage.dart';
+import '../../data/datasources/dashboard_remote_datasource.dart';
+import '../../data/repositories/dashboard_repository_impl.dart';
+import '../../domain/entities/dashboard_entity.dart';
+import '../../domain/get_dashboard_usecase.dart';
+
 class DashboardProvider extends ChangeNotifier {
-  String nombreUsuario = "Juan Pérez";
+  bool isLoading = false;
+  String? errorMessage;
+  DashboardEntity? data;
 
-  int lotesActivos = 12;
-  int alertas = 3;
-  int predicciones = 28;
+  late final GetDashboardUseCase _getDashboardUseCase = GetDashboardUseCase(
+    DashboardRepositoryImpl(
+      DashboardRemoteDataSourceImpl(ApiClient(), SecureStorage()),
+    ),
+  );
 
-  final List<Map<String, dynamic>> ultimasPredicciones = [
-    {
-      "lote": "Lote A",
-      "estado": "Secado óptimo",
-      "fecha": "15/08/2026"
-    },
-    {
-      "lote": "Lote B",
-      "estado": "Riesgo de humedad",
-      "fecha": "14/08/2026"
-    },
-    {
-      "lote": "Lote C",
-      "estado": "Temperatura elevada",
-      "fecha": "13/08/2026"
-    },
-  ];
+  Future<void> loadDashboard() async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      data = await _getDashboardUseCase();
+    } on ApiException catch (e) {
+      errorMessage = e.statusCode == 401
+          ? "Tu sesión expiró. Inicia sesión de nuevo."
+          : "No se pudo conectar. Intenta de nuevo";
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 }
