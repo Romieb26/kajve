@@ -26,14 +26,17 @@ class DashboardProvider extends ChangeNotifier {
     try {
       data = await _getDashboardUseCase();
     } on ApiException catch (e) {
-      // TODO: quitar este print de diagnóstico una vez confirmada la causa.
-      debugPrint(
-        'DashboardProvider.loadDashboard -> ApiException '
-        '(statusCode=${e.statusCode}): ${e.message}',
-      );
       errorMessage = e.statusCode == 401
           ? "Tu sesión expiró. Inicia sesión de nuevo."
           : "No se pudo conectar. Intenta de nuevo";
+    } catch (e, stack) {
+      // TODO: quitar este print de diagnóstico una vez confirmada la causa.
+      // Cualquier error que no sea ApiException (típicamente un fallo al
+      // parsear el JSON de la respuesta) no debe dejar la pantalla en
+      // blanco silenciosamente.
+      debugPrint('DashboardProvider.loadDashboard -> error inesperado: $e');
+      debugPrint('$stack');
+      errorMessage = "Ocurrió un error al cargar el dashboard.";
     } finally {
       isLoading = false;
       notifyListeners();

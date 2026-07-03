@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'core/routes/app_pages.dart';
 import 'core/routes/app_routes.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 
 // Providers
 import 'features/Splash/presentation/providers/splash_provider.dart';
@@ -33,6 +34,11 @@ class KajveApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+
+        /// Tema (claro/oscuro manual)
+        ChangeNotifierProvider(
+          create: (_) => ThemeProvider(),
+        ),
 
         /// Registro
         ChangeNotifierProvider(
@@ -105,18 +111,22 @@ class KajveApp extends StatelessWidget {
         ),
       ],
 
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
 
-        title: 'KAJVE',
+            title: 'KAJVE',
 
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.system,
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: themeProvider.themeMode,
 
-        initialRoute: AppRoutes.splash,
+            initialRoute: AppRoutes.splash,
 
-        routes: AppPages.routes,
+            routes: AppPages.routes,
+          );
+        },
       ),
     );
   }

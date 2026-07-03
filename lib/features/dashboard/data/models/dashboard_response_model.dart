@@ -37,8 +37,8 @@ class LoteResumenModel extends LoteResumenEntity {
       nombreLote: json['nombre_lote'] as String,
       estado: json['estado'] as String,
       diasSecado: json['dias_secado'] as int,
-      ultimaTemperatura: (json['ultima_temperatura'] as num).toDouble(),
-      ultimaHumedad: (json['ultima_humedad'] as num).toDouble(),
+      ultimaTemperatura: (json['ultima_temperatura'] as num?)?.toDouble(),
+      ultimaHumedad: (json['ultima_humedad'] as num?)?.toDouble(),
       alertasActivas: json['alertas_activas'] as int,
     );
   }
@@ -68,9 +68,9 @@ class DashboardResponseModel extends DashboardEntity {
       alertasSinAtender: json['alertas_sin_atender'] as int,
       alertasCriticasActivas: json['alertas_criticas_activas'] as int,
       temperaturaPromedioActual:
-          (json['temperatura_promedio_actual'] as num).toDouble(),
+          (json['temperatura_promedio_actual'] as num?)?.toDouble(),
       humedadPromedioActual:
-          (json['humedad_promedio_actual'] as num).toDouble(),
+          (json['humedad_promedio_actual'] as num?)?.toDouble(),
       totalReportes: json['total_reportes'] as int,
       totalSensores: json['total_sensores'] as int,
       // ultima_prediccion puede venir null si el usuario no tiene

@@ -34,4 +34,34 @@ class AppColors {
 
   // Sombras
   static const Color shadow = Color(0x22000000);
+
+  // ==========================================================
+  // Modo oscuro — mismos tonos café/ámbar/naranja de la marca,
+  // sobre fondos cálidos oscuros en vez de gris neutro.
+  // ==========================================================
+
+  // Fondo principal
+  static const Color darkBackground = Color(0xFF1A130D);
+
+  // Tarjetas / superficies
+  static const Color darkSurface = Color(0xFF2B2019);
+
+  // AppBar / Drawer / Navigation bar
+  static const Color darkAppBar = Color(0xFF241A12);
+
+  // Acento principal (botones, selección, íconos activos)
+  static const Color darkAccent = Color(0xFFE3A94E);
+
+  // Texto sobre el acento (para que el botón ámbar no quede
+  // con texto blanco de bajo contraste)
+  static const Color darkOnAccent = Color(0xFF2A1B08);
+
+  // Bordes / divisores
+  static const Color darkBorder = Color(0xFF4C3B2C);
+
+  // Texto principal
+  static const Color darkTextPrimary = Color(0xFFF5ECE0);
+
+  // Texto secundario
+  static const Color darkTextSecondary = Color(0xFFCBB6A0);
 }

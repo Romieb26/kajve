@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../../../shared/widgets/app_bottom_navigation.dart';
 import '../../../../shared/widgets/app_drawer.dart';
 
+import '../../../../core/theme/theme_provider.dart';
+
 import '../providers/profile_provider.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_card.dart';
@@ -14,6 +16,8 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return Consumer<ProfileProvider>(
       builder: (context, provider, child) {
         return Scaffold(
@@ -46,6 +50,28 @@ class ProfilePage extends StatelessWidget {
 
                 /// Cambiar contraseña
                 PasswordCard(provider: provider),
+
+                const SizedBox(height: 20),
+
+                /// Modo claro / oscuro
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: SwitchListTile(
+                    value: themeProvider.modoOscuro,
+                    onChanged: themeProvider.cambiarTema,
+                    title: const Text("Modo oscuro"),
+                    subtitle: const Text(
+                      "Cambia el tema manualmente, sin depender del sistema.",
+                    ),
+                    secondary: Icon(
+                      themeProvider.modoOscuro
+                          ? Icons.dark_mode
+                          : Icons.light_mode,
+                    ),
+                  ),
+                ),
 
                 const SizedBox(height: 25),
 

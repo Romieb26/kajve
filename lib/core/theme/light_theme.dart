@@ -10,12 +10,32 @@ class LightTheme {
       brightness: Brightness.light,
     );
 
+    const textTheme = TextTheme(
+      titleLarge: TextStyle(
+        color: AppColors.textPrimary,
+        fontWeight: FontWeight.bold,
+      ),
+      titleMedium: TextStyle(
+        color: AppColors.textPrimary,
+        fontWeight: FontWeight.w600,
+      ),
+      titleSmall: TextStyle(color: AppColors.textPrimary),
+      bodyLarge: TextStyle(color: AppColors.textPrimary),
+      bodyMedium: TextStyle(color: AppColors.textPrimary),
+      bodySmall: TextStyle(color: AppColors.textSecondary),
+      labelLarge: TextStyle(color: AppColors.textPrimary),
+      labelMedium: TextStyle(color: AppColors.textSecondary),
+    );
+
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.light,
 
       colorScheme: colorScheme,
 
       scaffoldBackgroundColor: AppColors.background,
+
+      textTheme: textTheme,
 
       appBarTheme: const AppBarTheme(
         centerTitle: true,
@@ -106,11 +126,45 @@ class LightTheme {
 
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.white,
-        indicatorColor: AppColors.secondary.withOpacity(.15),
+        indicatorColor: AppColors.secondary.withValues(alpha: .15),
+        labelTextStyle: WidgetStateProperty.all(
+          const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 12,
+          ),
+        ),
       ),
 
       dividerTheme: const DividerThemeData(
+        color: AppColors.border,
         thickness: 1,
+      ),
+
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primary,
+        ),
+      ),
+
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? AppColors.primary
+              : Colors.grey.shade400,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? AppColors.primary.withValues(alpha: .5)
+              : Colors.grey.shade300,
+        ),
+      ),
+
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.textPrimary,
+        contentTextStyle: const TextStyle(color: Colors.white),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }

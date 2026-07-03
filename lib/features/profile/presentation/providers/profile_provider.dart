@@ -25,7 +25,6 @@ class ProfileProvider extends ChangeNotifier {
   /// Configuración
   bool ocultarPassword = true;
   bool ocultarConfirmacion = true;
-  bool modoOscuro = false;
 
   /// Mostrar/Ocultar contraseña
   void cambiarVisibilidadPassword() {
@@ -36,12 +35,6 @@ class ProfileProvider extends ChangeNotifier {
   /// Mostrar/Ocultar confirmación
   void cambiarVisibilidadConfirmacion() {
     ocultarConfirmacion = !ocultarConfirmacion;
-    notifyListeners();
-  }
-
-  /// Cambiar tema
-  void cambiarTema(bool value) {
-    modoOscuro = value;
     notifyListeners();
   }
 

@@ -21,8 +21,9 @@ class LoteResumenEntity {
   final String nombreLote;
   final String estado;
   final int diasSecado;
-  final double ultimaTemperatura;
-  final double ultimaHumedad;
+  // Nulos cuando el lote todavía no tiene lecturas de sensor asociadas.
+  final double? ultimaTemperatura;
+  final double? ultimaHumedad;
   final int alertasActivas;
 
   const LoteResumenEntity({
@@ -42,8 +43,10 @@ class DashboardEntity {
   final int lotesFinalizados;
   final int alertasSinAtender;
   final int alertasCriticasActivas;
-  final double temperaturaPromedioActual;
-  final double humedadPromedioActual;
+  // Nulos cuando aún no hay lecturas de sensores para promediar
+  // (mismo caso que ultima_temperatura/ultima_humedad por lote).
+  final double? temperaturaPromedioActual;
+  final double? humedadPromedioActual;
   final int totalReportes;
   final int totalSensores;
   final UltimaPrediccionEntity? ultimaPrediccion;
