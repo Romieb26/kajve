@@ -26,6 +26,11 @@ class DashboardProvider extends ChangeNotifier {
     try {
       data = await _getDashboardUseCase();
     } on ApiException catch (e) {
+      // TODO: quitar este print de diagnóstico una vez confirmada la causa.
+      debugPrint(
+        'DashboardProvider.loadDashboard -> ApiException '
+        '(statusCode=${e.statusCode}): ${e.message}',
+      );
       errorMessage = e.statusCode == 401
           ? "Tu sesión expiró. Inicia sesión de nuevo."
           : "No se pudo conectar. Intenta de nuevo";

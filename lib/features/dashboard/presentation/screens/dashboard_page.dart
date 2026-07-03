@@ -22,7 +22,9 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    context.read<DashboardProvider>().loadDashboard();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DashboardProvider>().loadDashboard();
+    });
   }
 
   String _formatFecha(DateTime fecha) {
