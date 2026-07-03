@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../shared/widgets/app_drawer.dart';
 
-import '../providers/ history_provider.dart';
+import '../providers/history_provider.dart';
 
 import '../widgets/search_history.dart';
 import '../widgets/history_filters.dart';

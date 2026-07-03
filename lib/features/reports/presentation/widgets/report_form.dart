@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../providers/ report_provider.dart';
+import '../providers/report_provider.dart';
 
 class ReportForm extends StatelessWidget {
   final ReportProvider provider;

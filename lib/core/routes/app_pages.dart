@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../features/Splash/ presentation/screens/splash_page.dart';
+import '../../features/Splash/presentation/screens/splash_page.dart';
 
 import '../../features/auth/presentation/screens/login_page.dart';
 import '../../features/dashboard/presentation/screens/dashboard_page.dart';
 
-import '../../features/lots/presentation/screens/ lots_page.dart';
+import '../../features/lots/presentation/screens/lots_page.dart';
 import '../../features/lots/presentation/screens/create_lot_page.dart';
 
-import '../../features/monitoring/presentation/screens/ lot_detail_page.dart';
+import '../../features/monitoring/presentation/screens/lot_detail_page.dart';
 
 import '../../features/qr/presentation/screens/scan_qr_page.dart';
 
@@ -16,22 +16,22 @@ import '../../features/predictions/presentation/screens/prediction_page.dart';
 
 import '../../features/realtime/presentation/screens/realtime_page.dart';
 
-import '../../features/ history/presentation/screens/history_page.dart';
+import '../../features/history/presentation/screens/history_page.dart';
 
 import '../../features/alerts/presentation/screens/alerts_page.dart';
 
-import '../../features/reports/ presentation/screens/reports_page.dart';
+import '../../features/reports/presentation/screens/reports_page.dart';
 
 
 import '../../features/profile/presentation/screens/profile_page.dart';
 
-import '../../features/auth/presentation/screens/ register_page.dart';
+import '../../features/auth/presentation/screens/register_page.dart';
 
 import '../../features/sensors/presentation/pages/sensors_page.dart';
 
 import '../../features/sensors/presentation/pages/create_sensor_page.dart';
 
-import '../routes/ app_routes.dart';
+import '../routes/app_routes.dart';
 
 
 class AppPages {

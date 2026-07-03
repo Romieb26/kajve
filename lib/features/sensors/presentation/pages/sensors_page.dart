@@ -5,7 +5,7 @@ import '../../../../shared/widgets/app_drawer.dart';
 
 import '../providers/sensor_provider.dart';
 import '../widgets/search_sensor.dart';
-import '../widgets/ sensor_card.dart';
+import '../widgets/sensor_card.dart';
 import 'create_sensor_page.dart';
 
 class SensorsPage extends StatelessWidget {

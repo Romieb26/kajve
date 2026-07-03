@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 
 
 import '../../../../shared/widgets/app_bottom_navigation.dart';
-import '../providers/ report_provider.dart';
+import '../providers/report_provider.dart';
 import '../widgets/report_form.dart';
-import '../widgets/ report_history.dart';
+import '../widgets/report_history.dart';
 
 class ReportsPage extends StatelessWidget {
   const ReportsPage({super.key});

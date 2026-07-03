@@ -5,11 +5,11 @@ import '../../../../shared/widgets/app_drawer.dart';
 
 import '../providers/monitoring_provider.dart';
 
-import '../widgets/ info_card.dart';
+import '../widgets/info_card.dart';
 import '../widgets/drying_status_card.dart';
 import '../widgets/environment_card.dart';
 import '../widgets/qr_card.dart';
-import '../widgets/ history_button.dart';
+import '../widgets/history_button.dart';
 
 class LotDetailPage extends StatelessWidget {
   const LotDetailPage({super.key});

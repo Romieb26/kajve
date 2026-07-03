@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../ providers/splash_provider.dart';
-import '../widgets/ logo_widget.dart';
+import '../providers/splash_provider.dart';
+import '../widgets/logo_widget.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});

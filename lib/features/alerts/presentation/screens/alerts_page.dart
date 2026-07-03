@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/alerts_provider.dart';
-import '../widgets/ alert_card.dart';
+import '../widgets/alert_card.dart';
 import '../widgets/alert_filter.dart';
 
 class AlertsPage extends StatelessWidget {

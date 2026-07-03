@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../providers/ history_provider.dart';
+import '../providers/history_provider.dart';
 
 class HistoryStatistics extends StatelessWidget {
   final HistoryProvider provider;

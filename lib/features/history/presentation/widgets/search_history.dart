@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../providers/ history_provider.dart';
+import '../providers/history_provider.dart';
 
 class SearchHistory extends StatelessWidget {
   final HistoryProvider provider;

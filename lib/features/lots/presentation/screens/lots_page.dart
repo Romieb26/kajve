@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/routes/ app_routes.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/widgets/app_drawer.dart';
 
 import '../providers/lot_provider.dart';

@@ -8,7 +8,7 @@ import '../providers/realtime_provider.dart';
 import '../widgets/realtime_header.dart';
 import '../widgets/sensor_grid.dart';
 import '../widgets/environment_card.dart';
-import '../widgets/ chart_card.dart';
+import '../widgets/chart_card.dart';
 
 class RealtimePage extends StatelessWidget {
   const RealtimePage({super.key});

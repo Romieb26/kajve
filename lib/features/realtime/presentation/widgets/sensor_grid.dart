@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../providers/realtime_provider.dart';
-import '../widgets/ sensor_card.dart';
+import '../widgets/sensor_card.dart';
 
 
 

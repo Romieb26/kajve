@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../providers/monitoring_provider.dart';
-import '../widgets/ sensor_status_card.dart';
+import '../widgets/sensor_status_card.dart';
 
 
 class InfoCard extends StatelessWidget {

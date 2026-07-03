@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../ providers/profile_provider.dart';
+import '../providers/profile_provider.dart';
 
 class ProfileCard extends StatelessWidget {
   final ProfileProvider provider;

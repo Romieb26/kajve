@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/register_provider.dart';
-import '../widgets/ register_button.dart';
-import '../widgets/ register_form.dart';
+import '../widgets/register_button.dart';
+import '../widgets/register_form.dart';
 import '../../../auth/presentation/widgets/logo_login.dart';
 
 class RegisterPage extends StatelessWidget {

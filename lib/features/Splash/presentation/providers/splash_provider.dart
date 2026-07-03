@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/routes/ app_routes.dart';
+import '../../../../core/routes/app_routes.dart';
 
 class SplashProvider extends ChangeNotifier {
 

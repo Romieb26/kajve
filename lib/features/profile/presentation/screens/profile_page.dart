@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../shared/widgets/app_bottom_navigation.dart';
 import '../../../../shared/widgets/app_drawer.dart';
 
-import '../ providers/profile_provider.dart';
+import '../providers/profile_provider.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/password_card.dart';
