@@ -29,7 +29,7 @@ class CreateLotForm extends StatelessWidget {
           const SizedBox(height: 10),
 
           TextField(
-            controller: provider.tipoController,
+            controller: provider.variedadController,
             decoration: const InputDecoration(
               labelText: "Tipo de café",
               border: UnderlineInputBorder(),
@@ -39,11 +39,31 @@ class CreateLotForm extends StatelessWidget {
           const SizedBox(height: 10),
 
           TextField(
-            controller: provider.fechaController,
+            controller: provider.pesoController,
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+            ),
             decoration: const InputDecoration(
-              labelText: "Fecha de inicio de secado",
+              labelText: "Peso (kg)",
+              prefixIcon: Icon(Icons.scale),
               border: UnderlineInputBorder(),
             ),
+          ),
+
+          const SizedBox(height: 10),
+
+          DropdownButtonFormField<String>(
+            initialValue: provider.tipoProceso,
+            decoration: const InputDecoration(
+              labelText: "Tipo de proceso",
+              border: UnderlineInputBorder(),
+            ),
+            items: const [
+              DropdownMenuItem(value: "lavado", child: Text("Lavado")),
+              DropdownMenuItem(value: "honey", child: Text("Honey")),
+              DropdownMenuItem(value: "natural", child: Text("Natural")),
+            ],
+            onChanged: provider.seleccionarTipoProceso,
           ),
 
           const SizedBox(height: 10),

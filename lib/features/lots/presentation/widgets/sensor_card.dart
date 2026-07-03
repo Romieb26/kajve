@@ -30,24 +30,16 @@ class SensorCard extends StatelessWidget {
 
           const SizedBox(height: 15),
 
-          CheckboxListTile(
-            value: provider.humedad,
-            onChanged: (value) {
-              provider.cambiarHumedad(value ?? false);
-            },
-            title: const Text("Humedad de suelo #1"),
-            controlAffinity: ListTileControlAffinity.leading,
-            contentPadding: EdgeInsets.zero,
-          ),
-
-          CheckboxListTile(
-            value: provider.temperatura,
-            onChanged: (value) {
-              provider.cambiarTemperatura(value ?? false);
-            },
-            title: const Text("Temperatura Aire #1"),
-            controlAffinity: ListTileControlAffinity.leading,
-            contentPadding: EdgeInsets.zero,
+          TextField(
+            controller: provider.sensorIdController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: "ID de sensor (opcional)",
+              helperText:
+                  "Déjalo vacío si el lote no tiene sensor asignado.",
+              prefixIcon: Icon(Icons.sensors),
+              border: UnderlineInputBorder(),
+            ),
           ),
         ],
       ),

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class QrPreview extends StatelessWidget {
-  const QrPreview({super.key});
+  /// Código real devuelto por el backend tras crear el lote. Mientras
+  /// sea null (aún no se ha guardado el lote) se muestra un placeholder.
+  final String? codigoQr;
+
+  const QrPreview({super.key, this.codigoQr});
 
   @override
   Widget build(BuildContext context) {
@@ -25,11 +30,17 @@ class QrPreview extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(15),
           ),
-          child: const Center(
-            child: Icon(
-              Icons.qr_code_2,
-              size: 120,
-            ),
+          child: Center(
+            child: codigoQr == null
+                ? const Icon(
+                    Icons.qr_code_2,
+                    size: 120,
+                  )
+                : QrImageView(
+                    data: codigoQr!,
+                    size: 150,
+                    padding: const EdgeInsets.all(8),
+                  ),
           ),
         ),
       ],
