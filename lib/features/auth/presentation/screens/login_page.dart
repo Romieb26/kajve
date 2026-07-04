@@ -29,47 +29,57 @@ class LoginPage extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-
-                const LogoLogin(),
-
-                const SizedBox(height: 30),
-
-                LoginForm(provider: provider),
-
-                const SizedBox(height: 25),
-
-                LoginButton(provider: provider),
-
-                const SizedBox(height: 30),
-
-                if (provider.cargando)
-                  const CircularProgressIndicator(
-                    color: Colors.white,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
                   ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
 
-                const SizedBox(height: 20),
+                      const LogoLogin(),
 
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.register,
-                    );
-                  },
-                  child: const Text(
-                    "¿No tienes cuenta? Regístrate",
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
+                      const SizedBox(height: 30),
+
+                      LoginForm(provider: provider),
+
+                      const SizedBox(height: 25),
+
+                      LoginButton(provider: provider),
+
+                      const SizedBox(height: 30),
+
+                      if (provider.cargando)
+                        const CircularProgressIndicator(
+                          color: Colors.white,
+                        ),
+
+                      const SizedBox(height: 20),
+
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.register,
+                          );
+                        },
+                        child: const Text(
+                          "¿No tienes cuenta? Regístrate",
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

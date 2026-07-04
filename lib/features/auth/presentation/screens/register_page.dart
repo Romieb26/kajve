@@ -27,50 +27,60 @@ class RegisterPage extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
 
-                const SizedBox(height: 20),
+                      const SizedBox(height: 20),
 
-                const LogoLogin(),
+                      const LogoLogin(),
 
-                const SizedBox(height: 30),
+                      const SizedBox(height: 30),
 
-                const Text(
-                  "Crear cuenta",
-                  style: TextStyle(
-                    fontSize: 26,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                      const Text(
+                        "Crear cuenta",
+                        style: TextStyle(
+                          fontSize: 26,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      RegisterForm(provider: provider),
+
+                      const SizedBox(height: 25),
+
+                      RegisterButton(provider: provider),
+
+                      const SizedBox(height: 20),
+
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          "¿Ya tienes cuenta? Inicia sesión",
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+
+                    ],
                   ),
                 ),
-
-                const SizedBox(height: 25),
-
-                RegisterForm(provider: provider),
-
-                const SizedBox(height: 25),
-
-                RegisterButton(provider: provider),
-
-                const SizedBox(height: 20),
-
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text(
-                    "¿Ya tienes cuenta? Inicia sesión",
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
