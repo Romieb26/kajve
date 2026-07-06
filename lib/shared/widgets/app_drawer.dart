@@ -79,7 +79,7 @@ class AppDrawer extends StatelessWidget {
             route: AppRoutes.qr,
           ),
 
-          _item(
+          _selectorItem(
             context,
             icon: Icons.show_chart,
             title: "Predicciones",

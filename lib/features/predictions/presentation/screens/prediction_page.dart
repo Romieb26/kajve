@@ -6,91 +6,176 @@ import '../../../../shared/widgets/app_drawer.dart';
 import '../providers/prediction_provider.dart';
 
 import '../widgets/metric_card.dart';
-import '../widgets/prediction_card.dart';
 import '../widgets/recommendation_card.dart';
-import '../widgets/prediction_chart.dart';
 import '../widgets/prediction_history.dart';
 
-class PredictionPage extends StatelessWidget {
+class PredictionPage extends StatefulWidget {
   const PredictionPage({super.key});
 
   @override
+  State<PredictionPage> createState() => _PredictionPageState();
+}
+
+class _PredictionPageState extends State<PredictionPage> {
+  int? _loteId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+    _loteId = arguments is int ? arguments : null;
+
+    final loteId = _loteId;
+    if (loteId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<PredictionProvider>().cargarDatos(loteId);
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Consumer<PredictionProvider>(
-      builder: (context, provider, child) {
-        return Scaffold(
-          drawer: const AppDrawer(),
+    final loteId = _loteId;
 
-          appBar: AppBar(
-            title: const Text("Predicción IA"),
-            centerTitle: true,
-          ),
+    return Scaffold(
+      drawer: const AppDrawer(),
 
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: const Text("Predicción IA"),
+        centerTitle: true,
+      ),
 
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+      body: loteId == null
+          ? const _MensajeCentrado(
+              icono: Icons.error_outline,
+              mensaje: "No se especificó el lote a mostrar.",
+            )
+          : Consumer<PredictionProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading &&
+                    provider.predicciones.isEmpty &&
+                    provider.recomendaciones.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-                /// Predicción principal
-                PredictionCard(
-                  provider: provider,
-                ),
+                if (provider.errorMessage != null &&
+                    provider.predicciones.isEmpty &&
+                    provider.recomendaciones.isEmpty) {
+                  return _MensajeCentrado(
+                    icono: Icons.cloud_off,
+                    mensaje: provider.errorMessage!,
+                    onReintentar: () => provider.cargarDatos(loteId),
+                  );
+                }
 
-                const SizedBox(height: 20),
+                final ultimaPrediccion = provider.predicciones.isNotEmpty
+                    ? provider.predicciones.last
+                    : null;
 
-                /// Tiempo restante
-                MetricCard(
-                  titulo: "Tiempo restante",
-                  valor: provider.tiempoRestante,
-                  icono: Icons.schedule,
-                ),
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
 
-                const SizedBox(height: 15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
 
-                /// Fecha estimada
-                MetricCard(
-                  titulo: "Fecha estimada",
-                  valor: provider.fechaEstimada,
-                  icono: Icons.calendar_today,
-                ),
+                      if (ultimaPrediccion != null) ...[
 
-                const SizedBox(height: 15),
+                        /// Tiempo restante
+                        MetricCard(
+                          titulo: "Tiempo restante",
+                          valor:
+                              "${ultimaPrediccion.tiempoEstimadoHoras.toStringAsFixed(1)} horas",
+                          icono: Icons.schedule,
+                        ),
 
-                /// Calidad esperada
-                MetricCard(
-                  titulo: "Calidad esperada",
-                  valor: provider.calidadEsperada,
-                  icono: Icons.workspace_premium,
-                ),
+                        const SizedBox(height: 15),
 
-                const SizedBox(height: 20),
+                        /// Última predicción generada
+                        MetricCard(
+                          titulo: "Última predicción generada",
+                          valor: ultimaPrediccion.fechaPrediccion ??
+                              "Sin fecha",
+                          icono: Icons.calendar_today,
+                        ),
 
-                /// Recomendaciones IA
-                RecommendationCard(
-                  provider: provider,
-                ),
+                        const SizedBox(height: 15),
 
-                const SizedBox(height: 20),
+                        /// Calidad esperada
+                        MetricCard(
+                          titulo: "Calidad esperada",
+                          valor: ultimaPrediccion.calidadEstimada,
+                          icono: Icons.workspace_premium,
+                        ),
 
-                /// Gráfica del avance
-                PredictionChart(
-                  provider: provider,
-                ),
+                        const SizedBox(height: 15),
 
-                const SizedBox(height: 20),
+                        /// Confianza IA — se muestra tal cual llega del
+                        /// backend hasta confirmar si es fracción (0-1)
+                        /// o porcentaje (0-100).
+                        MetricCard(
+                          titulo: "Confianza IA",
+                          valor: "${ultimaPrediccion.confianza}%",
+                          icono: Icons.psychology,
+                        ),
 
-                /// Historial de predicciones
-                PredictionHistory(
-                  provider: provider,
-                ),
+                        const SizedBox(height: 20),
+                      ],
 
-              ],
+                      /// Recomendaciones IA
+                      RecommendationCard(
+                        recomendaciones: provider.recomendaciones,
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      /// Historial de predicciones
+                      PredictionHistory(
+                        predicciones: provider.predicciones,
+                      ),
+
+                    ],
+                  ),
+                );
+              },
             ),
-          ),
-        );
-      },
+    );
+  }
+}
+
+class _MensajeCentrado extends StatelessWidget {
+  final IconData icono;
+  final String mensaje;
+  final VoidCallback? onReintentar;
+
+  const _MensajeCentrado({
+    required this.icono,
+    required this.mensaje,
+    this.onReintentar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icono, size: 48, color: Colors.grey),
+            const SizedBox(height: 12),
+            Text(mensaje, textAlign: TextAlign.center),
+            if (onReintentar != null) ...[
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: onReintentar,
+                child: const Text("Reintentar"),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

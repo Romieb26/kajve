@@ -1,62 +1,79 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/network/api_client.dart';
+import '../../../../core/storage/secure_storage.dart';
+import '../../data/datasources/predictions_remote_datasource.dart';
+import '../../data/repositories/predictions_repository_impl.dart';
+import '../../domain/entities/prediccion_entity.dart';
+import '../../domain/entities/recomendacion_entity.dart';
+import '../../domain/usecases/get_predicciones_usecase.dart';
+import '../../domain/usecases/get_recomendaciones_usecase.dart';
+
 class PredictionProvider extends ChangeNotifier {
+  bool isLoading = false;
+  String? errorMessage;
 
-  /// Lote seleccionado
-  String loteSeleccionado = "Lote Norte";
+  List<PrediccionEntity> predicciones = [];
+  List<RecomendacionEntity> recomendaciones = [];
 
-  /// Predicción
-  double porcentajeSecado = 76;
+  bool _confianzaLogueada = false;
 
-  String tiempoRestante = "2 días";
-  String fechaEstimada = "18 Julio 2026";
-  String calidadEsperada = "91/100";
-  String estado = "Óptimo";
+  late final PredictionsRepositoryImpl _repository =
+      PredictionsRepositoryImpl(
+        PredictionsRemoteDataSourceImpl(ApiClient(), SecureStorage()),
+      );
 
-  /// Confianza del modelo IA
-  int confianza = 96;
+  late final GetPrediccionesUseCase _getPrediccionesUseCase =
+      GetPrediccionesUseCase(_repository);
 
-  /// Recomendaciones
-  List<String> recomendaciones = [
-    "Mantener temperatura entre 25°C y 28°C.",
-    "Reducir humedad ambiental al 40%.",
-    "Evitar exposición directa al sol.",
-    "Revisar sensores cada 6 horas.",
-  ];
+  late final GetRecomendacionesUseCase _getRecomendacionesUseCase =
+      GetRecomendacionesUseCase(_repository);
 
-  /// Historial de predicciones
-  final List<Map<String, dynamic>> historial = [
-    {
-      "fecha": "15 Jul",
-      "avance": 62,
-    },
-    {
-      "fecha": "16 Jul",
-      "avance": 68,
-    },
-    {
-      "fecha": "17 Jul",
-      "avance": 72,
-    },
-    {
-      "fecha": "18 Jul",
-      "avance": 76,
-    },
-  ];
-
-  void actualizarPrediccion({
-    required double porcentaje,
-    required String tiempo,
-    required String fecha,
-    required String calidad,
-    required String nuevoEstado,
-  }) {
-    porcentajeSecado = porcentaje;
-    tiempoRestante = tiempo;
-    fechaEstimada = fecha;
-    calidadEsperada = calidad;
-    estado = nuevoEstado;
-
+  Future<void> cargarDatos(int loteId) async {
+    isLoading = true;
+    errorMessage = null;
     notifyListeners();
+
+    try {
+      final resultados = await Future.wait([
+        _getPrediccionesUseCase(loteId),
+        _getRecomendacionesUseCase(loteId),
+      ]);
+
+      predicciones = resultados[0] as List<PrediccionEntity>;
+      recomendaciones = resultados[1] as List<RecomendacionEntity>;
+
+      // TODO: quitar este print de diagnóstico en cuanto confirmemos:
+      // 1) si "confianza" viene del backend como fracción (0-1) o ya
+      //    como porcentaje (0-100).
+      // 2) el orden real del array (hoy se asume ascendente y se usa
+      //    predicciones.last como "la más reciente" en el provider y
+      //    en prediction_page.dart) — comparando first vs last se ve
+      //    cuál fecha es cronológicamente más nueva.
+      if (!_confianzaLogueada && predicciones.isNotEmpty) {
+        _confianzaLogueada = true;
+        debugPrint(
+          'PredictionProvider: confianza cruda de la predicción más '
+          'reciente = ${predicciones.last.confianza}',
+        );
+        debugPrint(
+          'PredictionProvider: fechaPrediccion primer elemento del '
+          'array = ${predicciones.first.fechaPrediccion}',
+        );
+        debugPrint(
+          'PredictionProvider: fechaPrediccion último elemento del '
+          'array = ${predicciones.last.fechaPrediccion}',
+        );
+      }
+    } on ApiException catch (e) {
+      errorMessage = e.statusCode == 401
+          ? "Tu sesión expiró. Inicia sesión de nuevo."
+          : "No se pudo conectar. Intenta de nuevo";
+    } catch (_) {
+      errorMessage = "Ocurrió un error al cargar las predicciones.";
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 }

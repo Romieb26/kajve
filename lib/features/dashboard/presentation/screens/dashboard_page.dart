@@ -238,10 +238,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       titulo: "Predicciones",
                       icono: Icons.show_chart,
                       onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.prediction,
-                        );
+                        showLoteSelector(context, route: AppRoutes.prediction);
                       },
                     ),
 

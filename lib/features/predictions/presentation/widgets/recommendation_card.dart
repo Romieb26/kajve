@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../providers/prediction_provider.dart';
+import '../../domain/entities/recomendacion_entity.dart';
 
 class RecommendationCard extends StatelessWidget {
-  final PredictionProvider provider;
+  final List<RecomendacionEntity> recomendaciones;
 
   const RecommendationCard({
     super.key,
-    required this.provider,
+    required this.recomendaciones,
   });
 
   @override
@@ -50,30 +50,36 @@ class RecommendationCard extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            ...provider.recomendaciones.map(
-                  (texto) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+            if (recomendaciones.isEmpty)
+              const Text(
+                "Aún no hay recomendaciones para este lote.",
+                style: TextStyle(color: Colors.grey),
+              )
+            else
+              ...recomendaciones.map(
+                (recomendacion) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
 
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
 
-                  children: [
+                    children: [
 
-                    const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                    ),
+                      const Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                      ),
 
-                    const SizedBox(width: 10),
+                      const SizedBox(width: 10),
 
-                    Expanded(
-                      child: Text(texto),
-                    ),
+                      Expanded(
+                        child: Text(recomendacion.texto),
+                      ),
 
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
 
           ],
         ),

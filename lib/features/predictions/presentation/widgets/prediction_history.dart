@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../providers/prediction_provider.dart';
+import '../../domain/entities/prediccion_entity.dart';
 
 class PredictionHistory extends StatelessWidget {
-  final PredictionProvider provider;
+  final List<PrediccionEntity> predicciones;
 
   const PredictionHistory({
     super.key,
-    required this.provider,
+    required this.predicciones,
   });
 
   @override
@@ -37,22 +37,33 @@ class PredictionHistory extends StatelessWidget {
 
             const Divider(),
 
-            ...provider.historial.map(
-                  (dato) => ListTile(
-
-                leading: const Icon(Icons.history),
-
-                title: Text(
-                  "${dato["avance"]}% de secado",
+            if (predicciones.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  "Aún no hay predicciones para este lote.",
+                  style: TextStyle(color: Colors.grey),
                 ),
+              )
+            else
+              ...predicciones.map(
+                (prediccion) => ListTile(
+                  leading: const Icon(Icons.history),
 
-                subtitle: Text(
-                  dato["fecha"],
+                  title: Text(
+                    "Calidad estimada: ${prediccion.calidadEstimada}",
+                  ),
+
+                  subtitle: Text(
+                    "Confianza: ${prediccion.confianza}% · "
+                    "${prediccion.fechaPrediccion ?? 'Sin fecha'}",
+                  ),
+
+                  trailing: Text(
+                    "${prediccion.tiempoEstimadoHoras.toStringAsFixed(1)} h",
+                  ),
                 ),
-
-                trailing: const Icon(Icons.arrow_forward_ios),
               ),
-            ),
 
           ],
         ),
