@@ -55,9 +55,21 @@ class LotsPage extends StatelessWidget {
 
                       return GestureDetector(
                         onTap: () {
+                          if (lote.id == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Este lote de ejemplo no tiene datos de monitoreo.",
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
                           Navigator.pushNamed(
                             context,
                             AppRoutes.lotDetail,
+                            arguments: lote.id,
                           );
                         },
                         child: LotCard(

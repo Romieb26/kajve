@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/widgets/app_drawer.dart';
+import '../../../../shared/widgets/lote_selector_sheet.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 import '../providers/dashboard_provider.dart';
@@ -248,10 +249,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       titulo: "Tiempo Real",
                       icono: Icons.monitor_heart,
                       onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.realtime,
-                        );
+                        showLoteSelector(context, route: AppRoutes.realtime);
                       },
                     ),
 

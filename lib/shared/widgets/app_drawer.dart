@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/routes/app_routes.dart';
+import 'lote_selector_sheet.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -64,7 +65,7 @@ class AppDrawer extends StatelessWidget {
             route: AppRoutes.createLot,
           ),
 
-          _item(
+          _selectorItem(
             context,
             icon: Icons.monitor_heart,
             title: "Monitoreo",
@@ -85,7 +86,7 @@ class AppDrawer extends StatelessWidget {
             route: AppRoutes.prediction,
           ),
 
-          _item(
+          _selectorItem(
             context,
             icon: Icons.sensors,
             title: "Tiempo Real",
@@ -161,6 +162,25 @@ class AppDrawer extends StatelessWidget {
           context,
           route,
         );
+      },
+    );
+  }
+
+  /// Igual que [_item], pero para rutas que necesitan un lote
+  /// específico (monitoreo, tiempo real) y no tienen uno en contexto:
+  /// primero muestra un selector de lotes en vez de navegar directo.
+  static Widget _selectorItem(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required String route,
+      }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      onTap: () {
+        Navigator.pop(context);
+        showLoteSelector(context, route: route);
       },
     );
   }

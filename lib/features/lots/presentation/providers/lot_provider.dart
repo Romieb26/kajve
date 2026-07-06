@@ -7,12 +7,16 @@ import '../../data/repositories/lots_repository_impl.dart';
 import '../../domain/create_lote_usecase.dart';
 
 class Lote {
+  // Id real devuelto por POST /lotes. Null en los lotes de ejemplo,
+  // que nunca existieron en el backend.
+  final int? id;
   final String nombre;
   final String fecha;
   final String estado;
   final Color colorEstado;
 
   Lote({
+    this.id,
     required this.nombre,
     required this.fecha,
     required this.estado,
@@ -175,9 +179,11 @@ class LotProvider extends ChangeNotifier {
       codigoQrGenerado = lote.codigoQr;
 
       // Refleja el lote nuevo en la lista local mientras no exista
-      // una pantalla de listado conectada a GET /lotes.
+      // una pantalla de listado conectada a GET /lotes. El id sí es
+      // real: viene de la respuesta de POST /lotes.
       _todos.add(
         Lote(
+          id: lote.idLote,
           nombre: nombreController.text.trim(),
           fecha: _fechaHoy(),
           estado: "Registrado",
