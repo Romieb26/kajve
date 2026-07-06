@@ -1,17 +1,40 @@
 import 'package:flutter/material.dart';
 
-import '../providers/realtime_provider.dart';
+import '../../../monitoring/domain/entities/lectura_entity.dart';
 
 class ChartCard extends StatelessWidget {
-  final RealtimeProvider provider;
+  final List<LecturaEntity> lecturas;
 
   const ChartCard({
     super.key,
-    required this.provider,
+    required this.lecturas,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (lecturas.isEmpty) {
+      return Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const Padding(
+          padding: EdgeInsets.all(20),
+          child: Center(
+            child: Text(
+              "Sin lecturas registradas aún",
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Toma como máximo las últimas 9 lecturas para no saturar el gráfico.
+    final datos = lecturas.length > 9
+        ? lecturas.sublist(lecturas.length - 9)
+        : lecturas;
+
     return Card(
       elevation: 4,
 
@@ -58,9 +81,9 @@ class ChartCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 
                 children: List.generate(
-                  provider.historial.length,
+                  datos.length,
                       (index) {
-                    final value = provider.historial[index];
+                    final value = datos[index].temperatura;
 
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -92,7 +115,7 @@ class ChartCard extends StatelessWidget {
                         const SizedBox(height: 8),
 
                         Text(
-                          "T${index + 1}",
+                          "L${index + 1}",
                           style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 12,

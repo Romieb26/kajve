@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import '../providers/realtime_provider.dart';
+
+import '../../../monitoring/domain/entities/lectura_entity.dart';
 import '../widgets/sensor_card.dart';
 
-
-
 class SensorGrid extends StatelessWidget {
-  final RealtimeProvider provider;
+  final LecturaEntity? ultimaLectura;
 
   const SensorGrid({
     super.key,
-    required this.provider,
+    required this.ultimaLectura,
   });
 
   @override
@@ -25,26 +24,18 @@ class SensorGrid extends StatelessWidget {
 
         SensorCard(
           titulo: "Temperatura",
-          valor: "${provider.temperatura} °C",
+          valor: ultimaLectura != null
+              ? "${ultimaLectura!.temperatura.toStringAsFixed(1)} °C"
+              : "--",
           icono: Icons.thermostat,
         ),
 
         SensorCard(
           titulo: "Humedad",
-          valor: "${provider.humedad} %",
+          valor: ultimaLectura != null
+              ? "${ultimaLectura!.humedad.toStringAsFixed(1)} %"
+              : "--",
           icono: Icons.water_drop,
-        ),
-
-        SensorCard(
-          titulo: "Humedad Grano",
-          valor: "${provider.humedadGrano} %",
-          icono: Icons.grass,
-        ),
-
-        SensorCard(
-          titulo: "Viento",
-          valor: "12 km/h", // temporal o agrégalo al provider
-          icono: Icons.air,
         ),
 
       ],

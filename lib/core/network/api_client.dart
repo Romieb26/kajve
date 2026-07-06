@@ -24,20 +24,32 @@ class ApiClient {
 
   final http.Client _client;
 
-  Future<Map<String, dynamic>> get(String path, {String? token}) {
-    return _send(
+  Future<Map<String, dynamic>> get(String path, {String? token}) async {
+    final result = await _send(
       () => _client
           .get(Uri.parse('$baseUrl$path'), headers: _headers(token))
           .timeout(_timeout),
     );
+    return (result as Map<String, dynamic>?) ?? <String, dynamic>{};
+  }
+
+  /// Igual que [get], pero para endpoints cuya respuesta es un array
+  /// JSON en la raíz (ej. GET /lotes/{id}/lecturas) en vez de un objeto.
+  Future<List<dynamic>> getList(String path, {String? token}) async {
+    final result = await _send(
+      () => _client
+          .get(Uri.parse('$baseUrl$path'), headers: _headers(token))
+          .timeout(_timeout),
+    );
+    return (result as List<dynamic>?) ?? <dynamic>[];
   }
 
   Future<Map<String, dynamic>> post(
     String path, {
     Map<String, dynamic>? body,
     String? token,
-  }) {
-    return _send(
+  }) async {
+    final result = await _send(
       () => _client
           .post(
             Uri.parse('$baseUrl$path'),
@@ -46,6 +58,7 @@ class ApiClient {
           )
           .timeout(_timeout),
     );
+    return (result as Map<String, dynamic>?) ?? <String, dynamic>{};
   }
 
   Map<String, String> _headers(String? token) {
@@ -55,7 +68,7 @@ class ApiClient {
     };
   }
 
-  Future<Map<String, dynamic>> _send(
+  Future<dynamic> _send(
     Future<http.Response> Function() request,
   ) async {
     try {
@@ -76,13 +89,14 @@ class ApiClient {
     }
   }
 
-  Map<String, dynamic> _handleResponse(http.Response response) {
-    final decoded = response.body.isNotEmpty ? jsonDecode(response.body) : {};
-    final json = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+  dynamic _handleResponse(http.Response response) {
+    final decoded = response.body.isNotEmpty ? jsonDecode(response.body) : null;
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return json;
+      return decoded;
     }
+
+    final json = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
 
     throw ApiException(
       json['message']?.toString() ??

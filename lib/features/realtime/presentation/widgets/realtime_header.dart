@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../providers/realtime_provider.dart';
+import '../../../monitoring/domain/entities/estadisticas_entity.dart';
 
 class RealtimeHeader extends StatelessWidget {
-  final RealtimeProvider provider;
+  final int loteId;
+  final EstadisticasEntity? estadisticas;
 
   const RealtimeHeader({
     super.key,
-    required this.provider,
+    required this.loteId,
+    required this.estadisticas,
   });
 
   @override
@@ -22,7 +24,7 @@ class RealtimeHeader extends StatelessWidget {
           children: [
 
             Text(
-              provider.nombreLote,
+              "Lote #$loteId",
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -32,14 +34,14 @@ class RealtimeHeader extends StatelessWidget {
             const SizedBox(height: 8),
 
             Text(
-              "Última actualización",
+              "Última lectura",
               style: TextStyle(
                 color: Colors.grey[700],
               ),
             ),
 
             Text(
-              provider.ultimaActualizacion,
+              estadisticas?.ultimaLectura ?? "Sin datos",
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),

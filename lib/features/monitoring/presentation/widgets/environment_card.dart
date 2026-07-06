@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../providers/monitoring_provider.dart';
+import '../../domain/entities/estadisticas_entity.dart';
 
 class EnvironmentCard extends StatelessWidget {
-  final MonitoringProvider provider;
+  final EstadisticasEntity estadisticas;
 
   const EnvironmentCard({
     super.key,
-    required this.provider,
+    required this.estadisticas,
   });
 
   Widget _sensorTile({
@@ -20,7 +20,7 @@ class EnvironmentCard extends StatelessWidget {
       elevation: 2,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.15),
+          backgroundColor: color.withValues(alpha: 0.15),
           child: Icon(
             icon,
             color: color,
@@ -66,30 +66,20 @@ class EnvironmentCard extends StatelessWidget {
 
             _sensorTile(
               icon: Icons.thermostat,
-              titulo: "Temperatura",
-              valor: "${provider.temperatura} °C",
+              titulo: "Temperatura (min / prom / max)",
+              valor: "${estadisticas.temperaturaMin.toStringAsFixed(1)} / "
+                  "${estadisticas.temperaturaPromedio.toStringAsFixed(1)} / "
+                  "${estadisticas.temperaturaMax.toStringAsFixed(1)} °C",
               color: Colors.red,
             ),
 
             _sensorTile(
               icon: Icons.water_drop,
-              titulo: "Humedad",
-              valor: "${provider.humedad} %",
+              titulo: "Humedad (min / prom / max)",
+              valor: "${estadisticas.humedadMin.toStringAsFixed(1)} / "
+                  "${estadisticas.humedadPromedio.toStringAsFixed(1)} / "
+                  "${estadisticas.humedadMax.toStringAsFixed(1)} %",
               color: Colors.blue,
-            ),
-
-            _sensorTile(
-              icon: Icons.wb_sunny,
-              titulo: "Radiación Solar",
-              valor: "${provider.radiacion} W/m²",
-              color: Colors.orange,
-            ),
-
-            _sensorTile(
-              icon: Icons.air,
-              titulo: "Velocidad del viento",
-              valor: "${provider.viento} km/h",
-              color: Colors.green,
             ),
           ],
         ),

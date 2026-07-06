@@ -1,90 +1,54 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/network/api_client.dart';
+import '../../../../core/storage/secure_storage.dart';
+import '../../data/datasources/monitoring_remote_datasource.dart';
+import '../../data/repositories/monitoring_repository_impl.dart';
+import '../../domain/entities/estadisticas_entity.dart';
+import '../../domain/entities/lectura_entity.dart';
+import '../../domain/usecases/get_estadisticas_usecase.dart';
+import '../../domain/usecases/get_lecturas_usecase.dart';
+
 class MonitoringProvider extends ChangeNotifier {
-  ///=========================
-  /// Información del lote
-  ///=========================
+  bool isLoading = false;
+  String? errorMessage;
 
-  String nombreLote = "Lote Norte";
-  String etapa = "Secado";
-  String calidad = "87.5";
-  String diasSecado = "8 días";
-  String rendimiento = "92 %";
+  List<LecturaEntity> lecturas = [];
+  EstadisticasEntity? estadisticas;
 
-  ///=========================
-  /// Sensores
-  ///=========================
+  late final MonitoringRepositoryImpl _repository = MonitoringRepositoryImpl(
+    MonitoringRemoteDataSourceImpl(ApiClient(), SecureStorage()),
+  );
 
-  double humedad = 42.5;
-  double temperatura = 28.3;
-  double radiacion = 580.0;
-  double viento = 11.2;
+  late final GetLecturasUseCase _getLecturasUseCase = GetLecturasUseCase(
+    _repository,
+  );
 
-  ///=========================
-  /// Estado del secado
-  ///=========================
+  late final GetEstadisticasUseCase _getEstadisticasUseCase =
+      GetEstadisticasUseCase(_repository);
 
-  String estadoSecado = "Óptimo";
+  Future<void> cargarDatos(int loteId) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
 
-  Color get colorEstado {
-    switch (estadoSecado) {
-      case "Óptimo":
-        return Colors.green;
+    try {
+      final resultados = await Future.wait([
+        _getLecturasUseCase(loteId),
+        _getEstadisticasUseCase(loteId),
+      ]);
 
-      case "En proceso":
-        return Colors.orange;
-
-      case "Riesgo":
-        return Colors.red;
-
-      default:
-        return Colors.grey;
+      lecturas = resultados[0] as List<LecturaEntity>;
+      estadisticas = resultados[1] as EstadisticasEntity;
+    } on ApiException catch (e) {
+      errorMessage = e.statusCode == 401
+          ? "Tu sesión expiró. Inicia sesión de nuevo."
+          : "No se pudo conectar. Intenta de nuevo";
+    } catch (_) {
+      errorMessage = "Ocurrió un error al cargar el monitoreo.";
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
-  }
-
-  ///=========================
-  /// Recomendaciones
-  ///=========================
-
-  List<String> recomendaciones = [
-    "Mantener ventilación natural.",
-    "No cubrir el café durante el día.",
-    "Continuar monitoreando humedad cada hora.",
-  ];
-
-  ///=========================
-  /// Actualizar sensores
-  ///=========================
-
-  void actualizarSensores({
-    required double nuevaTemperatura,
-    required double nuevaHumedad,
-    required double nuevaRadiacion,
-    required double nuevoViento,
-  }) {
-    temperatura = nuevaTemperatura;
-    humedad = nuevaHumedad;
-    radiacion = nuevaRadiacion;
-    viento = nuevoViento;
-
-    notifyListeners();
-  }
-
-  ///=========================
-  /// Cambiar estado
-  ///=========================
-
-  void cambiarEstado(String estado) {
-    estadoSecado = estado;
-    notifyListeners();
-  }
-
-  ///=========================
-  /// Agregar recomendación
-  ///=========================
-
-  void agregarRecomendacion(String texto) {
-    recomendaciones.add(texto);
-    notifyListeners();
   }
 }

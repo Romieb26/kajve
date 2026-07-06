@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../providers/monitoring_provider.dart';
+import '../../domain/entities/estadisticas_entity.dart';
 import '../widgets/sensor_status_card.dart';
 
-
 class InfoCard extends StatelessWidget {
-  final MonitoringProvider provider;
+  final EstadisticasEntity estadisticas;
 
   const InfoCard({
     super.key,
-    required this.provider,
+    required this.estadisticas,
   });
 
   @override
@@ -38,24 +37,25 @@ class InfoCard extends StatelessWidget {
 
             const Divider(height: 30),
 
-            _fila("Etapa", provider.etapa),
-            _fila("Calidad SCA", provider.calidad),
-            _fila("Días de secado", provider.diasSecado),
-            _fila("Rendimiento", provider.rendimiento),
+            _fila("Días de secado", "${estadisticas.diasSecado}"),
+            _fila("Total de lecturas", "${estadisticas.totalLecturas}"),
+            _fila("Alertas totales", "${estadisticas.totalAlertas}"),
+            _fila("Alertas críticas", "${estadisticas.alertasCriticas}"),
 
             const SizedBox(height: 20),
 
             SensorStatusCard(
-              titulo: "Humedad",
-              valor: "${provider.humedad} %",
+              titulo: "Humedad promedio",
+              valor: "${estadisticas.humedadPromedio.toStringAsFixed(1)} %",
               icono: Icons.water_drop,
             ),
 
             const SizedBox(height: 12),
 
             SensorStatusCard(
-              titulo: "Temperatura",
-              valor: "${provider.temperatura} °C",
+              titulo: "Temperatura promedio",
+              valor:
+                  "${estadisticas.temperaturaPromedio.toStringAsFixed(1)} °C",
               icono: Icons.thermostat,
             ),
           ],

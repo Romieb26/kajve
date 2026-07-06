@@ -1,17 +1,34 @@
 import 'package:flutter/material.dart';
 
-import '../providers/realtime_provider.dart';
+import '../../../monitoring/domain/entities/estadisticas_entity.dart';
 
 class EnvironmentCard extends StatelessWidget {
-  final RealtimeProvider provider;
+  final EstadisticasEntity? estadisticas;
 
   const EnvironmentCard({
     super.key,
-    required this.provider,
+    required this.estadisticas,
   });
 
   @override
   Widget build(BuildContext context) {
+    final alertasCriticas = estadisticas?.alertasCriticas ?? 0;
+    final alertasSinAtender = estadisticas?.alertasSinAtender ?? 0;
+
+    final String estadoTexto;
+    final Color estadoColor;
+
+    if (alertasCriticas > 0) {
+      estadoTexto = "Atención: alertas críticas activas";
+      estadoColor = Colors.red;
+    } else if (alertasSinAtender > 0) {
+      estadoTexto = "Hay alertas sin atender";
+      estadoColor = Colors.orange;
+    } else {
+      estadoTexto = "Sistema estable";
+      estadoColor = Colors.green;
+    }
+
     return Card(
       elevation: 4,
 
@@ -34,22 +51,20 @@ class EnvironmentCard extends StatelessWidget {
             const Divider(),
 
             ListTile(
-              leading: const Icon(
+              leading: Icon(
                 Icons.check_circle,
-                color: Colors.green,
+                color: estadoColor,
               ),
 
-              title: Text(provider.estado),
+              title: Text(estadoTexto),
             ),
 
             ListTile(
-              leading: const Icon(Icons.sunny),
+              leading: const Icon(Icons.warning_amber),
 
-              title: const Text("Radiación"),
+              title: const Text("Alertas críticas"),
 
-              trailing: Text(
-                "${provider.radiacion} W/m²",
-              ),
+              trailing: Text("$alertasCriticas"),
             ),
 
           ],
