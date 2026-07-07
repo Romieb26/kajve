@@ -6,6 +6,7 @@ import '../../../../shared/widgets/app_drawer.dart';
 import '../../../../shared/widgets/lote_selector_sheet.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
+import '../../../lots/presentation/providers/lot_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/dashboard_header.dart';
 import '../widgets/dashboard_card.dart';
@@ -25,6 +26,10 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardProvider>().loadDashboard();
+      // Precarga los lotes reales para que showLoteSelector (accesos
+      // rápidos de Predicciones/Tiempo Real) los tenga listos sin
+      // depender de haber visitado antes la pantalla de Lotes.
+      context.read<LotProvider>().cargarLotes();
     });
   }
 
@@ -173,6 +178,13 @@ class _DashboardPageState extends State<DashboardPage> {
                     lote: prediccion.nombreLote,
                     estado: prediccion.calidadEstimada,
                     fecha: _formatFecha(prediccion.fechaPrediccion),
+                    onVer: () {
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.prediction,
+                        arguments: prediccion.idLote,
+                      );
+                    },
                   )
                 else
                   Card(

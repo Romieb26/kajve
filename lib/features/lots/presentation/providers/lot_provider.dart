@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
+import '../../data/datasources/lot_remote_datasource.dart';
 import '../../data/datasources/lots_remote_datasource.dart';
+import '../../data/repositories/lot_repository_impl.dart';
 import '../../data/repositories/lots_repository_impl.dart';
 import '../../domain/create_lote_usecase.dart';
+import '../../domain/usecases/get_lots.dart';
 
 class Lote {
   // Id real devuelto por POST /lotes. Null en los lotes de ejemplo,
@@ -55,44 +58,92 @@ class LotProvider extends ChangeNotifier {
     ),
   );
 
+  late final GetLotsUseCase _getLotsUseCase = GetLotsUseCase(
+    LotRepositoryImpl(
+      LotRemoteDataSourceImpl(ApiClient(), SecureStorage()),
+    ),
+  );
+
   void seleccionarTipoProceso(String? value) {
     tipoProceso = value;
     notifyListeners();
   }
 
   ///=========================
-  /// Datos de ejemplo
+  /// Listado de lotes (GET /lotes)
   ///=========================
 
-  final List<Lote> _todos = [
-    Lote(
-      nombre: "Osiles B - Sibaca",
-      fecha: "02/05/2026",
-      estado: "Excelente",
-      colorEstado: Colors.green,
-    ),
-    Lote(
-      nombre: "Osiles D - Ocosingo",
-      fecha: "10/06/2026",
-      estado: "En proceso",
-      colorEstado: Colors.orange,
-    ),
-    Lote(
-      nombre: "Osiles H - La Gloria",
-      fecha: "09/01/2026",
-      estado: "Peligro",
-      colorEstado: Colors.red,
-    ),
-  ];
-
+  List<Lote> _todos = [];
   List<Lote> lotes = [];
 
-  ///=========================
-  /// Constructor
-  ///=========================
+  bool cargandoLotes = false;
+  String? errorLotes;
 
-  LotProvider() {
-    lotes = List.from(_todos);
+  Future<void> cargarLotes() async {
+    cargandoLotes = true;
+    errorLotes = null;
+    notifyListeners();
+
+    try {
+      final resultado = await _getLotsUseCase();
+
+      _todos = resultado
+          .map(
+            (lote) => Lote(
+              id: lote.idLote,
+              nombre: lote.nombreLote,
+              fecha: lote.createdAt != null
+                  ? _formatearFecha(lote.createdAt!)
+                  : "Sin fecha",
+              estado: lote.estado.isNotEmpty ? lote.estado : "Sin estado",
+              colorEstado: _colorPorEstado(lote.estado),
+            ),
+          )
+          .toList();
+
+      buscar(searchController.text);
+    } on ApiException catch (e) {
+      errorLotes = e.statusCode == 401
+          ? "Tu sesión expiró. Inicia sesión de nuevo."
+          : "No se pudo conectar. Intenta de nuevo";
+    } catch (_) {
+      errorLotes = "Ocurrió un error al cargar los lotes.";
+    } finally {
+      cargandoLotes = false;
+      notifyListeners();
+    }
+  }
+
+  String _formatearFecha(DateTime fecha) {
+    final dia = fecha.day.toString().padLeft(2, '0');
+    final mes = fecha.month.toString().padLeft(2, '0');
+    return "$dia/$mes/${fecha.year}";
+  }
+
+  Color _colorPorEstado(String estado) {
+    final valor = estado.toLowerCase();
+
+    if (valor.contains("riesgo") ||
+        valor.contains("peligro") ||
+        valor.contains("alerta")) {
+      return Colors.red;
+    }
+
+    if (valor.contains("proceso") ||
+        valor.contains("secando") ||
+        valor.contains("activo")) {
+      return Colors.orange;
+    }
+
+    if (valor.contains("final") ||
+        valor.contains("óptimo") ||
+        valor.contains("optimo") ||
+        valor.contains("excelente") ||
+        valor.contains("completado")) {
+      return Colors.green;
+    }
+
+    return Colors.blueGrey;
   }
 
   ///=========================
@@ -178,19 +229,9 @@ class LotProvider extends ChangeNotifier {
 
       codigoQrGenerado = lote.codigoQr;
 
-      // Refleja el lote nuevo en la lista local mientras no exista
-      // una pantalla de listado conectada a GET /lotes. El id sí es
-      // real: viene de la respuesta de POST /lotes.
-      _todos.add(
-        Lote(
-          id: lote.idLote,
-          nombre: nombreController.text.trim(),
-          fecha: _fechaHoy(),
-          estado: "Registrado",
-          colorEstado: Colors.blue,
-        ),
-      );
-      lotes = List.from(_todos);
+      // Refresca desde GET /lotes en vez de simular el registro
+      // localmente, para que la lista siempre refleje al backend.
+      await cargarLotes();
 
       nombreController.clear();
       variedadController.clear();
@@ -217,13 +258,6 @@ class LotProvider extends ChangeNotifier {
     }
   }
 
-  String _fechaHoy() {
-    final ahora = DateTime.now();
-    final dia = ahora.day.toString().padLeft(2, '0');
-    final mes = ahora.month.toString().padLeft(2, '0');
-    return "$dia/$mes/${ahora.year}";
-  }
-
   void _mostrarSnackBar(BuildContext context, String mensaje, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(mensaje), backgroundColor: color),
@@ -236,18 +270,6 @@ class LotProvider extends ChangeNotifier {
 
   void ocultarQr() {
     codigoQrGenerado = null;
-    notifyListeners();
-  }
-
-  ///=========================
-  /// Eliminar lote
-  ///=========================
-
-  void eliminarLote(int index) {
-    _todos.removeAt(index);
-
-    lotes = List.from(_todos);
-
     notifyListeners();
   }
 

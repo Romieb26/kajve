@@ -17,48 +17,54 @@ class LotCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.white70,
-        borderRadius: BorderRadius.circular(20),
-      ),
-
-      child: Row(
-        children: [
-
-          const Icon(Icons.grass,size:45),
-
-          const SizedBox(width:10),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-
-                Text(
-                  nombre,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize:18,
-                  ),
-                ),
-
-                Text("Registrado:"),
-                Text(fecha),
-
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Chip(
-                    label: Text(estado),
-                    backgroundColor: colorEstado.withOpacity(.2),
-                  ),
-                )
-              ],
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 26,
+              backgroundColor: colorEstado.withValues(alpha: 0.15),
+              child: Icon(Icons.grass, color: colorEstado),
             ),
-          )
-        ],
+
+            const SizedBox(width: 15),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  Text(
+                    nombre,
+                    style: theme.textTheme.titleMedium,
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    "Registrado: $fecha",
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            Chip(
+              label: Text(estado),
+              backgroundColor: colorEstado.withValues(alpha: 0.18),
+              labelStyle: TextStyle(
+                color: colorEstado,
+                fontWeight: FontWeight.w600,
+              ),
+              side: BorderSide.none,
+            ),
+          ],
+        ),
       ),
     );
   }

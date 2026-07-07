@@ -42,7 +42,9 @@ class _PredictionPageState extends State<PredictionPage> {
       drawer: const AppDrawer(),
 
       appBar: AppBar(
-        title: const Text("Predicción IA"),
+        title: Text(
+          loteId != null ? "Predicción IA - Lote #$loteId" : "Predicción IA",
+        ),
         centerTitle: true,
       ),
 
@@ -111,12 +113,12 @@ class _PredictionPageState extends State<PredictionPage> {
 
                         const SizedBox(height: 15),
 
-                        /// Confianza IA — se muestra tal cual llega del
-                        /// backend hasta confirmar si es fracción (0-1)
-                        /// o porcentaje (0-100).
+                        /// Confianza IA — el backend la manda como
+                        /// fracción (0-1), se muestra como porcentaje.
                         MetricCard(
                           titulo: "Confianza IA",
-                          valor: "${ultimaPrediccion.confianza}%",
+                          valor:
+                              "${(ultimaPrediccion.confianza * 100).toStringAsFixed(0)}%",
                           icono: Icons.psychology,
                         ),
 

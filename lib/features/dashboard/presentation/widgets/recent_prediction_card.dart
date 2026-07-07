@@ -4,12 +4,14 @@ class RecentPredictionCard extends StatelessWidget {
   final String lote;
   final String estado;
   final String fecha;
+  final VoidCallback onVer;
 
   const RecentPredictionCard({
     super.key,
     required this.lote,
     required this.estado,
     required this.fecha,
+    required this.onVer,
   });
 
   Color _getStatusColor() {
@@ -95,13 +97,7 @@ class RecentPredictionCard extends StatelessWidget {
               padding: EdgeInsets.zero,
               minimumSize: const Size(0, 36),
             ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Mostrando detalles de $lote"),
-                ),
-              );
-            },
+            onPressed: onVer,
             child: const Text("Ver"),
           ),
         ),

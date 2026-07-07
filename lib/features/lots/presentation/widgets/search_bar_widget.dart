@@ -17,9 +17,7 @@ class SearchBarWidget extends StatelessWidget {
       onChanged: onChanged,
       decoration: InputDecoration(
         hintText: "Buscar lote...",
-        prefixIcon: const Icon(Icons.search, color: Colors.black54),
-        filled: true,
-        fillColor: Colors.white,
+        prefixIcon: const Icon(Icons.search),
         contentPadding: const EdgeInsets.symmetric(vertical: 0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
@@ -31,8 +29,8 @@ class SearchBarWidget extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
-          borderSide: const BorderSide(
-            color: Colors.brown,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
             width: 2,
           ),
         ),

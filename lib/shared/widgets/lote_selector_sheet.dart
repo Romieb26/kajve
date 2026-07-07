@@ -13,6 +13,22 @@ Future<void> showLoteSelector(
   required String route,
 }) async {
   final lotProvider = Provider.of<LotProvider>(context, listen: false);
+
+  // Se captura el Navigator ahora, mientras el context todavía es
+  // válido con certeza. El Drawer que suele disparar este selector se
+  // cierra justo antes de llamar aquí (ver app_drawer.dart), y para
+  // cuando el usuario termina de elegir un lote en el modal, ese
+  // context puede haber quedado inválido; el NavigatorState capturado
+  // no depende de que el context original siga vivo.
+  final navigator = Navigator.of(context);
+
+  if (lotProvider.cargandoLotes) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Cargando lotes, intenta de nuevo en un momento.")),
+    );
+    return;
+  }
+
   final lotes = lotProvider.lotes;
 
   if (lotes.isEmpty) {
@@ -22,7 +38,11 @@ Future<void> showLoteSelector(
     return;
   }
 
-  await showModalBottomSheet(
+  // Se espera a que el modal cierre por completo (devolviendo el id
+  // elegido) antes de navegar. Hacer el pop del modal y el push de la
+  // nueva pantalla en el mismo tap producía una carrera con la
+  // animación de cierre y la navegación se perdía silenciosamente.
+  final loteId = await showModalBottomSheet<int>(
     context: context,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -45,25 +65,9 @@ Future<void> showLoteSelector(
 
             for (final lote in lotes)
               ListTile(
-                leading: Icon(
-                  Icons.grass,
-                  color: lote.id != null ? null : Colors.grey,
-                ),
+                leading: const Icon(Icons.grass),
                 title: Text(lote.nombre),
-                subtitle: lote.id != null
-                    ? null
-                    : const Text("Sin datos de monitoreo disponibles"),
-                enabled: lote.id != null,
-                onTap: lote.id == null
-                    ? null
-                    : () {
-                        Navigator.pop(sheetContext);
-                        Navigator.pushNamed(
-                          context,
-                          route,
-                          arguments: lote.id,
-                        );
-                      },
+                onTap: () => Navigator.pop(sheetContext, lote.id),
               ),
 
             const SizedBox(height: 8),
@@ -72,4 +76,8 @@ Future<void> showLoteSelector(
       );
     },
   );
+
+  if (loteId == null) return;
+
+  navigator.pushNamed(route, arguments: loteId);
 }

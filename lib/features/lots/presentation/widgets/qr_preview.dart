@@ -12,13 +12,9 @@ class QrPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Text(
+        Text(
           "QR",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
 
         const SizedBox(height: 10),
@@ -32,9 +28,10 @@ class QrPreview extends StatelessWidget {
           ),
           child: Center(
             child: codigoQr == null
-                ? const Icon(
+                ? Icon(
                     Icons.qr_code_2,
                     size: 120,
+                    color: Colors.grey.shade400,
                   )
                 : QrImageView(
                     data: codigoQr!,
