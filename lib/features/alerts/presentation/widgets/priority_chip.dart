@@ -13,6 +13,10 @@ class PriorityChip extends StatelessWidget {
     Color color;
 
     switch (prioridad.toLowerCase()) {
+      case 'critica':
+        color = Colors.red.shade900;
+        break;
+
       case 'alta':
         color = Colors.red;
         break;
@@ -26,19 +30,20 @@ class PriorityChip extends StatelessWidget {
     }
 
     return Chip(
-      avatar: const Icon(
+      avatar: Icon(
         Icons.warning_amber_rounded,
-        color: Colors.white,
+        color: color,
         size: 18,
       ),
-      backgroundColor: color,
+      backgroundColor: color.withValues(alpha: 0.18),
       label: Text(
         prioridad,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w600,
         ),
       ),
+      side: BorderSide.none,
     );
   }
 }

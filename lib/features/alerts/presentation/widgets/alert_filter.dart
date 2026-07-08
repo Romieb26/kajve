@@ -18,6 +18,7 @@ class AlertFilter extends StatelessWidget {
       "alta",
       "media",
       "baja",
+      "critica",
     ];
 
     return Wrap(

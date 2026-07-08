@@ -9,67 +9,88 @@ class SensorForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<SensorProvider>(context);
+    final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white70,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
 
-          /// Nombre
-          TextField(
-            controller: provider.nombreController,
-            decoration: const InputDecoration(
-              labelText: "Nombre del sensor",
-              prefixIcon: Icon(Icons.sensors),
+            Row(
+              children: [
+                Icon(Icons.sensors, color: theme.colorScheme.primary),
+                const SizedBox(width: 10),
+                Text("Datos del sensor", style: theme.textTheme.titleMedium),
+              ],
             ),
-          ),
 
-          const SizedBox(height: 15),
+            const SizedBox(height: 20),
 
-          /// Tipo
-          TextField(
-            controller: provider.tipoController,
-            decoration: const InputDecoration(
-              labelText: "Tipo de sensor",
-              prefixIcon: Icon(Icons.category),
+            /// Nombre
+            TextField(
+              controller: provider.nombreController,
+              decoration: InputDecoration(
+                labelText: "Nombre del sensor",
+                prefixIcon: const Icon(Icons.badge_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
-          ),
 
-          const SizedBox(height: 15),
+            const SizedBox(height: 15),
 
-          /// Código
-          TextField(
-            controller: provider.codigoController,
-            decoration: const InputDecoration(
-              labelText: "Código",
-              prefixIcon: Icon(Icons.qr_code),
+            /// Tipo
+            TextField(
+              controller: provider.tipoController,
+              decoration: InputDecoration(
+                labelText: "Tipo de sensor",
+                prefixIcon: const Icon(Icons.category_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
-          ),
 
-          const SizedBox(height: 15),
+            const SizedBox(height: 15),
 
-          /// Lote
-          TextField(
-            controller: provider.loteController,
-            decoration: const InputDecoration(
-              labelText: "Lote asociado",
-              prefixIcon: Icon(Icons.agriculture),
+            /// Código
+            TextField(
+              controller: provider.codigoController,
+              decoration: InputDecoration(
+                labelText: "Código",
+                prefixIcon: const Icon(Icons.qr_code),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
-          ),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 15),
 
-          SwitchListTile(
-            value: provider.conectado,
-            onChanged: provider.cambiarEstado,
-            title: const Text("Sensor conectado"),
-            secondary: const Icon(Icons.wifi),
-          ),
-        ],
+            /// Lote
+            TextField(
+              controller: provider.loteController,
+              decoration: InputDecoration(
+                labelText: "Lote asociado",
+                prefixIcon: const Icon(Icons.agriculture_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            SwitchListTile(
+              value: provider.conectado,
+              onChanged: provider.cambiarEstado,
+              title: const Text("Sensor conectado"),
+              secondary: Icon(Icons.wifi, color: theme.colorScheme.primary),
+            ),
+          ],
+        ),
       ),
     );
   }

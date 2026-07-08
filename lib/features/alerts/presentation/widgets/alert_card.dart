@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/alert_model.dart';
+import '../../domain/entities/alerta_entity.dart';
 import 'priority_chip.dart';
 
 class AlertCard extends StatelessWidget {
-  final AlertModel alert;
+  final AlertaEntity alert;
+  final VoidCallback? onAtender;
 
   const AlertCard({
     super.key,
     required this.alert,
+    this.onAtender,
   });
 
   Color _color() {
-    switch (alert.nivel.toLowerCase()) {
+    switch (alert.nivelSeveridad.toLowerCase()) {
+      case "critica":
+        return Colors.red.shade900;
+
       case "alta":
         return Colors.red;
 
@@ -25,7 +30,8 @@ class AlertCard extends StatelessWidget {
   }
 
   IconData _icon() {
-    switch (alert.nivel.toLowerCase()) {
+    switch (alert.nivelSeveridad.toLowerCase()) {
+      case "critica":
       case "alta":
         return Icons.warning;
 
@@ -39,12 +45,10 @@ class AlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Card(
-      elevation: 4,
       margin: const EdgeInsets.only(bottom: 15),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(15),
         child: Column(
@@ -55,7 +59,7 @@ class AlertCard extends StatelessWidget {
               children: [
 
                 CircleAvatar(
-                  backgroundColor: _color().withOpacity(.15),
+                  backgroundColor: _color().withValues(alpha: .15),
                   child: Icon(
                     _icon(),
                     color: _color(),
@@ -66,16 +70,13 @@ class AlertCard extends StatelessWidget {
 
                 Expanded(
                   child: Text(
-                    alert.titulo,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17,
-                    ),
+                    alert.tipoAlerta,
+                    style: theme.textTheme.titleMedium,
                   ),
                 ),
 
                 PriorityChip(
-                  prioridad: alert.nivel,
+                  prioridad: alert.nivelSeveridad,
                 ),
 
               ],
@@ -83,30 +84,43 @@ class AlertCard extends StatelessWidget {
 
             const SizedBox(height: 15),
 
-            Text(alert.descripcion),
+            Text(alert.mensaje, style: theme.textTheme.bodyMedium),
 
             const SizedBox(height: 10),
 
             Row(
               children: [
 
-                const Icon(
+                Icon(
                   Icons.calendar_today,
                   size: 18,
-                  color: Colors.grey,
+                  color: theme.textTheme.bodySmall?.color,
                 ),
 
                 const SizedBox(width: 8),
 
                 Text(
-                  alert.fecha,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                  ),
+                  alert.fechaGenerada,
+                  style: theme.textTheme.bodySmall,
                 ),
 
               ],
             ),
+
+            if (!alert.atendida && onAtender != null) ...[
+
+              const SizedBox(height: 12),
+
+              Align(
+                alignment: Alignment.centerRight,
+                child: OutlinedButton.icon(
+                  onPressed: onAtender,
+                  icon: const Icon(Icons.check),
+                  label: const Text("Atender"),
+                ),
+              ),
+
+            ],
 
           ],
         ),

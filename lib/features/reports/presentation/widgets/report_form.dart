@@ -12,20 +12,32 @@ class ReportForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
 
+            Row(
+              children: [
+                Icon(Icons.tune, color: theme.colorScheme.primary),
+                const SizedBox(width: 10),
+                Text("Parámetros del reporte", style: theme.textTheme.titleMedium),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
             TextField(
               controller: provider.loteController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Seleccionar lote",
-                prefixIcon: Icon(Icons.agriculture),
+                prefixIcon: const Icon(Icons.agriculture_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
 
@@ -33,9 +45,12 @@ class ReportForm extends StatelessWidget {
 
             DropdownButtonFormField<String>(
               value: provider.tipoReporte,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Tipo de reporte",
-                prefixIcon: Icon(Icons.description),
+                prefixIcon: const Icon(Icons.description_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               items: provider.tipos.map((tipo) {
                 return DropdownMenuItem(
@@ -55,7 +70,10 @@ class ReportForm extends StatelessWidget {
                 labelText: provider.fechaSeleccionada == null
                     ? "Fecha inicial"
                     : "${provider.fechaSeleccionada!.day}/${provider.fechaSeleccionada!.month}/${provider.fechaSeleccionada!.year}",
-                prefixIcon: const Icon(Icons.calendar_today),
+                prefixIcon: const Icon(Icons.calendar_today_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
 

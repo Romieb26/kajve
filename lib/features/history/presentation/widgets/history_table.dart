@@ -13,90 +13,95 @@ class HistoryTable extends StatelessWidget {
   Color _estadoColor(String estado) {
     switch (estado) {
       case "Óptimo":
-        return Colors.green.shade100;
+        return Colors.green;
 
       case "Bueno":
-        return Colors.blue.shade100;
+        return Colors.blue;
 
       case "Alerta":
-        return Colors.orange.shade100;
+        return Colors.orange;
 
       default:
-        return Colors.grey.shade200;
+        return Colors.grey;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
+    final theme = Theme.of(context);
 
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-
-        child: DataTable(
-          columns: const [
-
-            DataColumn(
-              label: Text(
-                "Lote",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+    if (provider.historial.isEmpty) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Text(
+              "No hay registros para mostrar.",
+              style: theme.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
+          ),
+        ),
+      );
+    }
 
-            DataColumn(
-              label: Text(
-                "Fecha",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
+    return Column(
+      children: provider.historial.map((item) {
+        final color = _estadoColor(item.estado);
 
-            DataColumn(
-              label: Text(
-                "Temperatura",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Row(
+              children: [
 
-            DataColumn(
-              label: Text(
-                "Humedad",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
+                CircleAvatar(
+                  backgroundColor: color.withValues(alpha: 0.15),
+                  child: Icon(Icons.grass, color: color),
+                ),
 
-            DataColumn(
-              label: Text(
-                "Estado",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
+                const SizedBox(width: 15),
 
-          rows: provider.historial.map((item) {
-            return DataRow(
-              cells: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
 
-                DataCell(Text(item.lote)),
+                      Text(item.lote, style: theme.textTheme.titleSmall),
 
-                DataCell(Text(item.fecha)),
+                      const SizedBox(height: 4),
 
-                DataCell(Text("${item.temperatura} °C")),
+                      Text(item.fecha, style: theme.textTheme.bodySmall),
 
-                DataCell(Text("${item.humedad} %")),
+                      const SizedBox(height: 4),
 
-                DataCell(
-                  Chip(
-                    label: Text(item.estado),
-                    backgroundColor: _estadoColor(item.estado),
+                      Text(
+                        "${item.temperatura} °C   •   ${item.humedad} %",
+                        style: theme.textTheme.bodySmall,
+                      ),
+
+                    ],
                   ),
                 ),
 
+                const SizedBox(width: 10),
+
+                Chip(
+                  label: Text(item.estado),
+                  backgroundColor: color.withValues(alpha: 0.18),
+                  labelStyle: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  side: BorderSide.none,
+                ),
+
               ],
-            );
-          }).toList(),
-        ),
-      ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

@@ -10,17 +10,18 @@ class ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ProfileProvider>(context);
+    final theme = Theme.of(context);
 
     return Column(
       children: [
 
-        const CircleAvatar(
+        CircleAvatar(
           radius: 55,
-          backgroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.primary.withValues(alpha: .15),
           child: Icon(
             Icons.person,
             size: 60,
-            color: Colors.brown,
+            color: theme.colorScheme.primary,
           ),
         ),
 
@@ -28,21 +29,14 @@ class ProfileHeader extends StatelessWidget {
 
         Text(
           provider.nombreController.text,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: theme.textTheme.titleLarge?.copyWith(fontSize: 24),
         ),
 
         const SizedBox(height: 5),
 
         Text(
           provider.correoController.text,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 16,
-          ),
+          style: theme.textTheme.bodyMedium?.copyWith(fontSize: 16),
         ),
 
       ],

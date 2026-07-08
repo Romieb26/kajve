@@ -29,56 +29,48 @@ class HistoryStatistics extends StatelessWidget {
           total;
     }
 
+    final theme = Theme.of(context);
+
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
 
-            const Text(
-              "Estadísticas",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Icon(Icons.insights_outlined, color: theme.colorScheme.primary),
+                const SizedBox(width: 10),
+                Text("Estadísticas", style: theme.textTheme.titleMedium),
+              ],
             ),
 
             const Divider(height: 30),
 
             ListTile(
-              leading: const Icon(Icons.list_alt),
+              leading: Icon(Icons.list_alt, color: theme.colorScheme.primary),
               title: const Text("Total de registros"),
               trailing: Text(
                 total.toString(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: theme.textTheme.titleSmall,
               ),
             ),
 
             ListTile(
-              leading: const Icon(Icons.thermostat),
+              leading: Icon(Icons.thermostat, color: theme.colorScheme.primary),
               title: const Text("Temperatura promedio"),
               trailing: Text(
                 "${promedioTemp.toStringAsFixed(1)} °C",
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: theme.textTheme.titleSmall,
               ),
             ),
 
             ListTile(
-              leading: const Icon(Icons.water_drop),
+              leading: Icon(Icons.water_drop, color: theme.colorScheme.primary),
               title: const Text("Humedad promedio"),
               trailing: Text(
                 "${promedioHum.toStringAsFixed(1)} %",
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: theme.textTheme.titleSmall,
               ),
             ),
 

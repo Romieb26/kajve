@@ -6,10 +6,6 @@ class HistoryFilters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(15),
         child: Column(
@@ -53,7 +49,7 @@ class HistoryFilters extends StatelessWidget {
               children: [
 
                 Expanded(
-                  child: ElevatedButton.icon(
+                  child: OutlinedButton.icon(
                     onPressed: () {},
                     icon: const Icon(Icons.picture_as_pdf),
                     label: const Text("PDF"),
@@ -63,7 +59,7 @@ class HistoryFilters extends StatelessWidget {
                 const SizedBox(width: 10),
 
                 Expanded(
-                  child: ElevatedButton.icon(
+                  child: OutlinedButton.icon(
                     onPressed: () {},
                     icon: const Icon(Icons.table_chart),
                     label: const Text("Excel"),

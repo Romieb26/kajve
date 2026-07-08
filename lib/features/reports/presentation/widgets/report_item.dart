@@ -14,6 +14,7 @@ class ReportItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
 
     return Card(
 
@@ -21,11 +22,12 @@ class ReportItem extends StatelessWidget {
 
       child: ListTile(
 
-        leading: const CircleAvatar(
-          child: Icon(Icons.picture_as_pdf),
+        leading: CircleAvatar(
+          backgroundColor: theme.colorScheme.primary.withValues(alpha: .15),
+          child: Icon(Icons.picture_as_pdf, color: theme.colorScheme.primary),
         ),
 
-        title: Text(reporte.nombre),
+        title: Text(reporte.nombre, style: theme.textTheme.titleSmall),
 
         subtitle: Column(
 
@@ -33,9 +35,9 @@ class ReportItem extends StatelessWidget {
 
           children: [
 
-            Text("Tipo: ${reporte.tipo}"),
+            Text("Tipo: ${reporte.tipo}", style: theme.textTheme.bodySmall),
 
-            Text("Fecha: ${reporte.fecha}"),
+            Text("Fecha: ${reporte.fecha}", style: theme.textTheme.bodySmall),
 
           ],
         ),

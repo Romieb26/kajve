@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../shared/widgets/app_bottom_navigation.dart';
 import '../../../../shared/widgets/app_drawer.dart';
 
 import '../../../../core/theme/theme_provider.dart';
@@ -21,12 +20,9 @@ class ProfilePage extends StatelessWidget {
     return Consumer<ProfileProvider>(
       builder: (context, provider, child) {
         return Scaffold(
-          backgroundColor: const Color(0xffB56A1F),
-
           drawer: const AppDrawer(),
 
           appBar: AppBar(
-            backgroundColor: const Color(0xff6A3C18),
             title: const Text("Mi Perfil"),
             centerTitle: true,
           ),
@@ -55,9 +51,6 @@ class ProfilePage extends StatelessWidget {
 
                 /// Modo claro / oscuro
                 Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
                   child: SwitchListTile(
                     value: themeProvider.modoOscuro,
                     onChanged: themeProvider.cambiarTema,
@@ -94,10 +87,6 @@ class ProfilePage extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-
-          bottomNavigationBar: const AppBottomNavigation(
-            currentIndex: 4,
           ),
         );
       },

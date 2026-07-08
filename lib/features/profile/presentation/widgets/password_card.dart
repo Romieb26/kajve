@@ -12,32 +12,27 @@ class PasswordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Cambiar contraseña",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Icon(Icons.lock_outline, color: theme.colorScheme.primary),
+                const SizedBox(width: 10),
+                Text("Cambiar contraseña", style: theme.textTheme.titleMedium),
+              ],
             ),
 
             const SizedBox(height: 8),
 
-            const Text(
+            Text(
               "Utiliza una contraseña segura de al menos 8 caracteres.",
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 13,
-              ),
+              style: theme.textTheme.bodySmall,
             ),
 
             const SizedBox(height: 20),

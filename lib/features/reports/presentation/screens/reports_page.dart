@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../shared/widgets/app_drawer.dart';
 
-import '../../../../shared/widgets/app_bottom_navigation.dart';
 import '../providers/report_provider.dart';
 import '../widgets/report_form.dart';
 import '../widgets/report_history.dart';
@@ -15,10 +15,9 @@ class ReportsPage extends StatelessWidget {
     final provider = Provider.of<ReportProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xffB56A1F),
+      drawer: const AppDrawer(),
 
       appBar: AppBar(
-        backgroundColor: const Color(0xff6A3C18),
         title: const Text("Generar Reportes"),
         centerTitle: true,
       ),
@@ -36,10 +35,6 @@ class ReportsPage extends StatelessWidget {
 
           ],
         ),
-      ),
-
-      bottomNavigationBar: const AppBottomNavigation(
-        currentIndex: 2,
       ),
     );
   }

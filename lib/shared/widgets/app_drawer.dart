@@ -108,7 +108,7 @@ class AppDrawer extends StatelessWidget {
             route: AppRoutes.history,
           ),
 
-          _item(
+          _selectorItem(
             context,
             icon: Icons.warning_amber,
             title: "Alertas",
