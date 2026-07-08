@@ -1,20 +1,38 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/report_model.dart';
-import '../../../../core/services/pdf_service.dart';
-import '../../../../core/services/excel_service.dart';
+import '../../domain/entities/reporte_entity.dart';
+import '../providers/report_provider.dart';
 
 class ReportItem extends StatelessWidget {
-  final ReportModel reporte;
+  final ReporteEntity reporte;
+  final ReportProvider provider;
 
   const ReportItem({
     super.key,
     required this.reporte,
+    required this.provider,
   });
+
+  /// El backend solo llena url_archivo una vez que el archivo existe,
+  /// así que su presencia es la señal real de "listo".
+  bool get _listo => reporte.urlArchivo != null && reporte.urlArchivo!.isNotEmpty;
+
+  IconData get _formatoIcon =>
+      reporte.formato.toLowerCase() == 'excel' ? Icons.table_chart : Icons.picture_as_pdf;
+
+  String _formatearFecha(String iso) {
+    final fecha = DateTime.tryParse(iso);
+    if (fecha == null) return iso;
+
+    final dia = fecha.day.toString().padLeft(2, '0');
+    final mes = fecha.month.toString().padLeft(2, '0');
+    return "$dia/$mes/${fecha.year}";
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final descargando = provider.idDescargando == reporte.id;
 
     return Card(
 
@@ -24,10 +42,10 @@ class ReportItem extends StatelessWidget {
 
         leading: CircleAvatar(
           backgroundColor: theme.colorScheme.primary.withValues(alpha: .15),
-          child: Icon(Icons.picture_as_pdf, color: theme.colorScheme.primary),
+          child: Icon(_formatoIcon, color: theme.colorScheme.primary),
         ),
 
-        title: Text(reporte.nombre, style: theme.textTheme.titleSmall),
+        title: Text(reporte.tipoReporte, style: theme.textTheme.titleSmall),
 
         subtitle: Column(
 
@@ -35,40 +53,46 @@ class ReportItem extends StatelessWidget {
 
           children: [
 
-            Text("Tipo: ${reporte.tipo}", style: theme.textTheme.bodySmall),
+            Text(
+              "Formato: ${reporte.formato.toUpperCase()}",
+              style: theme.textTheme.bodySmall,
+            ),
 
-            Text("Fecha: ${reporte.fecha}", style: theme.textTheme.bodySmall),
+            Text(
+              "Fecha: ${_formatearFecha(reporte.fechaGeneracion)}",
+              style: theme.textTheme.bodySmall,
+            ),
 
           ],
         ),
 
-        trailing: PopupMenuButton(
-
-          itemBuilder: (_) => [
-
-            const PopupMenuItem(
-              value: 1,
-              child: Text("Descargar PDF"),
-            ),
-
-            const PopupMenuItem(
-              value: 2,
-              child: Text("Exportar Excel"),
-            ),
-
-          ],
-
-          onSelected: (value) async {
-
-            if (value == 1) {
-              await PdfService.generarReportePdf(reporte);
-            } else if (value == 2) {
-              await ExcelService.exportarReportes([reporte]);
-            }
-
-          },
-
-        ),
+        trailing: !_listo
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: theme.textTheme.bodySmall?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text("Generando...", style: theme.textTheme.bodySmall),
+                ],
+              )
+            : descargando
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : IconButton(
+                    icon: Icon(Icons.download, color: theme.colorScheme.primary),
+                    tooltip: "Descargar",
+                    onPressed: () => provider.descargarReporte(context, reporte),
+                  ),
 
       ),
 

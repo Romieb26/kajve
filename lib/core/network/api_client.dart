@@ -15,6 +15,15 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+/// Respuesta binaria (ej. descarga de un reporte en PDF/Excel).
+class ApiFileResponse {
+  final List<int> bytes;
+  final String? contentType;
+  final String? fileName;
+
+  const ApiFileResponse({required this.bytes, this.contentType, this.fileName});
+}
+
 /// Wrapper de [http] con timeout y manejo de errores centralizado.
 class ApiClient {
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
@@ -78,6 +87,45 @@ class ApiClient {
     return (result as Map<String, dynamic>?) ?? <String, dynamic>{};
   }
 
+  /// Descarga el binario de un endpoint (ej. GET /reportes/{id}/descargar).
+  /// A diferencia de [get]/[post], el cuerpo de una respuesta exitosa no se
+  /// intenta decodificar como JSON.
+  Future<ApiFileResponse> getBytes(String path, {String? token}) async {
+    try {
+      final response = await _client
+          .get(Uri.parse('$baseUrl$path'), headers: _headers(token))
+          .timeout(_timeout);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return ApiFileResponse(
+          bytes: response.bodyBytes,
+          contentType: response.headers['content-type'],
+          fileName: _parseFileName(response.headers['content-disposition']),
+        );
+      }
+
+      throw _errorFromResponse(response);
+    } on ApiException {
+      rethrow;
+    } on TimeoutException {
+      throw const ApiException(
+        'La conexión tardó demasiado. Intenta de nuevo.',
+      );
+    } on SocketException {
+      throw const ApiException(
+        'No se pudo conectar. Revisa tu conexión a internet.',
+      );
+    } catch (_) {
+      throw const ApiException('Ocurrió un error inesperado.');
+    }
+  }
+
+  String? _parseFileName(String? contentDisposition) {
+    if (contentDisposition == null) return null;
+    final match = RegExp(r'filename="?([^";]+)"?').firstMatch(contentDisposition);
+    return match?.group(1);
+  }
+
   Map<String, String> _headers(String? token) {
     return {
       'Content-Type': 'application/json',
@@ -107,15 +155,21 @@ class ApiClient {
   }
 
   dynamic _handleResponse(http.Response response) {
-    final decoded = response.body.isNotEmpty ? jsonDecode(response.body) : null;
-
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return decoded;
+      return response.body.isNotEmpty ? jsonDecode(response.body) : null;
     }
 
-    final json = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+    throw _errorFromResponse(response);
+  }
 
-    throw ApiException(
+  ApiException _errorFromResponse(http.Response response) {
+    Map<String, dynamic> json = {};
+    try {
+      final decoded = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+      if (decoded is Map<String, dynamic>) json = decoded;
+    } catch (_) {}
+
+    return ApiException(
       json['message']?.toString() ??
           json['error']?.toString() ??
           'Error en la solicitud.',

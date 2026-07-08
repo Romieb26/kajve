@@ -3,15 +3,24 @@ import 'package:provider/provider.dart';
 
 import '../../features/lots/presentation/providers/lot_provider.dart';
 
-/// Muestra una hoja modal para elegir un lote y navega a [route]
-/// pasando su id real como argumento. Se usa en los accesos que no
-/// tienen contexto de un lote específico (drawer, accesos rápidos del
-/// dashboard) — a diferencia de tocar una card en la lista de lotes,
-/// donde el id ya se conoce de antemano.
+/// Muestra una hoja modal para elegir un lote.
+///
+/// Con [route], navega a esa ruta pasando el id del lote como argumento
+/// (uso en accesos que no tienen contexto de un lote específico: drawer,
+/// accesos rápidos del dashboard). Con [onSelected], en cambio, entrega
+/// el [Lote] elegido al callback sin navegar — para formularios que solo
+/// necesitan capturar el lote elegido sin salir de la pantalla (ej.
+/// Reportes). Debe pasarse exactamente uno de los dos.
 Future<void> showLoteSelector(
   BuildContext context, {
-  required String route,
+  String? route,
+  ValueChanged<Lote>? onSelected,
 }) async {
+  assert(
+    (route == null) != (onSelected == null),
+    'showLoteSelector necesita exactamente uno de: route (para navegar) u onSelected (para recibir el lote elegido).',
+  );
+
   final lotProvider = Provider.of<LotProvider>(context, listen: false);
 
   // Se captura el Navigator ahora, mientras el context todavía es
@@ -42,7 +51,7 @@ Future<void> showLoteSelector(
   // elegido) antes de navegar. Hacer el pop del modal y el push de la
   // nueva pantalla en el mismo tap producía una carrera con la
   // animación de cierre y la navegación se perdía silenciosamente.
-  final loteId = await showModalBottomSheet<int>(
+  final loteElegido = await showModalBottomSheet<Lote>(
     context: context,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -67,7 +76,7 @@ Future<void> showLoteSelector(
               ListTile(
                 leading: const Icon(Icons.grass),
                 title: Text(lote.nombre),
-                onTap: () => Navigator.pop(sheetContext, lote.id),
+                onTap: () => Navigator.pop(sheetContext, lote),
               ),
 
             const SizedBox(height: 8),
@@ -77,7 +86,12 @@ Future<void> showLoteSelector(
     },
   );
 
-  if (loteId == null) return;
+  if (loteElegido == null) return;
 
-  navigator.pushNamed(route, arguments: loteId);
+  if (onSelected != null) {
+    onSelected(loteElegido);
+    return;
+  }
+
+  navigator.pushNamed(route!, arguments: loteElegido.id);
 }

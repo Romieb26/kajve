@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/lote_selector_sheet.dart';
 import '../providers/report_provider.dart';
 
 class ReportForm extends StatelessWidget {
@@ -31,9 +32,13 @@ class ReportForm extends StatelessWidget {
             const SizedBox(height: 20),
 
             TextField(
-              controller: provider.loteController,
+              readOnly: true,
+              onTap: () => showLoteSelector(
+                context,
+                onSelected: provider.seleccionarLote,
+              ),
               decoration: InputDecoration(
-                labelText: "Seleccionar lote",
+                labelText: provider.loteNombreSeleccionado ?? "Seleccionar lote",
                 prefixIcon: const Icon(Icons.agriculture_outlined),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -61,20 +66,29 @@ class ReportForm extends StatelessWidget {
               onChanged: provider.seleccionarTipo,
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 20),
 
-            TextField(
-              readOnly: true,
-              onTap: () => provider.seleccionarFecha(context),
-              decoration: InputDecoration(
-                labelText: provider.fechaSeleccionada == null
-                    ? "Fecha inicial"
-                    : "${provider.fechaSeleccionada!.day}/${provider.fechaSeleccionada!.month}/${provider.fechaSeleccionada!.year}",
-                prefixIcon: const Icon(Icons.calendar_today_outlined),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text("Formato", style: theme.textTheme.bodySmall),
+            ),
+
+            const SizedBox(height: 8),
+
+            Wrap(
+              spacing: 10,
+              children: [
+                ChoiceChip(
+                  label: const Text("PDF"),
+                  selected: provider.formato == "pdf",
+                  onSelected: (_) => provider.seleccionarFormato("pdf"),
                 ),
-              ),
+                ChoiceChip(
+                  label: const Text("Excel"),
+                  selected: provider.formato == "excel",
+                  onSelected: (_) => provider.seleccionarFormato("excel"),
+                ),
+              ],
             ),
 
             const SizedBox(height: 20),
@@ -82,9 +96,19 @@ class ReportForm extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: provider.generarReporte,
-                icon: const Icon(Icons.picture_as_pdf),
-                label: const Text("Generar reporte"),
+                onPressed: provider.solicitando
+                    ? null
+                    : () => provider.generarReporte(context),
+                icon: provider.solicitando
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.picture_as_pdf),
+                label: Text(
+                  provider.solicitando ? "Generando..." : "Generar reporte",
+                ),
               ),
             ),
 

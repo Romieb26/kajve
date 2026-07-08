@@ -28,31 +28,66 @@ class ReportHistory extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        if (provider.reportes.isEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Center(
-                child: Text(
-                  "Aún no has generado ningún reporte.",
-                  style: theme.textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          )
-        else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: provider.reportes.length,
-            itemBuilder: (context, index) {
-              return ReportItem(
-                reporte: provider.reportes[index],
-              );
-            },
-          ),
+        _buildBody(theme),
       ],
+    );
+  }
+
+  Widget _buildBody(ThemeData theme) {
+    if (provider.isLoading && provider.reportes.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (provider.errorMessage != null && provider.reportes.isEmpty) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.cloud_off, size: 40, color: theme.textTheme.bodySmall?.color),
+              const SizedBox(height: 12),
+              Text(
+                provider.errorMessage!,
+                style: theme.textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: provider.cargarReportes,
+                child: const Text("Reintentar"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (provider.reportes.isEmpty) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Text(
+              "Aún no has generado ningún reporte.",
+              style: theme.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: provider.reportes.length,
+      itemBuilder: (context, index) {
+        return ReportItem(
+          reporte: provider.reportes[index],
+          provider: provider,
+        );
+      },
     );
   }
 }

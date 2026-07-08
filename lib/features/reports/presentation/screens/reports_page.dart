@@ -7,8 +7,21 @@ import '../providers/report_provider.dart';
 import '../widgets/report_form.dart';
 import '../widgets/report_history.dart';
 
-class ReportsPage extends StatelessWidget {
+class ReportsPage extends StatefulWidget {
   const ReportsPage({super.key});
+
+  @override
+  State<ReportsPage> createState() => _ReportsPageState();
+}
+
+class _ReportsPageState extends State<ReportsPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ReportProvider>().cargarReportes();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
