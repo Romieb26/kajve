@@ -16,7 +16,7 @@ class SearchHistory extends StatelessWidget {
       controller: provider.searchController,
       onChanged: provider.buscar,
       decoration: InputDecoration(
-        hintText: "Buscar lote...",
+        hintText: "Buscar evento...",
         prefixIcon: const Icon(Icons.search),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),

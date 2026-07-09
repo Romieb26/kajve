@@ -10,20 +10,15 @@ class HistoryTable extends StatelessWidget {
     required this.provider,
   });
 
-  Color _estadoColor(String estado) {
-    switch (estado) {
-      case "Óptimo":
-        return Colors.green;
+  String _formatearFecha(String iso) {
+    final fecha = DateTime.tryParse(iso);
+    if (fecha == null) return iso;
 
-      case "Bueno":
-        return Colors.blue;
-
-      case "Alerta":
-        return Colors.orange;
-
-      default:
-        return Colors.grey;
-    }
+    final dia = fecha.day.toString().padLeft(2, '0');
+    final mes = fecha.month.toString().padLeft(2, '0');
+    final hora = fecha.hour.toString().padLeft(2, '0');
+    final minuto = fecha.minute.toString().padLeft(2, '0');
+    return "$dia/$mes/${fecha.year}  $hora:$minuto";
   }
 
   @override
@@ -36,7 +31,7 @@ class HistoryTable extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           child: Center(
             child: Text(
-              "No hay registros para mostrar.",
+              "No hay eventos para mostrar.",
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -46,9 +41,7 @@ class HistoryTable extends StatelessWidget {
     }
 
     return Column(
-      children: provider.historial.map((item) {
-        final color = _estadoColor(item.estado);
-
+      children: provider.historial.map((evento) {
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: Padding(
@@ -57,8 +50,8 @@ class HistoryTable extends StatelessWidget {
               children: [
 
                 CircleAvatar(
-                  backgroundColor: color.withValues(alpha: 0.15),
-                  child: Icon(Icons.grass, color: color),
+                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                  child: Icon(Icons.event_note, color: theme.colorScheme.primary),
                 ),
 
                 const SizedBox(width: 15),
@@ -68,33 +61,21 @@ class HistoryTable extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
 
-                      Text(item.lote, style: theme.textTheme.titleSmall),
+                      Text(evento.tipoEvento, style: theme.textTheme.titleSmall),
 
                       const SizedBox(height: 4),
 
-                      Text(item.fecha, style: theme.textTheme.bodySmall),
+                      Text(evento.descripcion, style: theme.textTheme.bodySmall),
 
                       const SizedBox(height: 4),
 
                       Text(
-                        "${item.temperatura} °C   •   ${item.humedad} %",
+                        _formatearFecha(evento.fechaEvento),
                         style: theme.textTheme.bodySmall,
                       ),
 
                     ],
                   ),
-                ),
-
-                const SizedBox(width: 10),
-
-                Chip(
-                  label: Text(item.estado),
-                  backgroundColor: color.withValues(alpha: 0.18),
-                  labelStyle: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  side: BorderSide.none,
                 ),
 
               ],

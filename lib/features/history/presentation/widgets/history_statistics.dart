@@ -14,21 +14,6 @@ class HistoryStatistics extends StatelessWidget {
   Widget build(BuildContext context) {
     final total = provider.historial.length;
 
-    double promedioTemp = 0;
-    double promedioHum = 0;
-
-    if (total > 0) {
-      promedioTemp = provider.historial
-          .map((e) => e.temperatura)
-          .reduce((a, b) => a + b) /
-          total;
-
-      promedioHum = provider.historial
-          .map((e) => e.humedad)
-          .reduce((a, b) => a + b) /
-          total;
-    }
-
     final theme = Theme.of(context);
 
     return Card(
@@ -49,27 +34,9 @@ class HistoryStatistics extends StatelessWidget {
 
             ListTile(
               leading: Icon(Icons.list_alt, color: theme.colorScheme.primary),
-              title: const Text("Total de registros"),
+              title: const Text("Total de eventos"),
               trailing: Text(
                 total.toString(),
-                style: theme.textTheme.titleSmall,
-              ),
-            ),
-
-            ListTile(
-              leading: Icon(Icons.thermostat, color: theme.colorScheme.primary),
-              title: const Text("Temperatura promedio"),
-              trailing: Text(
-                "${promedioTemp.toStringAsFixed(1)} °C",
-                style: theme.textTheme.titleSmall,
-              ),
-            ),
-
-            ListTile(
-              leading: Icon(Icons.water_drop, color: theme.colorScheme.primary),
-              title: const Text("Humedad promedio"),
-              trailing: Text(
-                "${promedioHum.toStringAsFixed(1)} %",
                 style: theme.textTheme.titleSmall,
               ),
             ),

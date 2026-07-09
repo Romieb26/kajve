@@ -46,9 +46,12 @@ class ProfileCard extends StatelessWidget {
 
             TextField(
               controller: provider.correoController,
+              readOnly: true,
+              enabled: false,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 labelText: "Correo electrónico",
+                helperText: "El correo no se puede modificar.",
                 prefixIcon: const Icon(Icons.email),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -66,6 +69,27 @@ class ProfileCard extends StatelessWidget {
                 prefixIcon: const Icon(Icons.phone),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: provider.guardando
+                    ? null
+                    : () => provider.guardarCambios(context),
+                icon: provider.guardando
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save),
+                label: Text(
+                  provider.guardando ? "Guardando..." : "Guardar cambios",
                 ),
               ),
             ),

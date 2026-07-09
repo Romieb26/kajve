@@ -5,7 +5,6 @@ import '../../../../shared/widgets/app_drawer.dart';
 
 import '../providers/history_provider.dart';
 
-
 import '../widgets/search_history.dart';
 import '../widgets/history_filters.dart';
 import '../widgets/history_table.dart';
@@ -33,34 +32,89 @@ class HistoryPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
 
-                /// Buscador
-                SearchHistory(
-                  provider: provider,
-                ),
+                /// Filtros (incluye el selector de lote, que dispara la carga)
+                HistoryFilters(provider: provider),
 
                 const SizedBox(height: 20),
 
-                /// Filtros
-                const HistoryFilters(),
+                _buildContenido(context, provider),
 
-                const SizedBox(height: 20),
-
-                /// Tabla
-                HistoryTable(
-                  provider: provider,
-                ),
-
-                const SizedBox(height: 20),
-
-                /// Estadísticas
-                HistoryStatistics(
-                  provider: provider,
-                ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildContenido(BuildContext context, HistoryProvider provider) {
+    final theme = Theme.of(context);
+
+    if (provider.loteIdSeleccionado == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            "Selecciona un lote para ver su historial.",
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium,
+          ),
+        ),
+      );
+    }
+
+    if (provider.cargando && provider.historial.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (provider.errorMessage != null && provider.historial.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.cloud_off, size: 48, color: theme.textTheme.bodySmall?.color),
+              const SizedBox(height: 12),
+              Text(
+                provider.errorMessage!,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => provider.cargarHistorial(provider.loteIdSeleccionado!),
+                child: const Text("Reintentar"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+
+        /// Buscador
+        SearchHistory(
+          provider: provider,
+        ),
+
+        const SizedBox(height: 20),
+
+        /// Tabla
+        HistoryTable(
+          provider: provider,
+        ),
+
+        const SizedBox(height: 20),
+
+        /// Estadísticas
+        HistoryStatistics(
+          provider: provider,
+        ),
+      ],
     );
   }
 }

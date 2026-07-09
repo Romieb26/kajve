@@ -38,6 +38,30 @@ class PasswordCard extends StatelessWidget {
             const SizedBox(height: 20),
 
             TextField(
+              controller: provider.passwordActualController,
+              obscureText: provider.ocultarPasswordActual,
+              enableSuggestions: false,
+              autocorrect: false,
+              decoration: InputDecoration(
+                labelText: "Contraseña actual",
+                prefixIcon: const Icon(Icons.lock_clock_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    provider.ocultarPasswordActual
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: provider.cambiarVisibilidadPasswordActual,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            TextField(
               controller: provider.passwordController,
               obscureText: provider.ocultarPassword,
               enableSuggestions: false,
@@ -80,6 +104,27 @@ class PasswordCard extends StatelessWidget {
                   ),
                   onPressed:
                   provider.cambiarVisibilidadConfirmacion,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: provider.cambiandoPassword
+                    ? null
+                    : () => provider.cambiarPassword(context),
+                icon: provider.cambiandoPassword
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.lock_reset),
+                label: Text(
+                  provider.cambiandoPassword ? "Cambiando..." : "Cambiar contraseña",
                 ),
               ),
             ),

@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/lote_selector_sheet.dart';
+import '../providers/history_provider.dart';
+
 class HistoryFilters extends StatelessWidget {
-  const HistoryFilters({super.key});
+  final HistoryProvider provider;
+
+  const HistoryFilters({
+    super.key,
+    required this.provider,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -10,6 +18,23 @@ class HistoryFilters extends StatelessWidget {
         padding: const EdgeInsets.all(15),
         child: Column(
           children: [
+
+            TextField(
+              readOnly: true,
+              onTap: () => showLoteSelector(
+                context,
+                onSelected: provider.seleccionarLote,
+              ),
+              decoration: InputDecoration(
+                labelText: provider.loteNombreSeleccionado ?? "Seleccionar lote",
+                prefixIcon: const Icon(Icons.agriculture_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 15),
 
             Row(
               children: [
@@ -45,29 +70,24 @@ class HistoryFilters extends StatelessWidget {
 
             const SizedBox(height: 15),
 
-            Row(
-              children: [
-
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.picture_as_pdf),
-                    label: const Text("PDF"),
-                  ),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: provider.solicitandoPdf
+                    ? null
+                    : () => provider.solicitarPdf(context),
+                icon: provider.solicitandoPdf
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.picture_as_pdf),
+                label: Text(
+                  provider.solicitandoPdf ? "Solicitando..." : "PDF",
                 ),
-
-                const SizedBox(width: 10),
-
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.table_chart),
-                    label: const Text("Excel"),
-                  ),
-                ),
-
-              ],
-            )
+              ),
+            ),
 
           ],
         ),

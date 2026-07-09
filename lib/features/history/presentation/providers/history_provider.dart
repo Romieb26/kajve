@@ -1,67 +1,144 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/history_model.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../../core/storage/secure_storage.dart';
+import '../../../lots/presentation/providers/lot_provider.dart';
+import '../../../reports/data/datasources/reports_remote_datasource.dart';
+import '../../../reports/data/repositories/reports_repository_impl.dart';
+import '../../../reports/domain/usecases/solicitar_reporte_usecase.dart';
+import '../../data/datasources/history_remote_datasource.dart';
+import '../../data/repositories/history_repository_impl.dart';
+import '../../domain/entities/historial_evento_entity.dart';
+import '../../domain/usecases/get_historial_usecase.dart';
 
 class HistoryProvider extends ChangeNotifier {
 
   final TextEditingController searchController =
   TextEditingController();
 
-  final List<HistoryModel> _todos = [
-
-    HistoryModel(
-      lote: "Lote Norte",
-      fecha: "18 Jul 2026",
-      temperatura: 26,
-      humedad: 42,
-      estado: "Óptimo",
+  late final GetHistorialUseCase _getHistorialUseCase = GetHistorialUseCase(
+    HistoryRepositoryImpl(
+      HistoryRemoteDataSourceImpl(ApiClient(), SecureStorage()),
     ),
+  );
 
-    HistoryModel(
-      lote: "Lote Centro",
-      fecha: "17 Jul 2026",
-      temperatura: 25,
-      humedad: 41,
-      estado: "Bueno",
-    ),
+  /// Todos los eventos del lote seleccionado, sin filtrar por texto.
+  List<HistorialEventoEntity> _todos = [];
 
-    HistoryModel(
-      lote: "Lote Sur",
-      fecha: "16 Jul 2026",
-      temperatura: 28,
-      humedad: 45,
-      estado: "Alerta",
-    ),
+  List<HistorialEventoEntity> historial = [];
 
-  ];
+  bool cargando = false;
+  String? errorMessage;
 
-  List<HistoryModel> historial = [];
+  Future<void> cargarHistorial(int loteId) async {
+    cargando = true;
+    errorMessage = null;
+    notifyListeners();
 
-  String filtro = "Todos";
-
-  HistoryProvider() {
-    historial = List.from(_todos);
+    try {
+      _todos = await _getHistorialUseCase(loteId);
+      buscar(searchController.text);
+    } on ApiException catch (e) {
+      errorMessage = e.statusCode == 401
+          ? "Tu sesión expiró. Inicia sesión de nuevo."
+          : "No se pudo conectar. Intenta de nuevo";
+    } catch (_) {
+      errorMessage = "Ocurrió un error al cargar el historial.";
+    } finally {
+      cargando = false;
+      notifyListeners();
+    }
   }
 
   void buscar(String texto) {
 
-    historial = _todos.where((item) {
+    if (texto.isEmpty) {
+      historial = List.from(_todos);
+    } else {
+      historial = _todos.where((evento) {
+        final busqueda = texto.toLowerCase();
 
-      return item.lote
-          .toLowerCase()
-          .contains(texto.toLowerCase());
-
-    }).toList();
+        return evento.tipoEvento.toLowerCase().contains(busqueda) ||
+            evento.descripcion.toLowerCase().contains(busqueda);
+      }).toList();
+    }
 
     notifyListeners();
   }
 
-  void cambiarFiltro(String nuevo) {
+  ///=========================
+  /// Reporte PDF (POST /reportes)
+  ///=========================
 
-    filtro = nuevo;
+  /// Lote elegido. Como GET /lotes/{id}/historial ya está escopado por
+  /// lote, elegir uno aquí sirve doble propósito: carga la lista de
+  /// eventos de ese lote Y es el id_lote que viaja en la solicitud de
+  /// PDF, con el mismo selector compartido que usa Reportes.
+  int? loteIdSeleccionado;
+  String? loteNombreSeleccionado;
 
+  bool solicitandoPdf = false;
+
+  late final SolicitarReporteUseCase _solicitarReporteUseCase =
+      SolicitarReporteUseCase(
+    ReportsRepositoryImpl(
+      ReportsRemoteDataSourceImpl(ApiClient(), SecureStorage()),
+    ),
+  );
+
+  void seleccionarLote(Lote lote) {
+    if (lote.id == null) return;
+
+    loteIdSeleccionado = lote.id;
+    loteNombreSeleccionado = lote.nombre;
     notifyListeners();
 
+    cargarHistorial(lote.id!);
+  }
+
+  Future<void> solicitarPdf(BuildContext context) async {
+    final loteId = loteIdSeleccionado;
+
+    if (loteId == null) {
+      _mostrarSnackBar(context, "Selecciona un lote para generar el PDF.", Colors.orange);
+      return;
+    }
+
+    solicitandoPdf = true;
+    notifyListeners();
+
+    try {
+      await _solicitarReporteUseCase(
+        idLote: loteId,
+        tipoReporte: "historial",
+        formato: "pdf",
+      );
+
+      if (context.mounted) {
+        _mostrarSnackBar(
+          context,
+          "Reporte solicitado. Podrás descargarlo desde la pantalla de Reportes cuando esté listo.",
+          Colors.green,
+        );
+      }
+    } on ApiException catch (e) {
+      if (context.mounted) {
+        _mostrarSnackBar(context, e.message, Colors.red);
+      }
+    } catch (_) {
+      if (context.mounted) {
+        _mostrarSnackBar(context, "Ocurrió un error al solicitar el reporte.", Colors.red);
+      }
+    } finally {
+      solicitandoPdf = false;
+      notifyListeners();
+    }
+  }
+
+  void _mostrarSnackBar(BuildContext context, String mensaje, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje), backgroundColor: color),
+    );
   }
 
   @override
