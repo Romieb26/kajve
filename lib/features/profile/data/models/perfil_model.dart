@@ -9,6 +9,8 @@ class PerfilModel extends PerfilEntity {
     super.telefono,
     required super.estado,
     required super.fechaRegistro,
+    required super.esPremium,
+    super.premiumHasta,
   });
 
   factory PerfilModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,8 @@ class PerfilModel extends PerfilEntity {
       telefono: json['telefono'] as String?,
       estado: json['estado'] as String? ?? '',
       fechaRegistro: json['fecha_registro'] as String? ?? '',
+      esPremium: json['es_premium'] as bool? ?? false,
+      premiumHasta: json['premium_hasta'] as String?,
     );
   }
 }

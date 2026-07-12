@@ -45,14 +45,39 @@ class ScanQrPage extends StatelessWidget {
                   height: 350,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: CameraScanner(
-                      flash: provider.flash,
-                      onDetect: (codigo) {
-                        provider.detectarCodigo(
-                          context,
-                          codigo,
-                        );
-                      },
+                    child: Stack(
+                      children: [
+                        CameraScanner(
+                          flash: provider.flash,
+                          paused: provider.procesando,
+                          onDetect: (codigo) {
+                            provider.detectarCodigo(
+                              context,
+                              codigo,
+                            );
+                          },
+                        ),
+
+                        if (provider.procesando)
+                          Container(
+                            color: Colors.black54,
+                            child: const Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(height: 12),
+                                  Text(
+                                    "Reclamando lote...",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),

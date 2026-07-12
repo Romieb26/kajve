@@ -4,14 +4,17 @@ import 'package:provider/provider.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/widgets/app_drawer.dart';
 import '../../../../shared/widgets/lote_selector_sheet.dart';
+import '../../../../shared/widgets/premium_upsell_sheet.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 import '../../../lots/presentation/providers/lot_provider.dart';
+import '../../../profile/presentation/providers/profile_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/dashboard_header.dart';
 import '../widgets/dashboard_card.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/recent_prediction_card.dart';
+import '../widgets/premium_banner.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -21,6 +24,8 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  bool _bannerCerrado = false;
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +35,10 @@ class _DashboardPageState extends State<DashboardPage> {
       // rápidos de Predicciones/Tiempo Real) los tenga listos sin
       // depender de haber visitado antes la pantalla de Lotes.
       context.read<LotProvider>().cargarLotes();
+      // Precarga el perfil (incluye es_premium) para que el drawer y
+      // este dashboard sepan si el usuario es premium sin depender de
+      // haber visitado antes la pantalla de Perfil.
+      context.read<ProfileProvider>().cargarPerfil();
     });
   }
 
@@ -43,6 +52,11 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final nombreUsuario =
         context.watch<AuthProvider>().usuario?.nombreCompleto ?? "Bienvenido";
+
+    // Mientras el perfil no ha cargado todavía se trata como no-premium
+    // (banner visible, accesos premium bloqueados) en vez de asumir
+    // acceso por defecto.
+    final esPremium = context.watch<ProfileProvider>().perfil?.esPremium ?? false;
 
     return Scaffold(
       drawer: const AppDrawer(),
@@ -112,6 +126,13 @@ class _DashboardPageState extends State<DashboardPage> {
                   nombre: nombreUsuario,
                 ),
 
+                if (!esPremium && !_bannerCerrado) ...[
+                  const SizedBox(height: 20),
+                  PremiumBanner(
+                    onClose: () => setState(() => _bannerCerrado = true),
+                  ),
+                ],
+
                 const SizedBox(height: 25),
 
                 const Text(
@@ -179,6 +200,10 @@ class _DashboardPageState extends State<DashboardPage> {
                     estado: prediccion.calidadEstimada,
                     fecha: _formatFecha(prediccion.fechaPrediccion),
                     onVer: () {
+                      if (!esPremium) {
+                        showPremiumUpsell(context);
+                        return;
+                      }
                       Navigator.pushNamed(
                         context,
                         AppRoutes.prediction,
@@ -250,6 +275,10 @@ class _DashboardPageState extends State<DashboardPage> {
                       titulo: "Predicciones",
                       icono: Icons.show_chart,
                       onTap: () {
+                        if (!esPremium) {
+                          showPremiumUpsell(context);
+                          return;
+                        }
                         showLoteSelector(context, route: AppRoutes.prediction);
                       },
                     ),
@@ -266,6 +295,10 @@ class _DashboardPageState extends State<DashboardPage> {
                       titulo: "Reportes",
                       icono: Icons.picture_as_pdf,
                       onTap: () {
+                        if (!esPremium) {
+                          showPremiumUpsell(context);
+                          return;
+                        }
                         Navigator.pushNamed(
                           context,
                           AppRoutes.reports,

@@ -7,6 +7,7 @@ import '../../../../core/theme/theme_provider.dart';
 
 import '../providers/profile_provider.dart';
 import '../widgets/profile_header.dart';
+import '../widgets/plan_card.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/password_card.dart';
 
@@ -91,6 +92,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
           /// Cabecera
           const ProfileHeader(),
+
+          const SizedBox(height: 20),
+
+          /// Plan / estado de suscripción
+          PlanCard(provider: provider),
 
           const SizedBox(height: 20),
 

@@ -26,6 +26,12 @@ class AppColors {
   static const Color warning = Color(0xFFF9A825);
   static const Color error = Color(0xFFC62828);
 
+  // Acento premium (candados, badges y CTA de upgrade). Morado a
+  // propósito: no existe en el resto de la paleta café/ámbar, así que
+  // resalta como algo distinto a la navegación normal de la app.
+  static const Color premium = Color(0xFF8E44AD);
+  static const Color premiumBackground = Color(0xFFF3E5F5);
+
   // Iconos
   static const Color icon = Color(0xFF6F4E37);
 

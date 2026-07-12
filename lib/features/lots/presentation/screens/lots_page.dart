@@ -36,17 +36,6 @@ class _LotsPageState extends State<LotsPage> {
             centerTitle: true,
           ),
 
-          floatingActionButton: FloatingActionButton.extended(
-            icon: const Icon(Icons.add),
-            label: const Text("Nuevo"),
-            onPressed: () {
-              Navigator.pushNamed(
-                context,
-                AppRoutes.createLot,
-              );
-            },
-          ),
-
           body: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

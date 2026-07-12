@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../core/constants/app_colors.dart';
 import '../../core/routes/app_routes.dart';
+import '../../features/profile/presentation/providers/profile_provider.dart';
 import 'lote_selector_sheet.dart';
+import 'premium_upsell_sheet.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Mientras el perfil no ha cargado todavía se trata como no-premium
+    // (candados visibles) en vez de asumir acceso por defecto.
+    final esPremium = context.watch<ProfileProvider>().perfil?.esPremium ?? false;
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -58,13 +66,6 @@ class AppDrawer extends StatelessWidget {
             route: AppRoutes.lots,
           ),
 
-          _item(
-            context,
-            icon: Icons.add_box,
-            title: "Crear Lote",
-            route: AppRoutes.createLot,
-          ),
-
           _selectorItem(
             context,
             icon: Icons.monitor_heart,
@@ -84,6 +85,8 @@ class AppDrawer extends StatelessWidget {
             icon: Icons.show_chart,
             title: "Predicciones",
             route: AppRoutes.prediction,
+            premium: true,
+            esPremium: esPremium,
           ),
 
           _selectorItem(
@@ -106,6 +109,8 @@ class AppDrawer extends StatelessWidget {
             icon: Icons.history,
             title: "Historial",
             route: AppRoutes.history,
+            premium: true,
+            esPremium: esPremium,
           ),
 
           _selectorItem(
@@ -120,6 +125,8 @@ class AppDrawer extends StatelessWidget {
             icon: Icons.description,
             title: "Reportes",
             route: AppRoutes.reports,
+            premium: true,
+            esPremium: esPremium,
           ),
 
           _item(
@@ -151,12 +158,21 @@ class AppDrawer extends StatelessWidget {
         required IconData icon,
         required String title,
         required String route,
+        bool premium = false,
+        bool esPremium = false,
       }) {
+    final bloqueado = premium && !esPremium;
+
     return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
+      leading: Icon(icon, color: bloqueado ? AppColors.premium : null),
+      title: _titulo(title, bloqueado),
       onTap: () {
         Navigator.pop(context);
+
+        if (bloqueado) {
+          showPremiumUpsell(context);
+          return;
+        }
 
         Navigator.pushReplacementNamed(
           context,
@@ -174,14 +190,46 @@ class AppDrawer extends StatelessWidget {
         required IconData icon,
         required String title,
         required String route,
+        bool premium = false,
+        bool esPremium = false,
       }) {
+    final bloqueado = premium && !esPremium;
+
     return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
+      leading: Icon(icon, color: bloqueado ? AppColors.premium : null),
+      title: _titulo(title, bloqueado),
       onTap: () {
         Navigator.pop(context);
+
+        if (bloqueado) {
+          showPremiumUpsell(context);
+          return;
+        }
+
         showLoteSelector(context, route: route);
       },
+    );
+  }
+
+  /// Título del ítem. Cuando está bloqueado por no ser premium, se
+  /// pinta en morado y se le agrega un candado, para distinguirlo del
+  /// resto de opciones antes de que el usuario intente entrar.
+  static Widget _titulo(String title, bool bloqueado) {
+    if (!bloqueado) return Text(title);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: AppColors.premium,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: 6),
+        const Icon(Icons.lock, size: 14, color: AppColors.premium),
+      ],
     );
   }
 }

@@ -6,6 +6,8 @@ class PerfilEntity {
   final String? telefono;
   final String estado;
   final String fechaRegistro;
+  final bool esPremium;
+  final String? premiumHasta;
 
   const PerfilEntity({
     required this.idUsuario,
@@ -15,5 +17,7 @@ class PerfilEntity {
     this.telefono,
     required this.estado,
     required this.fechaRegistro,
+    required this.esPremium,
+    this.premiumHasta,
   });
 }

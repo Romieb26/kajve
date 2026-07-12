@@ -5,10 +5,16 @@ class CameraScanner extends StatefulWidget {
   final Function(String) onDetect;
   final bool flash;
 
+  /// Pausa la cámara (deja de invocar [onDetect]) mientras el QR ya
+  /// detectado se está procesando, para no disparar múltiples llamadas
+  /// si el código sigue en cuadro.
+  final bool paused;
+
   const CameraScanner({
     super.key,
     required this.onDetect,
     required this.flash,
+    this.paused = false,
   });
 
   @override
@@ -36,6 +42,14 @@ class _CameraScannerState extends State<CameraScanner> {
     if (widget.flash != oldWidget.flash) {
       controller.toggleTorch();
     }
+
+    if (widget.paused != oldWidget.paused) {
+      if (widget.paused) {
+        controller.stop();
+      } else {
+        controller.start();
+      }
+    }
   }
 
   @override
@@ -47,6 +61,8 @@ class _CameraScannerState extends State<CameraScanner> {
           controller: controller,
 
           onDetect: (capture) {
+
+            if (widget.paused) return;
 
             final barcode = capture.barcodes.first;
 
