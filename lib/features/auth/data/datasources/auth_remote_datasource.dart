@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../../../core/network/api_client.dart';
 import '../models/auth_response_model.dart';
 
@@ -33,7 +35,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       'password': password,
     });
 
-    return AuthResponseModel.fromJson(json);
+    try {
+      return AuthResponseModel.fromJson(json);
+    } catch (e, st) {
+      // TODO(debug): quitar una vez identificado el campo que causa el crash.
+      debugPrint('LOGIN PARSE ERROR: $e');
+      debugPrint('LOGIN RAW JSON: $json');
+      debugPrint('$st');
+      rethrow;
+    }
   }
 
   @override

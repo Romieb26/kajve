@@ -80,6 +80,17 @@ class AuthProvider extends ChangeNotifier {
             : "No se pudo conectar. Intenta de nuevo";
         _mostrarSnackBar(context, mensaje, Colors.red);
       }
+    } catch (e, st) {
+      // TODO(debug): quitar una vez identificado el origen del crash.
+      debugPrint('LOGIN UNCAUGHT ERROR: $e');
+      debugPrint('$st');
+      if (context.mounted) {
+        _mostrarSnackBar(
+          context,
+          "Ocurrió un error inesperado. Revisa los logs.",
+          Colors.red,
+        );
+      }
     } finally {
       cargando = false;
       notifyListeners();
