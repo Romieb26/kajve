@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:screen_protector/screen_protector.dart';
 
 import '../../../../core/routes/app_routes.dart';
 
@@ -8,8 +9,25 @@ import '../widgets/logo_login.dart';
 import '../widgets/login_form.dart';
 import '../widgets/login_button.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  @override
+  void initState() {
+    super.initState();
+    ScreenProtector.preventScreenshotOn();
+  }
+
+  @override
+  void dispose() {
+    ScreenProtector.preventScreenshotOff();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

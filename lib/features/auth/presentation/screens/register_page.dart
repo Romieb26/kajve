@@ -1,13 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:screen_protector/screen_protector.dart';
 
 import '../providers/register_provider.dart';
 import '../widgets/register_button.dart';
 import '../widgets/register_form.dart';
 import '../../../auth/presentation/widgets/logo_login.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  @override
+  void initState() {
+    super.initState();
+    ScreenProtector.preventScreenshotOn();
+  }
+
+  @override
+  void dispose() {
+    ScreenProtector.preventScreenshotOff();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

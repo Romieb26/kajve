@@ -18,6 +18,8 @@ class RealtimeProvider extends ChangeNotifier {
   List<LecturaEntity> lecturas = [];
   EstadisticasEntity? estadisticas;
 
+  int? _loteIdActual;
+
   Timer? _autoRefreshTimer;
 
   late final MonitoringRepositoryImpl _repository = MonitoringRepositoryImpl(
@@ -32,6 +34,19 @@ class RealtimeProvider extends ChangeNotifier {
       GetEstadisticasUseCase(_repository);
 
   Future<void> cargarDatos(int loteId) async {
+    // Si es un lote distinto al que ya estaba cargado, se limpian los
+    // datos antes de esperar la respuesta: si la petición falla, la UI
+    // nunca debe seguir mostrando datos de un lote distinto al que el
+    // usuario está viendo (el provider es un singleton compartido entre
+    // lotes, ver main.dart). Si es el mismo lote (un tick del
+    // auto-refresh de 20s), se dejan los datos anteriores visibles
+    // mientras se espera, para no parpadear a un estado vacío en cada
+    // refresco.
+    if (loteId != _loteIdActual) {
+      lecturas = [];
+      estadisticas = null;
+    }
+
     isLoading = true;
     errorMessage = null;
     notifyListeners();
@@ -51,6 +66,7 @@ class RealtimeProvider extends ChangeNotifier {
     } catch (_) {
       errorMessage = "Ocurrió un error al cargar el monitoreo.";
     } finally {
+      _loteIdActual = loteId;
       isLoading = false;
       notifyListeners();
     }

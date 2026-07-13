@@ -27,10 +27,15 @@ class SplashProvider extends ChangeNotifier {
     Navigator.pushReplacementNamed(context, destino);
   }
 
-  /// Si hay un refresh token guardado, se intenta renovar el access token
-  /// para saltar el login. Solo se fuerza login si el refresh token fue
-  /// rechazado (401): un error de red/servidor no confirma que la sesión
-  /// sea inválida, así que no debe cerrarla por un problema transitorio.
+  /// Los tokens viven solo en memoria (ver [SecureStorage]): si la app
+  /// fue matada, el proceso reinició y no hay refresh token en memoria,
+  /// por lo que este es un arranque en frío y se va directo a login sin
+  /// intentar leer nada persistido. Si el proceso sigue vivo (la app
+  /// solo estuvo en segundo plano), sí hay refresh token y se intenta
+  /// renovar el access token para saltar el login. Solo se fuerza login
+  /// si el refresh token fue rechazado (401): un error de red/servidor
+  /// no confirma que la sesión sea inválida, así que no debe cerrarla
+  /// por un problema transitorio.
   Future<String> _resolverDestino() async {
     final refreshToken = await _secureStorage.getRefreshToken();
     if (refreshToken == null) return AppRoutes.login;
