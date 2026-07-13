@@ -82,15 +82,6 @@ class AppDrawer extends StatelessWidget {
 
           _selectorItem(
             context,
-            icon: Icons.show_chart,
-            title: "Predicciones",
-            route: AppRoutes.prediction,
-            premium: true,
-            esPremium: esPremium,
-          ),
-
-          _selectorItem(
-            context,
             icon: Icons.sensors,
             title: "Tiempo Real",
             route: AppRoutes.realtime,
@@ -104,6 +95,36 @@ class AppDrawer extends StatelessWidget {
             route: AppRoutes.sensors,
           ),
 
+          _selectorItem(
+            context,
+            icon: Icons.warning_amber,
+            title: "Alertas",
+            route: AppRoutes.alerts,
+          ),
+
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Text(
+              "PREMIUM",
+              style: TextStyle(
+                color: AppColors.premium,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                letterSpacing: 1.1,
+              ),
+            ),
+          ),
+
+          _selectorItem(
+            context,
+            icon: Icons.show_chart,
+            title: "Predicciones",
+            route: AppRoutes.prediction,
+            premium: true,
+            esPremium: esPremium,
+          ),
+
           _item(
             context,
             icon: Icons.history,
@@ -111,13 +132,6 @@ class AppDrawer extends StatelessWidget {
             route: AppRoutes.history,
             premium: true,
             esPremium: esPremium,
-          ),
-
-          _selectorItem(
-            context,
-            icon: Icons.warning_amber,
-            title: "Alertas",
-            route: AppRoutes.alerts,
           ),
 
           _item(
@@ -129,14 +143,14 @@ class AppDrawer extends StatelessWidget {
             esPremium: esPremium,
           ),
 
+          const Divider(),
+
           _item(
             context,
             icon: Icons.person,
             title: "Perfil",
             route: AppRoutes.profile,
           ),
-
-          const Divider(),
 
           ListTile(
             leading: const Icon(Icons.logout),
