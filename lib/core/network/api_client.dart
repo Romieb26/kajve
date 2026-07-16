@@ -28,7 +28,11 @@ class ApiFileResponse {
 class ApiClient {
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
-  static const String baseUrl = 'https://api-mobile.dnc-ed-denz.shop';
+  // URL vieja (llamada directa a api-mobile, sin gateway). Para revertir en
+  // caso de falla del gateway el día de la demo: comentar la línea de abajo
+  // y descomentar esta.
+  // static const String baseUrl = 'https://api-mobile.dnc-ed-denz.shop';
+  static const String baseUrl = 'https://gateway.dnc-ed-denz.shop/mobile';
   static const Duration _timeout = Duration(seconds: 10);
 
   final http.Client _client;
