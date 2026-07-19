@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../../../../core/storage/secure_storage.dart';
+import '../../../auth/data/datasources/auth_remote_datasource.dart';
+import '../../../auth/data/repositories/auth_repository_impl.dart';
+import '../../../auth/domain/usecases/logout_usecase.dart';
 import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/entities/perfil_entity.dart';
@@ -27,6 +31,10 @@ class ProfileProvider extends ChangeNotifier {
   late final GetPerfilUseCase _getPerfilUseCase = GetPerfilUseCase(_repository);
   late final UpdatePerfilUseCase _updatePerfilUseCase = UpdatePerfilUseCase(_repository);
   late final ChangePasswordUseCase _changePasswordUseCase = ChangePasswordUseCase(_repository);
+
+  late final LogoutUseCase _logoutUseCase = LogoutUseCase(
+    AuthRepositoryImpl(AuthRemoteDataSourceImpl(ApiClient()), SecureStorage()),
+  );
 
   /// Perfil (GET /perfil)
   PerfilEntity? perfil;
@@ -169,14 +177,18 @@ class ProfileProvider extends ChangeNotifier {
   }
 
   /// Cerrar sesión
-  void cerrarSesion(BuildContext context) {
+  Future<void> cerrarSesion(BuildContext context) async {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Sesión cerrada"),
       ),
     );
 
-    // Más adelante aquí navegaremos al Login.
+    await _logoutUseCase();
+
+    if (context.mounted) {
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
+    }
   }
 
   void _mostrarSnackBar(BuildContext context, String mensaje, Color color) {

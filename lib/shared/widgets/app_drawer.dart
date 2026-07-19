@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/network/api_client.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/storage/secure_storage.dart';
+import '../../features/auth/data/datasources/auth_remote_datasource.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/profile/presentation/providers/profile_provider.dart';
 import 'lote_selector_sheet.dart';
 import 'premium_upsell_sheet.dart';
@@ -155,11 +160,17 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text("Cerrar sesión"),
-            onTap: () {
-              Navigator.pushReplacementNamed(
-                context,
-                AppRoutes.login,
-              );
+            onTap: () async {
+              await LogoutUseCase(
+                AuthRepositoryImpl(AuthRemoteDataSourceImpl(ApiClient()), SecureStorage()),
+              )();
+
+              if (context.mounted) {
+                Navigator.pushReplacementNamed(
+                  context,
+                  AppRoutes.login,
+                );
+              }
             },
           ),
         ],

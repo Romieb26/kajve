@@ -1,44 +1,38 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-/// Almacenamiento seguro de la sesión (tokens y usuario). No usar
-/// SharedPreferences aquí: los tokens deben quedar cifrados en el
-/// almacén seguro del sistema operativo.
+/// Almacenamiento de la sesión (tokens y usuario) SOLO EN MEMORIA.
+///
+/// Los tokens nunca se escriben a disco: se guardan en campos estáticos
+/// que viven mientras el proceso de la app esté vivo (incluido segundo
+/// plano). Si el usuario mata la app, el proceso termina y este estado
+/// se pierde, por lo que al volver a abrirla debe iniciar sesión de
+/// nuevo. Esto es intencional (requisito de seguridad), no un bug.
 class SecureStorage {
-  SecureStorage({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
-
-  final FlutterSecureStorage _storage;
-
-  static const _keyAccessToken = 'access_token';
-  static const _keyRefreshToken = 'refresh_token';
-  static const _keyUserId = 'id_usuario';
+  static String? _accessToken;
+  static String? _refreshToken;
+  static int? _userId;
 
   Future<void> saveSession({
     required String accessToken,
     required String refreshToken,
     required int idUsuario,
   }) async {
-    await _storage.write(key: _keyAccessToken, value: accessToken);
-    await _storage.write(key: _keyRefreshToken, value: refreshToken);
-    await _storage.write(key: _keyUserId, value: idUsuario.toString());
+    _accessToken = accessToken;
+    _refreshToken = refreshToken;
+    _userId = idUsuario;
   }
 
-  Future<void> saveAccessToken(String accessToken) {
-    return _storage.write(key: _keyAccessToken, value: accessToken);
+  Future<void> saveAccessToken(String accessToken) async {
+    _accessToken = accessToken;
   }
 
-  Future<String?> getAccessToken() => _storage.read(key: _keyAccessToken);
+  Future<String?> getAccessToken() async => _accessToken;
 
-  Future<String?> getRefreshToken() => _storage.read(key: _keyRefreshToken);
+  Future<String?> getRefreshToken() async => _refreshToken;
 
-  Future<int?> getUserId() async {
-    final value = await _storage.read(key: _keyUserId);
-    return value != null ? int.tryParse(value) : null;
-  }
+  Future<int?> getUserId() async => _userId;
 
   Future<void> clear() async {
-    await _storage.delete(key: _keyAccessToken);
-    await _storage.delete(key: _keyRefreshToken);
-    await _storage.delete(key: _keyUserId);
+    _accessToken = null;
+    _refreshToken = null;
+    _userId = null;
   }
 }
