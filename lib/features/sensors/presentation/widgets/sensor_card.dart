@@ -1,6 +1,8 @@
+//libs/features/sensors/presentation/widgets/sensor_card.dart
 import 'package:flutter/material.dart';
 
 import '../../data/models/sensor_model.dart';
+import '../pages/sensor_detail_page.dart';
 
 class SensorCard extends StatelessWidget {
   final SensorModel sensor;
@@ -17,63 +19,74 @@ class SensorCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 15),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: color.withValues(alpha: 0.15),
-              child: Icon(Icons.sensors, color: color),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SensorDetailPage(sensor: sensor),
             ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
 
-            const SizedBox(width: 15),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  Text(
-                    sensor.nombre,
-                    style: theme.textTheme.titleMedium,
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  Text(
-                    "Tipo: ${sensor.tipo}",
-                    style: theme.textTheme.bodySmall,
-                  ),
-
-                  Text(
-                    "Código: ${sensor.codigo}",
-                    style: theme.textTheme.bodySmall,
-                  ),
-
-                  Text(
-                    "Lote: ${sensor.lote}",
-                    style: theme.textTheme.bodySmall,
-                  ),
-
-                ],
+              CircleAvatar(
+                radius: 26,
+                backgroundColor: color.withValues(alpha: 0.15),
+                child: Icon(Icons.sensors, color: color),
               ),
-            ),
 
-            const SizedBox(width: 10),
+              const SizedBox(width: 15),
 
-            Chip(
-              label: Text(sensor.estado),
-              backgroundColor: color.withValues(alpha: 0.18),
-              labelStyle: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w600,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    Text(
+                      sensor.nombre,
+                      style: theme.textTheme.titleMedium,
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      "Tipo: ${sensor.tipo}",
+                      style: theme.textTheme.bodySmall,
+                    ),
+
+                    Text(
+                      "Código: ${sensor.codigo}",
+                      style: theme.textTheme.bodySmall,
+                    ),
+
+                    Text(
+                      "Lote: ${sensor.lote}",
+                      style: theme.textTheme.bodySmall,
+                    ),
+
+                  ],
+                ),
               ),
-              side: BorderSide.none,
-            ),
 
-          ],
+              const SizedBox(width: 10),
+
+              Chip(
+                label: Text(sensor.estado),
+                backgroundColor: color.withValues(alpha: 0.18),
+                labelStyle: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
+                side: BorderSide.none,
+              ),
+
+            ],
+          ),
         ),
       ),
     );

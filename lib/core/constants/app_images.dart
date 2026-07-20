@@ -1,3 +1,4 @@
+//lib/core/constants/app_images.dart
 class AppImages {
   AppImages._();
 

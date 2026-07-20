@@ -1,3 +1,4 @@
+//lib/features/monitoring/data/models/lectura_model.dart
 import '../../domain/entities/lectura_entity.dart';
 
 class LecturaModel extends LecturaEntity {

@@ -1,3 +1,4 @@
+//lib/features/monitoring/presentation/screens/Iot_detail_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -6,10 +7,9 @@ import '../../../../shared/widgets/app_drawer.dart';
 import '../providers/monitoring_provider.dart';
 
 import '../widgets/info_card.dart';
-import '../widgets/drying_status_card.dart';
 import '../widgets/environment_card.dart';
-import '../widgets/qr_card.dart';
 import '../widgets/history_button.dart';
+import '../widgets/resumen_lote_card.dart';
 
 class LotDetailPage extends StatefulWidget {
   const LotDetailPage({super.key});
@@ -55,12 +55,18 @@ class _LotDetailPageState extends State<LotDetailPage> {
             )
           : Consumer<MonitoringProvider>(
               builder: (context, provider, child) {
-                if (provider.isLoading && provider.estadisticas == null) {
+                // El resumen (ws-gateway/Postgres) no depende de
+                // /lotes/{id}/estadisticas (api-mobile): si ese endpoint
+                // sigue caído pero el resumen sí cargó, se muestra igual
+                // en vez de bloquear toda la pantalla con un error.
+                final hayAlgoQueMostrar =
+                    provider.estadisticas != null || provider.resumen != null;
+
+                if (provider.isLoading && !hayAlgoQueMostrar) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (provider.errorMessage != null &&
-                    provider.estadisticas == null) {
+                if (provider.errorMessage != null && !hayAlgoQueMostrar) {
                   return _MensajeCentrado(
                     icono: Icons.cloud_off,
                     mensaje: provider.errorMessage!,
@@ -70,27 +76,6 @@ class _LotDetailPageState extends State<LotDetailPage> {
 
                 final estadisticas = provider.estadisticas;
 
-                if (estadisticas == null) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                final alertasCriticas = estadisticas.alertasCriticas;
-                final alertasSinAtender = estadisticas.alertasSinAtender;
-
-                final String estado;
-                final Color color;
-
-                if (alertasCriticas > 0) {
-                  estado = "Riesgo";
-                  color = Colors.red;
-                } else if (alertasSinAtender > 0) {
-                  estado = "En proceso";
-                  color = Colors.orange;
-                } else {
-                  estado = "Óptimo";
-                  color = Colors.green;
-                }
-
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
 
@@ -98,24 +83,25 @@ class _LotDetailPageState extends State<LotDetailPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
 
-                      /// Información general
-                      InfoCard(estadisticas: estadisticas),
+                      /// Resumen de todo el lote (siempre se intenta
+                      /// mostrar, incluso si lo de abajo no cargó).
+                      ResumenLoteCard(resumen: provider.resumen),
 
                       const SizedBox(height: 20),
 
-                      /// Estado del secado
-                      DryingStatusCard(
-                        estado: estado,
-                        color: color,
-                      ),
+                      if (estadisticas != null) ...[
+                        /// Información general
+                        InfoCard(estadisticas: estadisticas),
 
-                      const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                      /// Condiciones ambientales
-                      EnvironmentCard(estadisticas: estadisticas),
+                        /// Condiciones ambientales
+                        EnvironmentCard(estadisticas: estadisticas),
+
+                        const SizedBox(height: 20),
+                      ],
 
                       if (provider.lecturas.isEmpty) ...[
-                        const SizedBox(height: 20),
                         const Card(
                           child: Padding(
                             padding: EdgeInsets.all(20),
@@ -126,14 +112,8 @@ class _LotDetailPageState extends State<LotDetailPage> {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 20),
                       ],
-
-                      const SizedBox(height: 20),
-
-                      /// Código QR
-                      const QrCard(),
-
-                      const SizedBox(height: 20),
 
                       /// Historial
                       const HistoryButton(),

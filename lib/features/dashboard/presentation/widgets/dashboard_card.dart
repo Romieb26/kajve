@@ -24,25 +24,29 @@ class DashboardCard extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            vertical: 25,
+            vertical: 14,
             horizontal: 15,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 icono,
-                size: 42,
+                size: 36,
                 color: Colors.brown,
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
 
               Text(
                 titulo,
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
+                  fontSize: 13,
                 ),
               ),
             ],

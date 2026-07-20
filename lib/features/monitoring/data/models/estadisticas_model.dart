@@ -1,3 +1,4 @@
+//lib/features/monitoring/data/models/estadisticas_model.dart
 import '../../domain/entities/estadisticas_entity.dart';
 
 class EstadisticasModel extends EstadisticasEntity {

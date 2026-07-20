@@ -1,3 +1,4 @@
+//lib/core/constants/app_strings.dart
 class AppStrings {
   AppStrings._();
 

@@ -1,3 +1,4 @@
+//lib/features/monitoring/presentation/widgets/drying_status_card.dart
 import 'package:flutter/material.dart';
 
 class DryingStatusCard extends StatelessWidget {

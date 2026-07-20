@@ -1,3 +1,4 @@
+//lib/core/storage/secure_storage.dart
 /// Almacenamiento de la sesión (tokens y usuario) SOLO EN MEMORIA.
 ///
 /// Los tokens nunca se escriben a disco: se guardan en campos estáticos

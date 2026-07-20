@@ -1,3 +1,4 @@
+//libs/features/realtime/presentation/widgets/sensor_card.dart
 import 'package:flutter/material.dart';
 
 class SensorCard extends StatelessWidget {

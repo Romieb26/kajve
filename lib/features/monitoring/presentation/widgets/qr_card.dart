@@ -1,3 +1,4 @@
+//lib/features/monitoring/presentation/widgets/qr_card.dart
 import 'package:flutter/material.dart';
 
 class QrCard extends StatelessWidget {

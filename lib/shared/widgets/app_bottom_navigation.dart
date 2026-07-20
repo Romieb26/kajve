@@ -1,3 +1,4 @@
+//lib/shared/widgets/app_bottom_navigation.dart
 import 'package:flutter/material.dart';
 
 class AppBottomNavigation extends StatelessWidget {

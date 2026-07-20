@@ -1,3 +1,4 @@
+//libs/features/sensors/presentation/widgets/search_sensor.dart
 import 'package:flutter/material.dart';
 
 import '../providers/sensor_provider.dart';

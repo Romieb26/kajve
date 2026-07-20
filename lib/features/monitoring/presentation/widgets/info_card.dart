@@ -1,3 +1,4 @@
+//lib/features/monitoring/presentation/widgets/info_card.dart
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/estadisticas_entity.dart';

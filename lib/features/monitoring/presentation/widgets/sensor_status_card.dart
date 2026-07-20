@@ -1,3 +1,4 @@
+//lib/features/monitoring/presentation/widgets/sensor_status_card.dart
 import 'package:flutter/material.dart';
 
 class SensorStatusCard extends StatelessWidget {

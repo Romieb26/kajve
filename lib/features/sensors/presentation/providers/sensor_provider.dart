@@ -1,5 +1,8 @@
+//libs/features/sensors/presentation/providers/sensor_provider.dart
 import 'package:flutter/material.dart';
 
+import '../../../../core/network/api_client.dart';
+import '../../data/datasources/sensor_status_remote_datasource.dart';
 import '../../data/models/sensor_model.dart';
 
 class SensorProvider extends ChangeNotifier {
@@ -16,52 +19,59 @@ class SensorProvider extends ChangeNotifier {
 
   bool conectado = true;
 
-  final List<SensorModel> _todos = [
+  bool isLoading = false;
+  String? errorMessage;
 
-    SensorModel(
-      nombre: "Sensor 01",
-      tipo: "Temperatura",
-      codigo: "TMP001",
-      lote: "Lote Norte",
-      conectado: true,
-    ),
+  final SensorStatusRemoteDataSource _dataSource =
+      SensorStatusRemoteDataSource();
 
-    SensorModel(
-      nombre: "Sensor 02",
-      tipo: "Humedad",
-      codigo: "HUM002",
-      lote: "Lote Sur",
-      conectado: false,
-    ),
-
-    SensorModel(
-      nombre: "Sensor 03",
-      tipo: "Temperatura",
-      codigo: "TMP003",
-      lote: "Lote Centro",
-      conectado: true,
-    ),
-  ];
+  /// Sensores tal como los devolvió el backend la última vez (sin
+  /// filtrar). `sensores` es lo que la UI realmente pinta, ya filtrado
+  /// por el buscador.
+  List<SensorModel> _todos = [];
 
   List<SensorModel> sensores = [];
 
   SensorProvider() {
-    sensores = List.from(_todos);
+    cargarSensores();
+  }
+
+  /// Trae el estado real de los sensores desde
+  /// `GET /sensores/estado` de ws-gateway: "conectado" ya no es un valor
+  /// fijo, se calcula allá según si el sensor mandó una lectura reciente.
+  Future<void> cargarSensores() async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      _todos = await _dataSource.getEstadoSensores();
+      sensores = _filtrarPorTexto(searchController.text);
+    } on ApiException catch (e) {
+      errorMessage = e.statusCode == 401
+          ? "Tu sesión expiró. Inicia sesión de nuevo."
+          : "No se pudo conectar con el servidor de sensores.";
+    } catch (_) {
+      errorMessage = "Ocurrió un error al cargar los sensores.";
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   void buscar(String texto) {
-
-    if (texto.isEmpty) {
-      sensores = List.from(_todos);
-    } else {
-      sensores = _todos.where((sensor) {
-        return sensor.nombre
-            .toLowerCase()
-            .contains(texto.toLowerCase());
-      }).toList();
-    }
-
+    sensores = _filtrarPorTexto(texto);
     notifyListeners();
+  }
+
+  List<SensorModel> _filtrarPorTexto(String texto) {
+    if (texto.isEmpty) return List.from(_todos);
+
+    final buscado = texto.toLowerCase();
+    return _todos.where((sensor) {
+      return sensor.nombre.toLowerCase().contains(buscado) ||
+          sensor.lote.toLowerCase().contains(buscado);
+    }).toList();
   }
 
   void cambiarEstado(bool value) {
@@ -69,6 +79,9 @@ class SensorProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Registro manual de un sensor: todavía no existe un endpoint de alta
+  // de sensores, así que esto solo lo agrega a la lista en memoria (se
+  // pierde al recargar desde el backend con cargarSensores()).
   void guardarSensor() {
 
     _todos.add(

@@ -1,3 +1,4 @@
+//libs/features/sensors/presentation/widgets/sensor_info_card.dart
 import 'package:flutter/material.dart';
 
 import '../../data/models/sensor_model.dart';

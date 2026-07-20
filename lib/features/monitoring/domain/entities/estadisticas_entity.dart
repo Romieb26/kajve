@@ -1,3 +1,4 @@
+//lib/features/monitoring/domain/entities/estadisticas_entity.dart
 class EstadisticasEntity {
   final double temperaturaPromedio;
   final double temperaturaMin;

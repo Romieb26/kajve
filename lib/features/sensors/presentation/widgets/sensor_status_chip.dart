@@ -1,3 +1,4 @@
+//libs/features/sensors/presentation/widgets/sensor_status_chip.dart
 import 'package:flutter/material.dart';
 
 class SensorStatusChip extends StatelessWidget {

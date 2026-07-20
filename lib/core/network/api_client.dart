@@ -1,3 +1,4 @@
+//lib/core/network/api_client.dart
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -137,19 +138,34 @@ class ApiClient {
     };
   }
 
+  // Reintenta una vez las fallas a nivel de red (timeout/sin conexión)
+  // antes de darlas por definitivas. En la práctica, el primer request
+  // después de que la app arranca (o tras cambiar de red) suele fallar por
+  // un DNS/TLS "frío" contra el dominio del gateway, y el segundo intento
+  // ya conecta sin problema — antes esto obligaba al usuario a tocar
+  // "Reintentar" a mano; ahora se reintenta solo antes de mostrar error.
   Future<dynamic> _send(
-    Future<http.Response> Function() request,
-  ) async {
+    Future<http.Response> Function() request, {
+    int reintentosRestantes = 1,
+  }) async {
     try {
       final response = await request();
       return _handleResponse(response);
     } on ApiException {
       rethrow;
     } on TimeoutException {
+      if (reintentosRestantes > 0) {
+        await Future.delayed(const Duration(milliseconds: 600));
+        return _send(request, reintentosRestantes: reintentosRestantes - 1);
+      }
       throw const ApiException(
         'La conexión tardó demasiado. Intenta de nuevo.',
       );
     } on SocketException {
+      if (reintentosRestantes > 0) {
+        await Future.delayed(const Duration(milliseconds: 600));
+        return _send(request, reintentosRestantes: reintentosRestantes - 1);
+      }
       throw const ApiException(
         'No se pudo conectar. Revisa tu conexión a internet.',
       );
@@ -180,4 +196,25 @@ class ApiClient {
       statusCode: response.statusCode,
     );
   }
+}
+
+/// Traduce un [ApiException] a un mensaje para mostrar al usuario,
+/// distinguiendo "no hay conexión" (statusCode null: viene de un
+/// TimeoutException/SocketException, nunca hubo respuesta del servidor)
+/// de "el backend respondió con un error" (statusCode >= 500: sí hubo
+/// respuesta, pero el servidor falló, ej. una consulta SQL rota). Antes
+/// ambos casos mostraban el mismo "No se pudo conectar", lo que hacía ver
+/// como problema de red algo que en realidad era del backend.
+String mensajeAmigable(ApiException e) {
+  if (e.statusCode == 401) {
+    return "Tu sesión expiró. Inicia sesión de nuevo.";
+  }
+  if (e.statusCode == null) {
+    return "No se pudo conectar. Revisa tu conexión a internet.";
+  }
+  if (e.statusCode! >= 500) {
+    return "El servidor respondió con un error (${e.statusCode}). "
+        "Es un problema del backend, no de tu conexión — repórtalo.";
+  }
+  return e.message;
 }

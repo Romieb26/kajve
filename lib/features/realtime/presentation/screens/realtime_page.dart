@@ -1,3 +1,4 @@
+//libs/features/realtime/presentation/screens/realtime_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,13 +18,31 @@ class RealtimePage extends StatefulWidget {
   State<RealtimePage> createState() => _RealtimePageState();
 }
 
-class _RealtimePageState extends State<RealtimePage> {
+class _RealtimePageState extends State<RealtimePage>
+    with WidgetsBindingObserver {
   int? _loteId;
   bool _inicializado = false;
+
+  // Referencia al provider guardada mientras el context todavía está
+  // activo (ver didChangeDependencies), para poder usarla de forma segura
+  // en dispose(). Llamar context.read<T>() DENTRO de dispose() puede
+  // lanzar "Looking up a deactivated widget's ancestor is unsafe": para
+  // ese momento el árbol de widgets ya puede estar desactivado (ej. al
+  // salir de la pantalla), y context.read internamente hace una búsqueda
+  // en el árbol de ancestros que ya no es válida.
+  RealtimeProvider? _provider;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    _provider = context.read<RealtimeProvider>();
 
     if (_inicializado) return;
     _inicializado = true;
@@ -34,19 +53,37 @@ class _RealtimePageState extends State<RealtimePage> {
     final loteId = _loteId;
     if (loteId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final provider = context.read<RealtimeProvider>();
-        provider.cargarDatos(loteId);
-        provider.iniciarAutoRefresh(loteId);
+        _provider?.iniciarTiempoReal(loteId);
       });
+    }
+  }
+
+  // El sistema operativo mata el WebSocket cuando la app pasa a segundo
+  // plano (ahorro de batería / doze mode en Android, suspensión en iOS).
+  // Sin esto, al volver a abrir la app la pantalla se quedaba con el
+  // último estado ("no hay conexión") para siempre, porque nada disparaba
+  // una reconexión — solo initState/didChangeDependencies, que no
+  // vuelven a correr al pasar de background a foreground.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final loteId = _loteId;
+      if (loteId != null) {
+        _provider?.iniciarTiempoReal(loteId);
+      }
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     // El provider vive a nivel de app (registrado una sola vez en
-    // main.dart), así que si no se detiene aquí el auto-refresco
-    // seguiría corriendo en segundo plano tras salir de la pantalla.
-    context.read<RealtimeProvider>().detenerAutoRefresh();
+    // main.dart), así que si no se detiene aquí el WebSocket y el
+    // refresco de estadísticas seguirían corriendo en segundo plano tras
+    // salir de la pantalla. Se usa la referencia guardada en
+    // didChangeDependencies, no un context.read nuevo (ver comentario del
+    // campo _provider).
+    _provider?.detenerTiempoReal();
     super.dispose();
   }
 
@@ -69,51 +106,96 @@ class _RealtimePageState extends State<RealtimePage> {
             )
           : Consumer<RealtimeProvider>(
               builder: (context, provider, child) {
-                if (provider.isLoading && provider.estadisticas == null) {
+                // El WebSocket de ws-gateway (histórico + lecturas en vivo)
+                // no depende de /lotes/{id}/estadisticas: son dos fuentes
+                // distintas. Antes, si /estadisticas fallaba (ej. la API
+                // de api-mobile caída o su consulta rota), la pantalla
+                // completa se quedaba bloqueada en un error aunque el
+                // WebSocket sí estuviera entregando datos con normalidad.
+                // Ahora solo se bloquea si NO hay nada que mostrar todavía
+                // (ni estadísticas ni datos en vivo).
+                final hayAlgoQueMostrar = provider.estadisticas != null ||
+                    provider.serieTiempoReal.isNotEmpty;
+
+                if (provider.isLoading && !hayAlgoQueMostrar) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (provider.errorMessage != null &&
-                    provider.estadisticas == null) {
+                if (provider.errorMessage != null && !hayAlgoQueMostrar) {
                   return _MensajeCentrado(
                     icono: Icons.cloud_off,
                     mensaje: provider.errorMessage!,
-                    onReintentar: () => provider.cargarDatos(loteId),
+                    onReintentar: () => provider.iniciarTiempoReal(loteId),
                   );
                 }
 
-                final ultimaLectura =
-                    provider.lecturas.isNotEmpty ? provider.lecturas.last : null;
+                final ultimaLectura = provider.serieTiempoReal.isNotEmpty
+                    ? provider.serieTiempoReal.last
+                    : null;
 
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+                // Pull-to-refresh: si el WebSocket se cae (ej. el ESP32 se
+                // desconectó, o la red falló un momento), antes la única
+                // forma de reconectar era salir de la pantalla y volver a
+                // entrar. Deslizar hacia abajo desde arriba del todo ahora
+                // reinicia la conexión sin salir de la vista.
+                return RefreshIndicator(
+                  onRefresh: () => provider.iniciarTiempoReal(loteId),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
 
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
 
-                      RealtimeHeader(
-                        loteId: loteId,
-                        estadisticas: provider.estadisticas,
-                      ),
+                        RealtimeHeader(
+                          loteId: loteId,
+                          ultimaLectura: ultimaLectura?.timestamp,
+                        ),
 
-                      const SizedBox(height: 20),
+                        const SizedBox(height: 8),
 
-                      SensorGrid(ultimaLectura: ultimaLectura),
+                        _EstadoConexion(conectado: provider.wsConectado),
 
-                      const SizedBox(height: 20),
+                        const SizedBox(height: 12),
 
-                      ChartCard(lecturas: provider.lecturas),
+                        SensorGrid(ultimaLectura: ultimaLectura),
 
-                      const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                      EnvironmentCard(estadisticas: provider.estadisticas),
+                        ChartCard(lecturas: provider.serieTiempoReal),
 
-                    ],
+                        const SizedBox(height: 20),
+
+                        EnvironmentCard(estadisticas: provider.estadisticas),
+
+                      ],
+                    ),
                   ),
                 );
               },
             ),
+    );
+  }
+}
+
+class _EstadoConexion extends StatelessWidget {
+  final bool conectado;
+
+  const _EstadoConexion({required this.conectado});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = conectado ? Colors.green : Colors.grey;
+    final texto = conectado ? "En vivo" : "Conectando...";
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.circle, size: 10, color: color),
+        const SizedBox(width: 6),
+        Text(texto, style: TextStyle(color: color, fontSize: 12)),
+      ],
     );
   }
 }
