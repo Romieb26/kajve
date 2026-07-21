@@ -12,15 +12,10 @@ import '../models/sensor_model.dart';
 /// api-mobile) — por eso no usa el ApiClient normal, que apunta al
 /// dominio del gateway de api-mobile.
 class SensorStatusRemoteDataSource {
-  // TODO: mismo host/puerto que RealtimeWsDataSource (features/realtime).
-  // Mientras ws-gateway no esté desplegado detrás de un dominio público,
-  // apunta esto a la IP local de la PC donde corre `go run .` (revisa con
-  // `ipconfig` en Windows) — el celular debe estar en la misma red Wi-Fi
-  // que la PC. Cuando ya esté desplegado en producción, cambia
-  // _host/_port/_useTls por el dominio real y pon _useTls en true.
-  static const String _host = '192.168.1.90';
-  static const int _port = 8002;
-  static const bool _useTls = false;
+  // Mismo host que RealtimeWsDataSource (features/realtime): ws-gateway
+  // desplegado en el servidor, detrás de TLS.
+  static const String _host = 'ws.dnc-ed-denz.shop';
+  static const bool _useTls = true;
 
   final http.Client _client;
   final SecureStorage _secureStorage;
@@ -41,7 +36,7 @@ class SensorStatusRemoteDataSource {
     }
 
     final scheme = _useTls ? 'https' : 'http';
-    final uri = Uri.parse('$scheme://$_host:$_port/sensores/estado');
+    final uri = Uri.parse('$scheme://$_host/sensores/estado');
 
     http.Response response;
     try {

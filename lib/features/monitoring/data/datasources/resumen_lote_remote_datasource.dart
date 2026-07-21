@@ -11,13 +11,10 @@ import '../models/resumen_lote_model.dart';
 /// api-mobile) — igual que SensorStatusRemoteDataSource, por eso no usa el
 /// ApiClient normal, que apunta al dominio del gateway de api-mobile.
 class ResumenLoteRemoteDataSource {
-  // TODO: mismo host/puerto que RealtimeWsDataSource/SensorStatusRemote-
-  // DataSource. Mientras ws-gateway no esté desplegado detrás de un
-  // dominio público, apunta esto a la IP local de la PC donde corre
-  // `go run .` — el celular debe estar en la misma red Wi-Fi que la PC.
-  static const String _host = '192.168.1.90';
-  static const int _port = 8002;
-  static const bool _useTls = false;
+  // Mismo host que RealtimeWsDataSource/SensorStatusRemoteDataSource:
+  // ws-gateway desplegado en el servidor, detrás de TLS.
+  static const String _host = 'ws.dnc-ed-denz.shop';
+  static const bool _useTls = true;
 
   final http.Client _client;
   final SecureStorage _secureStorage;
@@ -38,7 +35,7 @@ class ResumenLoteRemoteDataSource {
     }
 
     final scheme = _useTls ? 'https' : 'http';
-    final uri = Uri.parse('$scheme://$_host:$_port/lotes/$loteId/resumen');
+    final uri = Uri.parse('$scheme://$_host/lotes/$loteId/resumen');
 
     http.Response response;
     try {
