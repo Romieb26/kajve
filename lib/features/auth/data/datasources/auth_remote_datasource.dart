@@ -37,11 +37,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     try {
       return AuthResponseModel.fromJson(json);
-    } catch (e, st) {
-      // TODO(debug): quitar una vez identificado el campo que causa el crash.
+    } catch (e) {
       debugPrint('LOGIN PARSE ERROR: $e');
-      debugPrint('LOGIN RAW JSON: $json');
-      debugPrint('$st');
       rethrow;
     }
   }
