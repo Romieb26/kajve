@@ -197,7 +197,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 if (prediccion != null)
                   RecentPredictionCard(
                     lote: prediccion.nombreLote,
-                    estado: prediccion.calidadEstimada,
+                    estado: prediccion.calidadEstimada ?? "No disponible",
                     fecha: _formatFecha(prediccion.fechaPrediccion),
                     onVer: () {
                       if (!esPremium) {

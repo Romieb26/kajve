@@ -3,8 +3,8 @@
 class UltimaPrediccionEntity {
   final int idLote;
   final String nombreLote;
-  final double tiempoEstimadoHoras;
-  final String calidadEstimada;
+  final double? tiempoEstimadoHoras;
+  final String? calidadEstimada;
   final DateTime fechaPrediccion;
 
   const UltimaPrediccionEntity({

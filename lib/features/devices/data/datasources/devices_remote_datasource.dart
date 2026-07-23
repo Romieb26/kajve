@@ -29,10 +29,10 @@ class DevicesRemoteDataSourceImpl implements DevicesRemoteDataSource {
   Future<void> registrarDispositivo(String fcmToken) async {
     final token = await _requireToken();
 
-    // TODO: pendiente confirmar ruta final (gateway aún no enruta hacia microservicioML)
     await apiClient.post(
       '/dispositivos/registrar',
-      body: {'fcm_token': fcmToken},
+      baseUrlOverride: ApiClient.mlBaseUrl,
+      body: {'fcm_token': fcmToken, 'plataforma': 'android'},
       token: token,
     );
   }

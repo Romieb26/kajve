@@ -34,6 +34,7 @@ class ApiClient {
   // y descomentar esta.
   // static const String baseUrl = 'https://api-mobile.dnc-ed-denz.shop';
   static const String baseUrl = 'https://gateway.dnc-ed-denz.shop/mobile';
+  static const String mlBaseUrl = 'https://gateway.dnc-ed-denz.shop/ml/api/v1';
   static const Duration _timeout = Duration(seconds: 10);
 
   final http.Client _client;
@@ -62,11 +63,12 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
     String? token,
+    String? baseUrlOverride,
   }) async {
     final result = await _send(
       () => _client
           .post(
-            Uri.parse('$baseUrl$path'),
+            Uri.parse('${baseUrlOverride ?? baseUrl}$path'),
             headers: _headers(token),
             body: jsonEncode(body ?? {}),
           )

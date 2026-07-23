@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/storage/secure_storage.dart';
+import '../../../../core/messaging/fcm_service.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/usuario_entity.dart';
@@ -67,6 +68,8 @@ class AuthProvider extends ChangeNotifier {
         refreshToken: session.refreshToken,
         idUsuario: session.usuario.id,
       );
+
+      await FcmService().registrarTokenPendienteSiExiste();
 
       usuario = session.usuario;
 

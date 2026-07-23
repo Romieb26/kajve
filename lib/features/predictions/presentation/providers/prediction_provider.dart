@@ -66,10 +66,12 @@ class PredictionProvider extends ChangeNotifier {
         );
       }
     } on ApiException catch (e) {
+      debugPrint('Error real predicciones: $e (statusCode: ${e.statusCode})');
       errorMessage = e.statusCode == 401
           ? "Tu sesión expiró. Inicia sesión de nuevo."
           : "No se pudo conectar. Intenta de nuevo";
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Error real predicciones (no-ApiException): $e');
       errorMessage = "Ocurrió un error al cargar las predicciones.";
     } finally {
       isLoading = false;
