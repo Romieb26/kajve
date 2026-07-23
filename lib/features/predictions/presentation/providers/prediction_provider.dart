@@ -16,8 +16,6 @@ class PredictionProvider extends ChangeNotifier {
   List<PrediccionEntity> predicciones = [];
   List<RecomendacionEntity> recomendaciones = [];
 
-  bool _confianzaLogueada = false;
-
   late final PredictionsRepositoryImpl _repository =
       PredictionsRepositoryImpl(
         PredictionsRemoteDataSourceImpl(ApiClient(), SecureStorage()),
@@ -40,31 +38,15 @@ class PredictionProvider extends ChangeNotifier {
         _getRecomendacionesUseCase(loteId),
       ]);
 
+      // Confirmado (ya no es un TODO abierto):
+      // 1) "confianza" viene del backend 0-100, no como fracción -- ver
+      //    app/services/predictor.py del microservicio de ML.
+      // 2) el array viene en orden DESCENDENTE por fecha (Go:
+      //    prediccion_repository.go, ORDER BY fecha_prediccion DESC), así
+      //    que el elemento más reciente es predicciones.first, no
+      //    predicciones.last -- ver prediction_page.dart.
       predicciones = resultados[0] as List<PrediccionEntity>;
       recomendaciones = resultados[1] as List<RecomendacionEntity>;
-
-      // TODO: quitar este print de diagnóstico en cuanto confirmemos:
-      // 1) si "confianza" viene del backend como fracción (0-1) o ya
-      //    como porcentaje (0-100).
-      // 2) el orden real del array (hoy se asume ascendente y se usa
-      //    predicciones.last como "la más reciente" en el provider y
-      //    en prediction_page.dart) — comparando first vs last se ve
-      //    cuál fecha es cronológicamente más nueva.
-      if (!_confianzaLogueada && predicciones.isNotEmpty) {
-        _confianzaLogueada = true;
-        debugPrint(
-          'PredictionProvider: confianza cruda de la predicción más '
-          'reciente = ${predicciones.last.confianza}',
-        );
-        debugPrint(
-          'PredictionProvider: fechaPrediccion primer elemento del '
-          'array = ${predicciones.first.fechaPrediccion}',
-        );
-        debugPrint(
-          'PredictionProvider: fechaPrediccion último elemento del '
-          'array = ${predicciones.last.fechaPrediccion}',
-        );
-      }
     } on ApiException catch (e) {
       debugPrint('Error real predicciones: $e (statusCode: ${e.statusCode})');
       errorMessage = e.statusCode == 401

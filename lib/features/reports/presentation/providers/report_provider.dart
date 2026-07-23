@@ -11,8 +11,10 @@ import '../../../lots/presentation/providers/lot_provider.dart';
 import '../../data/datasources/reports_remote_datasource.dart';
 import '../../data/repositories/reports_repository_impl.dart';
 import '../../domain/entities/reporte_entity.dart';
+import '../../domain/entities/reporte_narrativo_entity.dart';
 import '../../domain/usecases/descargar_reporte_usecase.dart';
 import '../../domain/usecases/get_reportes_usecase.dart';
+import '../../domain/usecases/obtener_reporte_narrativo_usecase.dart';
 import '../../domain/usecases/solicitar_reporte_usecase.dart';
 
 class ReportProvider extends ChangeNotifier {
@@ -66,6 +68,41 @@ class ReportProvider extends ChangeNotifier {
 
   late final DescargarReporteUseCase _descargarReporteUseCase =
       DescargarReporteUseCase(_repository);
+
+  late final ObtenerReporteNarrativoUseCase _obtenerReporteNarrativoUseCase =
+      ObtenerReporteNarrativoUseCase(_repository);
+
+  /// Reporte NLG (texto en lenguaje natural, generado al momento) del lote
+  /// seleccionado en el formulario -- distinto del PDF/Excel de arriba.
+  bool cargandoNarrativo = false;
+  String? errorNarrativo;
+  ReporteNarrativoEntity? reporteNarrativo;
+
+  Future<void> cargarReporteNarrativo(BuildContext context) async {
+    final loteId = loteIdSeleccionado;
+    if (loteId == null) {
+      _mostrarSnackBar(context, "Selecciona un lote.", Colors.orange);
+      return;
+    }
+
+    cargandoNarrativo = true;
+    errorNarrativo = null;
+    reporteNarrativo = null;
+    notifyListeners();
+
+    try {
+      reporteNarrativo = await _obtenerReporteNarrativoUseCase(loteId);
+    } on ApiException catch (e) {
+      errorNarrativo = e.statusCode == 401
+          ? "Tu sesión expiró. Inicia sesión de nuevo."
+          : e.message;
+    } catch (_) {
+      errorNarrativo = "Ocurrió un error al generar el reporte narrativo.";
+    } finally {
+      cargandoNarrativo = false;
+      notifyListeners();
+    }
+  }
 
   Future<void> cargarReportes() async {
     isLoading = true;

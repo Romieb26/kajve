@@ -11,6 +11,13 @@ class EnvironmentCard extends StatelessWidget {
     required this.estadisticas,
   });
 
+  // Antes esto era un ListTile con leading + title + trailing: con un
+  // CircleAvatar ancho y un título largo ("Temperatura (min / prom / max)")
+  // compitiendo por el mismo ancho de fila que el valor ("22.5 / 25.0 / 30.1
+  // °C"), ListTile le dejaba al title un ancho casi nulo -- el texto se
+  // envolvía letra por letra (vertical). Ahora todo va en una Column: el
+  // título arriba, el valor abajo, cada uno usando el ancho completo de la
+  // tarjeta.
   Widget _sensorTile({
     required IconData icon,
     required String titulo,
@@ -19,21 +26,35 @@ class EnvironmentCard extends StatelessWidget {
   }) {
     return Card(
       elevation: 2,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.15),
-          child: Icon(
-            icon,
-            color: color,
-          ),
-        ),
-        title: Text(titulo),
-        trailing: Text(
-          valor,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: color.withValues(alpha: 0.15),
+              child: Icon(icon, color: color),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    titulo,
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    valor,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -73,6 +94,8 @@ class EnvironmentCard extends StatelessWidget {
                   "${estadisticas.temperaturaMax.toStringAsFixed(1)} °C",
               color: Colors.red,
             ),
+
+            const SizedBox(height: 10),
 
             _sensorTile(
               icon: Icons.water_drop,

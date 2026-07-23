@@ -194,6 +194,19 @@ class _SensorDetailPageState extends State<SensorDetailPage>
   /// OFFLINE cuando el valor se queda pegado exactamente en 0 durante
   /// varias lecturas seguidas.
   bool _estaActiva(VariableConfig variable) {
+    // Fuente de verdad del backend: "conectado" ya se calcula del lado del
+    // servidor según si el sensor mandó una lectura reciente (mismo campo
+    // que usa la lista y SensorInfoCard arriba en esta misma pantalla). Si
+    // el backend dice que el sensor está desconectado, ninguna variable
+    // puede aparecer "ON" -- sin este corte, el heurístico de abajo podía
+    // decir "activo" justo después de abrir la pantalla, porque el replay
+    // del histórico del WebSocket (mensaje.esHistorial) marca
+    // _ultimaActualizacion = DateTime.now() aunque esos datos sean viejos,
+    // dejando _datosDesactualizados en false por los primeros 15s aunque
+    // el sensor físico llevara horas apagado. Eso era justo la
+    // contradicción reportada: la lista decía "Desconectado" y el detalle
+    // decía "ON".
+    if (!widget.sensor.conectado) return false;
     if (!_conectadoWs || _ultimaLectura == null) return false;
     if (_datosDesactualizados) return false;
 

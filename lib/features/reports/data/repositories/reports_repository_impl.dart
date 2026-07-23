@@ -1,5 +1,6 @@
 import '../../domain/entities/archivo_descargado_entity.dart';
 import '../../domain/entities/reporte_entity.dart';
+import '../../domain/entities/reporte_narrativo_entity.dart';
 import '../../domain/repositories/reports_repository.dart';
 import '../datasources/reports_remote_datasource.dart';
 
@@ -35,5 +36,10 @@ class ReportsRepositoryImpl implements ReportsRepository {
       contentType: resultado.contentType,
       fileName: resultado.fileName,
     );
+  }
+
+  @override
+  Future<ReporteNarrativoEntity> obtenerReporteNarrativo(int idLote) {
+    return remoteDataSource.obtenerReporteNarrativo(idLote);
   }
 }

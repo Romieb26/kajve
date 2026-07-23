@@ -14,7 +14,8 @@ class UltimaPrediccionModel extends UltimaPrediccionEntity {
       idLote: json['id_lote'] as int,
       nombreLote: json['nombre_lote'] as String,
       tiempoEstimadoHoras: (json['tiempo_estimado_horas'] as num?)?.toDouble(),
-      calidadEstimada: json['calidad_estimada'] as String?,
+      // Puntaje escala SCA 0-100 (num en el JSON desde la migración).
+      calidadEstimada: (json['calidad_estimada'] as num?)?.toDouble(),
       fechaPrediccion: DateTime.parse(json['fecha_prediccion'] as String),
     );
   }

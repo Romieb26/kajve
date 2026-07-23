@@ -1,6 +1,7 @@
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../models/reporte_model.dart';
+import '../models/reporte_narrativo_model.dart';
 
 /// Llamadas HTTP puras a /reportes (global, no va dentro de /lotes).
 /// No maneja estado de UI.
@@ -17,6 +18,10 @@ abstract class ReportsRemoteDataSource {
   /// `url_archivo` (ej. "/reportes/45/descargar"), ya lista para
   /// concatenar con la base de la API.
   Future<ApiFileResponse> descargarArchivo(String urlArchivo);
+
+  /// GET /lotes/{idLote}/reporte-narrativo -- proxy de Go hacia el reporte NLG de
+  /// microservicioMLL (texto generado al momento, no un archivo descargable como los de arriba).
+  Future<ReporteNarrativoModel> obtenerReporteNarrativo(int idLote);
 }
 
 class ReportsRemoteDataSourceImpl implements ReportsRemoteDataSource {
@@ -83,5 +88,24 @@ class ReportsRemoteDataSourceImpl implements ReportsRemoteDataSource {
     }
 
     return apiClient.getBytes(urlArchivo, token: token);
+  }
+
+  @override
+  Future<ReporteNarrativoModel> obtenerReporteNarrativo(int idLote) async {
+    final token = await secureStorage.getAccessToken();
+
+    if (token == null) {
+      throw const ApiException(
+        'Sesión expirada. Inicia sesión de nuevo.',
+        statusCode: 401,
+      );
+    }
+
+    final response = await apiClient.get(
+      '/lotes/$idLote/reporte-narrativo',
+      token: token,
+    );
+
+    return ReporteNarrativoModel.fromJson(response);
   }
 }

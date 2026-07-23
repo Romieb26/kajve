@@ -112,8 +112,65 @@ class ReportForm extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(height: 10),
+
+            /// Reporte narrativo (NLG): texto generado al momento por
+            /// microservicioMLL (NLP/generar_reporte.py) a partir de alertas,
+            /// predicciones y recomendaciones del lote seleccionado arriba.
+            /// No es un archivo -- se muestra directo en un diálogo.
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: provider.cargandoNarrativo
+                    ? null
+                    : () => _verReporteNarrativo(context, provider),
+                icon: provider.cargandoNarrativo
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.auto_awesome),
+                label: Text(
+                  provider.cargandoNarrativo
+                      ? "Generando reporte narrativo..."
+                      : "Ver reporte narrativo (IA)",
+                ),
+              ),
+            ),
+
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _verReporteNarrativo(
+    BuildContext context,
+    ReportProvider provider,
+  ) async {
+    await provider.cargarReporteNarrativo(context);
+    if (!context.mounted) return;
+
+    final reporte = provider.reporteNarrativo;
+    final error = provider.errorNarrativo;
+    if (reporte == null && error == null) return; // faltaba seleccionar lote
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("Reporte narrativo (IA)"),
+        content: SingleChildScrollView(
+          child: Text(
+            error ?? reporte!.reporteTexto,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text("Cerrar"),
+          ),
+        ],
       ),
     );
   }

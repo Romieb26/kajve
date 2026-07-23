@@ -27,8 +27,13 @@ class PredictionsRemoteDataSourceImpl implements PredictionsRemoteDataSource {
       );
     }
 
+    // limit=15: la pantalla de predicciones solo necesita las más recientes/relevantes para el
+    // historial visible, no cada predicción que se haya generado en toda la vida del lote (eso
+    // era lo que causaba el lag reportado -- cientos de filas renderizadas de golpe). Go ya
+    // defaultea a 15 si se omite este parámetro, pero se manda explícito para no depender de
+    // ese default.
     final response = await apiClient.getList(
-      '/lotes/$loteId/predicciones',
+      '/lotes/$loteId/predicciones?limit=15',
       token: token,
     );
 

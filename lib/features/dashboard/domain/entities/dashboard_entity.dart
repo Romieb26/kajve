@@ -4,7 +4,9 @@ class UltimaPrediccionEntity {
   final int idLote;
   final String nombreLote;
   final double? tiempoEstimadoHoras;
-  final String? calidadEstimada;
+  // Puntaje escala SCA 0-100 -- ya NO es una categoría de texto. Ver comentario equivalente en
+  // features/predictions/domain/entities/prediccion_entity.dart.
+  final double? calidadEstimada;
   final DateTime fechaPrediccion;
 
   const UltimaPrediccionEntity({

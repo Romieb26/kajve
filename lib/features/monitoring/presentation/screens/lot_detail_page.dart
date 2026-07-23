@@ -8,7 +8,6 @@ import '../providers/monitoring_provider.dart';
 
 import '../widgets/info_card.dart';
 import '../widgets/environment_card.dart';
-import '../widgets/history_button.dart';
 import '../widgets/resumen_lote_card.dart';
 
 class LotDetailPage extends StatefulWidget {
@@ -112,11 +111,7 @@ class _LotDetailPageState extends State<LotDetailPage> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
                       ],
-
-                      /// Historial
-                      HistoryButton(loteId: loteId),
 
                     ],
                   ),

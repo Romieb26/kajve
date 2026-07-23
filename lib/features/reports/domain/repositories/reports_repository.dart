@@ -1,5 +1,6 @@
 import '../entities/archivo_descargado_entity.dart';
 import '../entities/reporte_entity.dart';
+import '../entities/reporte_narrativo_entity.dart';
 
 abstract class ReportsRepository {
   Future<List<ReporteEntity>> getReportes();
@@ -11,4 +12,6 @@ abstract class ReportsRepository {
   });
 
   Future<ArchivoDescargadoEntity> descargarArchivo(String urlArchivo);
+
+  Future<ReporteNarrativoEntity> obtenerReporteNarrativo(int idLote);
 }

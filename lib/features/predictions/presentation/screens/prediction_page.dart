@@ -71,8 +71,14 @@ class _PredictionPageState extends State<PredictionPage> {
                   );
                 }
 
+                // Go devuelve las predicciones en orden DESC por fecha (ver
+                // prediccion_repository.go: ORDER BY fecha_prediccion DESC), así que la más
+                // reciente es el PRIMER elemento del arreglo, no el último. Antes esto usaba
+                // .last, que en realidad tomaba la predicción más VIEJA del lote como si fuera
+                // la actual -- por eso "Tiempo restante" y "Última predicción generada" podían
+                // verse desactualizados o incorrectos aunque el ML sí estuviera funcionando bien.
                 final ultimaPrediccion = provider.predicciones.isNotEmpty
-                    ? provider.predicciones.last
+                    ? provider.predicciones.first
                     : null;
 
                 return SingleChildScrollView(
@@ -104,22 +110,43 @@ class _PredictionPageState extends State<PredictionPage> {
 
                         const SizedBox(height: 15),
 
-                        /// Calidad esperada
+                        /// Calidad esperada — puntaje escala SCA 0-100 (protocolo de la
+                        /// Specialty Coffee Association), una aproximación del modelo según
+                        /// las condiciones de secado, no una catación real.
                         MetricCard(
-                          titulo: "Calidad esperada",
-                          valor: ultimaPrediccion.calidadEstimada,
+                          titulo: "Calidad esperada (escala SCA)",
+                          valor: ultimaPrediccion.calidadEstimada != null
+                              ? "${ultimaPrediccion.calidadEstimada!.toStringAsFixed(0)}/100"
+                              : "Aún sin datos suficientes",
                           icono: Icons.workspace_premium,
                         ),
 
                         const SizedBox(height: 15),
 
-                        /// Confianza IA — el backend la manda como
-                        /// fracción (0-1), se muestra como porcentaje.
+                        /// Confianza IA — el backend ya la manda en escala 0-100 (no es una
+                        /// fracción 0-1: ver app/services/predictor.py del microservicio),
+                        /// así que se muestra tal cual, sin multiplicar por 100.
                         MetricCard(
                           titulo: "Confianza IA",
-                          valor:
-                              "${(ultimaPrediccion.confianza * 100).toStringAsFixed(0)}%",
+                          valor: "${ultimaPrediccion.confianza.toStringAsFixed(0)}%",
                           icono: Icons.psychology,
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        /// Riesgo de lluvia próxima — salida del algoritmo genético (AG) de
+                        /// riesgo de lluvia (microservicioMLL: app/services/rain_predictor.py).
+                        /// Null cuando ese predictor todavía no corrió para esta predicción
+                        /// (p.ej. sin lecturas suficientes de humedad/temperatura).
+                        MetricCard(
+                          titulo: "Riesgo de lluvia próxima",
+                          valor: ultimaPrediccion.riesgoLluviaProxima == null
+                              ? "Aún sin datos suficientes"
+                              : ultimaPrediccion.riesgoLluviaProxima!
+                                  ? "Sí, en las próximas "
+                                      "${ultimaPrediccion.horasAnticipacionLluvia ?? 3} horas"
+                                  : "Sin riesgo por ahora",
+                          icono: Icons.umbrella,
                         ),
 
                         const SizedBox(height: 20),

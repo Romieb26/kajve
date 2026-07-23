@@ -197,7 +197,10 @@ class _DashboardPageState extends State<DashboardPage> {
                 if (prediccion != null)
                   RecentPredictionCard(
                     lote: prediccion.nombreLote,
-                    estado: prediccion.calidadEstimada ?? "No disponible",
+                    // Puntaje escala SCA 0-100. Null hasta que haya suficientes lotes
+                    // reales; el propio widget formatea la etiqueta y el color/icono
+                    // por rango.
+                    puntajeCalidad: prediccion.calidadEstimada,
                     fecha: _formatFecha(prediccion.fechaPrediccion),
                     onVer: () {
                       if (!esPremium) {
