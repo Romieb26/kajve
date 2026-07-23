@@ -75,7 +75,8 @@ class MonitoringProvider extends ChangeNotifier {
 
     try {
       lecturas = await _getLecturasUseCase(loteId);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Error real lecturas: $e');
       // No es crítico: si falla, simplemente se asume "sin lecturas" en
       // vez de tumbar toda la pantalla.
       lecturas = [];

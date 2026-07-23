@@ -116,7 +116,7 @@ class _LotDetailPageState extends State<LotDetailPage> {
                       ],
 
                       /// Historial
-                      const HistoryButton(),
+                      HistoryButton(loteId: loteId),
 
                     ],
                   ),

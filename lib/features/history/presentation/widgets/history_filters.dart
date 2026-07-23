@@ -11,6 +11,26 @@ class HistoryFilters extends StatelessWidget {
     required this.provider,
   });
 
+  String _formatearFecha(DateTime fecha) {
+    final dia = fecha.day.toString().padLeft(2, '0');
+    final mes = fecha.month.toString().padLeft(2, '0');
+    return "$dia/$mes/${fecha.year}";
+  }
+
+  Future<void> _elegirFecha(
+    BuildContext context,
+    DateTime? actual,
+    ValueChanged<DateTime> onElegida,
+  ) async {
+    final fecha = await showDatePicker(
+      context: context,
+      initialDate: actual ?? DateTime.now(),
+      firstDate: DateTime(2015),
+      lastDate: DateTime.now(),
+    );
+    if (fecha != null) onElegida(fecha);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -41,8 +61,16 @@ class HistoryFilters extends StatelessWidget {
 
                 Expanded(
                   child: TextField(
+                    readOnly: true,
+                    onTap: () => _elegirFecha(
+                      context,
+                      provider.fechaInicioSeleccionada,
+                      provider.seleccionarFechaInicio,
+                    ),
                     decoration: InputDecoration(
-                      labelText: "Fecha inicio",
+                      labelText: provider.fechaInicioSeleccionada != null
+                          ? _formatearFecha(provider.fechaInicioSeleccionada!)
+                          : "Fecha inicio",
                       prefixIcon: const Icon(Icons.calendar_today),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -55,8 +83,16 @@ class HistoryFilters extends StatelessWidget {
 
                 Expanded(
                   child: TextField(
+                    readOnly: true,
+                    onTap: () => _elegirFecha(
+                      context,
+                      provider.fechaFinSeleccionada,
+                      provider.seleccionarFechaFin,
+                    ),
                     decoration: InputDecoration(
-                      labelText: "Fecha fin",
+                      labelText: provider.fechaFinSeleccionada != null
+                          ? _formatearFecha(provider.fechaFinSeleccionada!)
+                          : "Fecha fin",
                       prefixIcon: const Icon(Icons.calendar_today),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),

@@ -39,10 +39,12 @@ class HistoryProvider extends ChangeNotifier {
       _todos = await _getHistorialUseCase(loteId);
       buscar(searchController.text);
     } on ApiException catch (e) {
+      debugPrint('Error real historial: $e (statusCode: ${e.statusCode})');
       errorMessage = e.statusCode == 401
           ? "Tu sesión expiró. Inicia sesión de nuevo."
           : "No se pudo conectar. Intenta de nuevo";
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Error real historial: $e');
       errorMessage = "Ocurrió un error al cargar el historial.";
     } finally {
       cargando = false;
@@ -94,6 +96,33 @@ class HistoryProvider extends ChangeNotifier {
     notifyListeners();
 
     cargarHistorial(lote.id!);
+  }
+
+  /// Preselecciona un lote por id sin necesitar el objeto Lote completo
+  /// (ej. al llegar desde "Ver historial" en el detalle de un lote,
+  /// donde solo se conoce el id). Si ya es el lote seleccionado, no
+  /// repite la carga.
+  void seleccionarLotePorId(int loteId, {String? nombre}) {
+    if (loteIdSeleccionado == loteId) return;
+
+    loteIdSeleccionado = loteId;
+    loteNombreSeleccionado = nombre ?? "Lote #$loteId";
+    notifyListeners();
+
+    cargarHistorial(loteId);
+  }
+
+  DateTime? fechaInicioSeleccionada;
+  DateTime? fechaFinSeleccionada;
+
+  void seleccionarFechaInicio(DateTime fecha) {
+    fechaInicioSeleccionada = fecha;
+    notifyListeners();
+  }
+
+  void seleccionarFechaFin(DateTime fecha) {
+    fechaFinSeleccionada = fecha;
+    notifyListeners();
   }
 
   Future<void> solicitarPdf(BuildContext context) async {

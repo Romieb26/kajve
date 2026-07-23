@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../shared/widgets/app_drawer.dart';
 
+import '../../../lots/presentation/providers/lot_provider.dart';
 import '../providers/history_provider.dart';
 
 import '../widgets/search_history.dart';
@@ -10,8 +11,54 @@ import '../widgets/history_filters.dart';
 import '../widgets/history_table.dart';
 import '../widgets/history_statistics.dart';
 
-class HistoryPage extends StatelessWidget {
+class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
+
+  @override
+  State<HistoryPage> createState() => _HistoryPageState();
+}
+
+class _HistoryPageState extends State<HistoryPage> {
+  bool _argumentoProcesado = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_argumentoProcesado) return;
+    _argumentoProcesado = true;
+
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+    final loteId = arguments is int ? arguments : null;
+    if (loteId == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _preseleccionarLote(loteId));
+  }
+
+  /// Busca el nombre del lote en la caché de LotProvider (sin red). Si
+  /// no está cargada todavía (ej. se llegó por QR sin pasar antes por
+  /// la lista de lotes), se hace la única llamada extra necesaria.
+  Future<void> _preseleccionarLote(int loteId) async {
+    final lotProvider = context.read<LotProvider>();
+    final historyProvider = context.read<HistoryProvider>();
+
+    var lote = _buscarLote(lotProvider.lotes, loteId);
+
+    if (lote == null && !lotProvider.cargandoLotes) {
+      await lotProvider.cargarLotes();
+      lote = _buscarLote(lotProvider.lotes, loteId);
+    }
+
+    if (!mounted) return;
+    historyProvider.seleccionarLotePorId(loteId, nombre: lote?.nombre);
+  }
+
+  Lote? _buscarLote(List<Lote> lotes, int loteId) {
+    for (final lote in lotes) {
+      if (lote.id == loteId) return lote;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
