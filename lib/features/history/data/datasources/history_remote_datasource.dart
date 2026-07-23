@@ -24,12 +24,13 @@ class HistoryRemoteDataSourceImpl implements HistoryRemoteDataSource {
       );
     }
 
-    final response = await apiClient.getList(
+    final response = await apiClient.get(
       '/lotes/$loteId/historial',
       token: token,
     );
+    final data = response['data'] as List<dynamic>? ?? [];
 
-    return response
+    return data
         .map((e) => HistorialEventoModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
