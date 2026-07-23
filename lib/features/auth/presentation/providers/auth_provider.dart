@@ -73,8 +73,18 @@ class AuthProvider extends ChangeNotifier {
 
       usuario = session.usuario;
 
+      final loteIdPendiente = FcmService().consumirLotePendienteAlertas();
+
       if (context.mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+        if (loteIdPendiente != null) {
+          Navigator.pushReplacementNamed(
+            context,
+            AppRoutes.alerts,
+            arguments: loteIdPendiente,
+          );
+        } else {
+          Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+        }
       }
     } on ApiException catch (e) {
       if (context.mounted) {

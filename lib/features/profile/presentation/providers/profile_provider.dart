@@ -6,6 +6,7 @@ import '../../../../core/storage/secure_storage.dart';
 import '../../../auth/data/datasources/auth_remote_datasource.dart';
 import '../../../auth/data/repositories/auth_repository_impl.dart';
 import '../../../auth/domain/usecases/logout_usecase.dart';
+import '../../../../core/messaging/fcm_service.dart';
 import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/entities/perfil_entity.dart';
@@ -184,6 +185,7 @@ class ProfileProvider extends ChangeNotifier {
       ),
     );
 
+    await FcmService().desactivarDispositivoActual();
     await _logoutUseCase();
 
     if (context.mounted) {

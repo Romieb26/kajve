@@ -4,6 +4,7 @@ import '../../../../core/storage/secure_storage.dart';
 
 abstract class DevicesRemoteDataSource {
   Future<void> registrarDispositivo(String fcmToken);
+  Future<void> desactivarDispositivo(String fcmToken);
 }
 
 class DevicesRemoteDataSourceImpl implements DevicesRemoteDataSource {
@@ -33,6 +34,18 @@ class DevicesRemoteDataSourceImpl implements DevicesRemoteDataSource {
       '/dispositivos/registrar',
       baseUrlOverride: ApiClient.mlBaseUrl,
       body: {'fcm_token': fcmToken, 'plataforma': 'android'},
+      token: token,
+    );
+  }
+
+  @override
+  Future<void> desactivarDispositivo(String fcmToken) async {
+    final token = await _requireToken();
+
+    await apiClient.post(
+      '/dispositivos/desactivar',
+      baseUrlOverride: ApiClient.apiV1BaseUrl,
+      body: {'fcm_token': fcmToken},
       token: token,
     );
   }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'core/routes/app_pages.dart';
 import 'core/routes/app_routes.dart';
+import 'core/navigation/navigator_key.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 
@@ -50,6 +51,7 @@ class KajveApp extends StatelessWidget {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'KAJVE',
+            navigatorKey: navigatorKey,
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
             themeMode: themeProvider.themeMode,

@@ -35,6 +35,7 @@ class ApiClient {
   // static const String baseUrl = 'https://api-mobile.dnc-ed-denz.shop';
   static const String baseUrl = 'https://gateway.dnc-ed-denz.shop/mobile';
   static const String mlBaseUrl = 'https://gateway.dnc-ed-denz.shop/ml/api/v1';
+  static const String apiV1BaseUrl = 'https://gateway.dnc-ed-denz.shop/api/v1';
   static const Duration _timeout = Duration(seconds: 10);
 
   final http.Client _client;

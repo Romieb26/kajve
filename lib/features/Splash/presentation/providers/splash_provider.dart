@@ -6,6 +6,7 @@ import '../../../../core/storage/secure_storage.dart';
 import '../../../auth/data/datasources/auth_remote_datasource.dart';
 import '../../../auth/data/repositories/auth_repository_impl.dart';
 import '../../../auth/domain/usecases/refresh_token_usecase.dart';
+import '../../../../core/messaging/fcm_service.dart';
 
 class SplashProvider extends ChangeNotifier {
   final SecureStorage _secureStorage = SecureStorage();
@@ -23,6 +24,18 @@ class SplashProvider extends ChangeNotifier {
 
     await tiempoMinimo;
     if (!context.mounted) return;
+
+    if (destino == AppRoutes.dashboard) {
+      final loteIdPendiente = FcmService().consumirLotePendienteAlertas();
+      if (loteIdPendiente != null) {
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.alerts,
+          arguments: loteIdPendiente,
+        );
+        return;
+      }
+    }
 
     Navigator.pushReplacementNamed(context, destino);
   }
