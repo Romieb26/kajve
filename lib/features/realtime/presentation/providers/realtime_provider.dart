@@ -33,9 +33,14 @@ class RealtimeProvider extends ChangeNotifier {
 
   static const int _maxPuntos = 60;
 
+  /// Cuánto esperar antes de reintentar el WebSocket cuando se cae solo
+  /// (ej. close 1005 por una red inestable o un timeout del gateway).
+  static const Duration _reintentoWs = Duration(seconds: 5);
+
   int? _loteIdActual;
   StreamSubscription<RealtimeWsMessage>? _wsSubscription;
   Timer? _refrescoEstadisticasTimer;
+  Timer? _reconexionWsTimer;
 
   final RealtimeWsDataSource _wsDataSource = RealtimeWsDataSource();
   final SecureStorage _secureStorage = SecureStorage();
@@ -101,6 +106,10 @@ class RealtimeProvider extends ChangeNotifier {
 
     serieTiempoReal = [];
 
+    _suscribirWs(loteId, token);
+  }
+
+  void _suscribirWs(int loteId, String token) {
     _wsSubscription = _wsDataSource.connect(loteId, token).listen(
       (mensaje) {
         if (mensaje.esHistorial) {
@@ -118,17 +127,59 @@ class RealtimeProvider extends ChangeNotifier {
       onError: (_) {
         wsConectado = false;
         notifyListeners();
+        _programarReconexionWs(loteId);
       },
       onDone: () {
         wsConectado = false;
         notifyListeners();
+        _programarReconexionWs(loteId);
       },
     );
+  }
+
+  /// El WebSocket de ws-gateway se puede caer solo (red del celular,
+  /// timeout del gateway, etc.) sin que el usuario haga nada. Antes, una
+  /// vez caído, la pantalla se quedaba en "Conectando..." para siempre —
+  /// solo se recuperaba si el usuario hacía pull-to-refresh o mandaba la
+  /// app a segundo plano y la regresaba. Esto reintenta solo, como ya
+  /// hacía _refrescoEstadisticasTimer con /estadisticas.
+  void _programarReconexionWs(int loteId) {
+    _reconexionWsTimer?.cancel();
+    _reconexionWsTimer = Timer(_reintentoWs, () async {
+      // Si mientras tanto se cambió de lote o se salió de la pantalla
+      // (detenerTiempoReal limpia _loteIdActual), no reconectamos.
+      if (_loteIdActual != loteId) return;
+
+      // CRÍTICO: todo el intento va en try/catch. Antes, si algo tronaba
+      // aquí (token nulo, excepción de red, lo que sea), el ciclo de
+      // reintentos moría para siempre — nada volvía a llamar
+      // _programarReconexionWs — y la pantalla se quedaba "Conectando..."
+      // de forma indefinida sin que el usuario supiera por qué (el bug
+      // real detrás de "dejó de conectar y no volvió").
+      try {
+        final token = await _secureStorage.getAccessToken();
+        if (token == null) {
+          errorMessage = "Tu sesión expiró. Inicia sesión de nuevo.";
+          notifyListeners();
+          return;
+        }
+
+        _wsDataSource.disconnect();
+        _suscribirWs(loteId, token);
+      } catch (_) {
+        _programarReconexionWs(loteId);
+      }
+    });
   }
 
   void detenerTiempoReal() {
     _refrescoEstadisticasTimer?.cancel();
     _refrescoEstadisticasTimer = null;
+
+    _reconexionWsTimer?.cancel();
+    _reconexionWsTimer = null;
+
+    _loteIdActual = null;
 
     _wsSubscription?.cancel();
     _wsSubscription = null;

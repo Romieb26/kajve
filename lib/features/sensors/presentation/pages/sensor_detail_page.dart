@@ -63,6 +63,14 @@ class _SensorDetailPageState extends State<SensorDetailPage>
   DateTime? _ultimaActualizacion;
   Timer? _relojDesconexion;
 
+  /// El WebSocket se puede caer solo (close 1005 por red inestable o
+  /// timeout del gateway) sin que el usuario haga nada. Antes solo se
+  /// reconectaba al volver del segundo plano (didChangeAppLifecycleState);
+  /// sin esto, una caída con la app en primer plano dejaba la pantalla
+  /// pegada en OFFLINE hasta que el usuario saliera y volviera a entrar.
+  Timer? _reconexionTimer;
+  static const Duration _reintentoWs = Duration(seconds: 5);
+
   @override
   void initState() {
     super.initState();
@@ -88,13 +96,34 @@ class _SensorDetailPageState extends State<SensorDetailPage>
   }
 
   Future<void> _reconectar() async {
+    _reconexionTimer?.cancel();
+    _reconexionTimer = null;
     await _subscription?.cancel();
     _wsDataSource.disconnect();
+    if (!mounted) return;
     setState(() {
       _conectando = true;
       _conectadoWs = false;
     });
     await _conectar();
+  }
+
+  void _programarReconexion() {
+    _reconexionTimer?.cancel();
+    _reconexionTimer = Timer(_reintentoWs, () async {
+      if (!mounted) return;
+      // CRÍTICO: si _reconectar()/_conectar() truena por lo que sea (una
+      // excepción no capturada en el camino de reconexión), antes el
+      // ciclo de reintentos moría ahí mismo para siempre — nada lo volvía
+      // a programar — y la pantalla se quedaba pegada en OFFLINE sin
+      // aviso. Con esto, una falla no mata el ciclo: se reintenta de
+      // nuevo en el siguiente tick.
+      try {
+        await _reconectar();
+      } catch (_) {
+        _programarReconexion();
+      }
+    });
   }
 
   bool get _datosDesactualizados {
@@ -167,10 +196,12 @@ class _SensorDetailPageState extends State<SensorDetailPage>
           _conectadoWs = false;
           _errorLecturas = "No se pudo conectar con el servidor de lecturas.";
         });
+        _programarReconexion();
       },
       onDone: () {
         if (!mounted) return;
         setState(() => _conectadoWs = false);
+        _programarReconexion();
       },
     );
   }
@@ -240,6 +271,7 @@ class _SensorDetailPageState extends State<SensorDetailPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _relojDesconexion?.cancel();
+    _reconexionTimer?.cancel();
     _subscription?.cancel();
     _wsDataSource.disconnect();
     super.dispose();

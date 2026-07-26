@@ -38,6 +38,13 @@ class RealtimeWsDataSource {
   WebSocketChannel? _channel;
 
   Stream<RealtimeWsMessage> connect(int loteId, String token) {
+    // Si ya había un canal abierto (ej. el caller olvidó llamar
+    // disconnect() antes de reconectar), lo cerramos primero. Dejar dos
+    // sockets vivos para el mismo usuario/lote hace que el servidor mate
+    // el más viejo apenas entra el nuevo (close 1005), lo que se ve como
+    // un ciclo de conecta-desconecta constante en el log del gateway.
+    disconnect();
+
     final scheme = _useTls ? 'wss' : 'ws';
     final uri = Uri.parse(
       '$scheme://$_host/ws/lotes/$loteId?token=$token',
