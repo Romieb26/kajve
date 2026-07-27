@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/custom_dialog.dart';
 import '../../domain/entities/alerta_entity.dart';
@@ -7,14 +7,14 @@ import '../providers/alerts_provider.dart';
 import '../widgets/alert_card.dart';
 import '../widgets/alert_filter.dart';
 
-class AlertsPage extends StatefulWidget {
+class AlertsPage extends ConsumerStatefulWidget {
   const AlertsPage({super.key});
 
   @override
-  State<AlertsPage> createState() => _AlertsPageState();
+  ConsumerState<AlertsPage> createState() => _AlertsPageState();
 }
 
-class _AlertsPageState extends State<AlertsPage> {
+class _AlertsPageState extends ConsumerState<AlertsPage> {
   int? _loteId;
 
   @override
@@ -29,7 +29,7 @@ class _AlertsPageState extends State<AlertsPage> {
       setState(() => _loteId = loteId);
 
       if (loteId != null) {
-        context.read<AlertsProvider>().cargarDatos(loteId);
+        ref.read(alertsControllerProvider.notifier).cargarDatos(loteId);
       }
     });
   }
@@ -40,13 +40,14 @@ class _AlertsPageState extends State<AlertsPage> {
       title: "Atender alerta",
       content: '¿Marcar "${alert.tipoAlerta}" como atendida?',
       onConfirm: () async {
-        final provider = context.read<AlertsProvider>();
-        await provider.atenderAlerta(alert.idAlerta);
+        final controller = ref.read(alertsControllerProvider.notifier);
+        await controller.atenderAlerta(alert.idAlerta);
 
         if (!context.mounted) return;
-        if (provider.errorMessage != null) {
+        final errorMessage = ref.read(alertsControllerProvider).errorMessage;
+        if (errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(provider.errorMessage!)),
+            SnackBar(content: Text(errorMessage)),
           );
         }
       },
@@ -56,40 +57,37 @@ class _AlertsPageState extends State<AlertsPage> {
   @override
   Widget build(BuildContext context) {
     final loteId = _loteId;
+    final state = ref.watch(alertsControllerProvider);
 
-    return Consumer<AlertsProvider>(
-      builder: (context, provider, child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text("Alertas"),
-            centerTitle: true,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Alertas"),
+        centerTitle: true,
+      ),
 
-          body: loteId == null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(
-                      "No se especificó el lote a mostrar.",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                )
-              : _buildBody(context, provider, loteId),
-        );
-      },
+      body: loteId == null
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  "No se especificó el lote a mostrar.",
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+            )
+          : _buildBody(context, state, loteId),
     );
   }
 
-  Widget _buildBody(BuildContext context, AlertsProvider provider, int loteId) {
+  Widget _buildBody(BuildContext context, AlertsState state, int loteId) {
     final theme = Theme.of(context);
 
-    if (provider.isLoading && provider.alertas.isEmpty) {
+    if (state.isLoading && state.alertas.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (provider.errorMessage != null && provider.alertas.isEmpty) {
+    if (state.errorMessage != null && state.alertas.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -99,13 +97,15 @@ class _AlertsPageState extends State<AlertsPage> {
               Icon(Icons.cloud_off, size: 48, color: theme.textTheme.bodySmall?.color),
               const SizedBox(height: 12),
               Text(
-                provider.errorMessage!,
+                state.errorMessage!,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () => provider.cargarDatos(loteId),
+                onPressed: () => ref
+                    .read(alertsControllerProvider.notifier)
+                    .cargarDatos(loteId),
                 child: const Text("Reintentar"),
               ),
             ],
@@ -121,13 +121,16 @@ class _AlertsPageState extends State<AlertsPage> {
         children: [
 
           /// Filtros
-          AlertFilter(provider: provider),
+          AlertFilter(
+            state: state,
+            controller: ref.read(alertsControllerProvider.notifier),
+          ),
 
           const SizedBox(height: 20),
 
           /// Lista de alertas
           Expanded(
-            child: provider.alertas.isEmpty
+            child: state.alertas.isEmpty
                 ? Center(
                     child: Text(
                       "No hay alertas para este lote",
@@ -135,9 +138,9 @@ class _AlertsPageState extends State<AlertsPage> {
                     ),
                   )
                 : ListView.builder(
-                    itemCount: provider.alertas.length,
+                    itemCount: state.alertas.length,
                     itemBuilder: (context, index) {
-                      final alert = provider.alertas[index];
+                      final alert = state.alertas[index];
                       return AlertCard(
                         alert: alert,
                         onAtender: () => _confirmarAtender(context, alert),

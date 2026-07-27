@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_drawer.dart';
 
@@ -9,14 +9,14 @@ import '../widgets/metric_card.dart';
 import '../widgets/recommendation_card.dart';
 import '../widgets/prediction_history.dart';
 
-class PredictionPage extends StatefulWidget {
+class PredictionPage extends ConsumerStatefulWidget {
   const PredictionPage({super.key});
 
   @override
-  State<PredictionPage> createState() => _PredictionPageState();
+  ConsumerState<PredictionPage> createState() => _PredictionPageState();
 }
 
-class _PredictionPageState extends State<PredictionPage> {
+class _PredictionPageState extends ConsumerState<PredictionPage> {
   int? _loteId;
 
   @override
@@ -29,7 +29,7 @@ class _PredictionPageState extends State<PredictionPage> {
     final loteId = _loteId;
     if (loteId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<PredictionProvider>().cargarDatos(loteId);
+        ref.read(predictionControllerProvider.notifier).cargarDatos(loteId);
       });
     }
   }
@@ -53,8 +53,10 @@ class _PredictionPageState extends State<PredictionPage> {
               icono: Icons.error_outline,
               mensaje: "No se especificó el lote a mostrar.",
             )
-          : Consumer<PredictionProvider>(
-              builder: (context, provider, child) {
+          : Builder(
+              builder: (context) {
+                final provider = ref.watch(predictionControllerProvider);
+
                 if (provider.isLoading &&
                     provider.predicciones.isEmpty &&
                     provider.recomendaciones.isEmpty) {
@@ -67,7 +69,9 @@ class _PredictionPageState extends State<PredictionPage> {
                   return _MensajeCentrado(
                     icono: Icons.cloud_off,
                     mensaje: provider.errorMessage!,
-                    onReintentar: () => provider.cargarDatos(loteId),
+                    onReintentar: () => ref
+                        .read(predictionControllerProvider.notifier)
+                        .cargarDatos(loteId),
                   );
                 }
 

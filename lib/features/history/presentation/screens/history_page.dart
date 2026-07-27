@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_drawer.dart';
 
@@ -11,14 +11,14 @@ import '../widgets/history_filters.dart';
 import '../widgets/history_table.dart';
 import '../widgets/history_statistics.dart';
 
-class HistoryPage extends StatefulWidget {
+class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({super.key});
 
   @override
-  State<HistoryPage> createState() => _HistoryPageState();
+  ConsumerState<HistoryPage> createState() => _HistoryPageState();
 }
 
-class _HistoryPageState extends State<HistoryPage> {
+class _HistoryPageState extends ConsumerState<HistoryPage> {
   bool _argumentoProcesado = false;
 
   @override
@@ -35,22 +35,22 @@ class _HistoryPageState extends State<HistoryPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _preseleccionarLote(loteId));
   }
 
-  /// Busca el nombre del lote en la caché de LotProvider (sin red). Si
+  /// Busca el nombre del lote en la caché de LotController (sin red). Si
   /// no está cargada todavía (ej. se llegó por QR sin pasar antes por
   /// la lista de lotes), se hace la única llamada extra necesaria.
   Future<void> _preseleccionarLote(int loteId) async {
-    final lotProvider = context.read<LotProvider>();
-    final historyProvider = context.read<HistoryProvider>();
+    final lotController = ref.read(lotControllerProvider.notifier);
+    final historyController = ref.read(historyControllerProvider.notifier);
 
-    var lote = _buscarLote(lotProvider.lotes, loteId);
+    var lote = _buscarLote(ref.read(lotControllerProvider).lotes, loteId);
 
-    if (lote == null && !lotProvider.cargandoLotes) {
-      await lotProvider.cargarLotes();
-      lote = _buscarLote(lotProvider.lotes, loteId);
+    if (lote == null && !ref.read(lotControllerProvider).cargandoLotes) {
+      await lotController.cargarLotes();
+      lote = _buscarLote(ref.read(lotControllerProvider).lotes, loteId);
     }
 
     if (!mounted) return;
-    historyProvider.seleccionarLotePorId(loteId, nombre: lote?.nombre);
+    historyController.seleccionarLotePorId(loteId, nombre: lote?.nombre);
   }
 
   Lote? _buscarLote(List<Lote> lotes, int loteId) {
@@ -62,42 +62,45 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HistoryProvider>(
-      builder: (context, provider, child) {
-        return Scaffold(
-          drawer: const AppDrawer(),
+    final state = ref.watch(historyControllerProvider);
+    final controller = ref.read(historyControllerProvider.notifier);
 
-          appBar: AppBar(
-            title: const Text("Historial"),
-            centerTitle: true,
-          ),
+    return Scaffold(
+      drawer: const AppDrawer(),
 
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: const Text("Historial"),
+        centerTitle: true,
+      ),
 
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
 
-                /// Filtros (incluye el selector de lote, que dispara la carga)
-                HistoryFilters(provider: provider),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
 
-                const SizedBox(height: 20),
+            /// Filtros (incluye el selector de lote, que dispara la carga)
+            HistoryFilters(state: state, controller: controller),
 
-                _buildContenido(context, provider),
+            const SizedBox(height: 20),
 
-              ],
-            ),
-          ),
-        );
-      },
+            _buildContenido(context, state, controller),
+
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildContenido(BuildContext context, HistoryProvider provider) {
+  Widget _buildContenido(
+    BuildContext context,
+    HistoryState state,
+    HistoryController controller,
+  ) {
     final theme = Theme.of(context);
 
-    if (provider.loteIdSeleccionado == null) {
+    if (state.loteIdSeleccionado == null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -110,11 +113,11 @@ class _HistoryPageState extends State<HistoryPage> {
       );
     }
 
-    if (provider.cargando && provider.historial.isEmpty) {
+    if (state.cargando && state.historial.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (provider.errorMessage != null && provider.historial.isEmpty) {
+    if (state.errorMessage != null && state.historial.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -124,13 +127,13 @@ class _HistoryPageState extends State<HistoryPage> {
               Icon(Icons.cloud_off, size: 48, color: theme.textTheme.bodySmall?.color),
               const SizedBox(height: 12),
               Text(
-                provider.errorMessage!,
+                state.errorMessage!,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () => provider.cargarHistorial(provider.loteIdSeleccionado!),
+                onPressed: () => controller.cargarHistorial(state.loteIdSeleccionado!),
                 child: const Text("Reintentar"),
               ),
             ],
@@ -145,21 +148,21 @@ class _HistoryPageState extends State<HistoryPage> {
 
         /// Buscador
         SearchHistory(
-          provider: provider,
+          controller: controller,
         ),
 
         const SizedBox(height: 20),
 
         /// Tabla
         HistoryTable(
-          provider: provider,
+          state: state,
         ),
 
         const SizedBox(height: 20),
 
         /// Estadísticas
         HistoryStatistics(
-          provider: provider,
+          state: state,
         ),
       ],
     );

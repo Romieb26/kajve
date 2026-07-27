@@ -1,72 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../../core/storage/secure_storage.dart';
 import '../../../lots/presentation/providers/lot_provider.dart';
-import '../../../reports/data/datasources/reports_remote_datasource.dart';
-import '../../../reports/data/repositories/reports_repository_impl.dart';
 import '../../../reports/domain/usecases/solicitar_reporte_usecase.dart';
-import '../../data/datasources/history_remote_datasource.dart';
-import '../../data/repositories/history_repository_impl.dart';
 import '../../domain/entities/historial_evento_entity.dart';
 import '../../domain/usecases/get_historial_usecase.dart';
 
-class HistoryProvider extends ChangeNotifier {
+part 'history_provider.g.dart';
 
-  final TextEditingController searchController =
-  TextEditingController();
-
-  late final GetHistorialUseCase _getHistorialUseCase = GetHistorialUseCase(
-    HistoryRepositoryImpl(
-      HistoryRemoteDataSourceImpl(ApiClient(), SecureStorage()),
-    ),
-  );
-
+class HistoryState {
   /// Todos los eventos del lote seleccionado, sin filtrar por texto.
-  List<HistorialEventoEntity> _todos = [];
+  final List<HistorialEventoEntity> todos;
+  final List<HistorialEventoEntity> historial;
 
-  List<HistorialEventoEntity> historial = [];
-
-  bool cargando = false;
-  String? errorMessage;
-
-  Future<void> cargarHistorial(int loteId) async {
-    cargando = true;
-    errorMessage = null;
-    notifyListeners();
-
-    try {
-      _todos = await _getHistorialUseCase(loteId);
-      buscar(searchController.text);
-    } on ApiException catch (e) {
-      debugPrint('Error real historial: $e (statusCode: ${e.statusCode})');
-      errorMessage = e.statusCode == 401
-          ? "Tu sesión expiró. Inicia sesión de nuevo."
-          : "No se pudo conectar. Intenta de nuevo";
-    } catch (e) {
-      debugPrint('Error real historial: $e');
-      errorMessage = "Ocurrió un error al cargar el historial.";
-    } finally {
-      cargando = false;
-      notifyListeners();
-    }
-  }
-
-  void buscar(String texto) {
-
-    if (texto.isEmpty) {
-      historial = List.from(_todos);
-    } else {
-      historial = _todos.where((evento) {
-        final busqueda = texto.toLowerCase();
-
-        return evento.tipoEvento.toLowerCase().contains(busqueda) ||
-            evento.descripcion.toLowerCase().contains(busqueda);
-      }).toList();
-    }
-
-    notifyListeners();
-  }
+  final bool cargando;
+  final String? errorMessage;
 
   ///=========================
   /// Reporte PDF (POST /reportes)
@@ -76,24 +26,111 @@ class HistoryProvider extends ChangeNotifier {
   /// lote, elegir uno aquí sirve doble propósito: carga la lista de
   /// eventos de ese lote Y es el id_lote que viaja en la solicitud de
   /// PDF, con el mismo selector compartido que usa Reportes.
-  int? loteIdSeleccionado;
-  String? loteNombreSeleccionado;
+  final int? loteIdSeleccionado;
+  final String? loteNombreSeleccionado;
 
-  bool solicitandoPdf = false;
+  final bool solicitandoPdf;
 
-  late final SolicitarReporteUseCase _solicitarReporteUseCase =
-      SolicitarReporteUseCase(
-    ReportsRepositoryImpl(
-      ReportsRemoteDataSourceImpl(ApiClient(), SecureStorage()),
-    ),
-  );
+  final DateTime? fechaInicioSeleccionada;
+  final DateTime? fechaFinSeleccionada;
+
+  const HistoryState({
+    this.todos = const [],
+    this.historial = const [],
+    this.cargando = false,
+    this.errorMessage,
+    this.loteIdSeleccionado,
+    this.loteNombreSeleccionado,
+    this.solicitandoPdf = false,
+    this.fechaInicioSeleccionada,
+    this.fechaFinSeleccionada,
+  });
+
+  HistoryState copyWith({
+    List<HistorialEventoEntity>? todos,
+    List<HistorialEventoEntity>? historial,
+    bool? cargando,
+    String? errorMessage,
+    bool clearError = false,
+    int? loteIdSeleccionado,
+    String? loteNombreSeleccionado,
+    bool? solicitandoPdf,
+    DateTime? fechaInicioSeleccionada,
+    DateTime? fechaFinSeleccionada,
+  }) {
+    return HistoryState(
+      todos: todos ?? this.todos,
+      historial: historial ?? this.historial,
+      cargando: cargando ?? this.cargando,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      loteIdSeleccionado: loteIdSeleccionado ?? this.loteIdSeleccionado,
+      loteNombreSeleccionado:
+          loteNombreSeleccionado ?? this.loteNombreSeleccionado,
+      solicitandoPdf: solicitandoPdf ?? this.solicitandoPdf,
+      fechaInicioSeleccionada:
+          fechaInicioSeleccionada ?? this.fechaInicioSeleccionada,
+      fechaFinSeleccionada: fechaFinSeleccionada ?? this.fechaFinSeleccionada,
+    );
+  }
+}
+
+@riverpod
+class HistoryController extends _$HistoryController {
+  final searchController = TextEditingController();
+
+  @override
+  HistoryState build() {
+    ref.onDispose(() {
+      searchController.dispose();
+    });
+    return const HistoryState();
+  }
+
+  Future<void> cargarHistorial(int loteId) async {
+    state = state.copyWith(cargando: true, clearError: true);
+
+    try {
+      final todos = await getIt<GetHistorialUseCase>()(loteId);
+      state = state.copyWith(todos: todos);
+      buscar(searchController.text);
+    } on ApiException catch (e) {
+      debugPrint('Error real historial: $e (statusCode: ${e.statusCode})');
+      state = state.copyWith(
+        errorMessage: e.statusCode == 401
+            ? "Tu sesión expiró. Inicia sesión de nuevo."
+            : "No se pudo conectar. Intenta de nuevo",
+      );
+    } catch (e) {
+      debugPrint('Error real historial: $e');
+      state = state.copyWith(
+        errorMessage: "Ocurrió un error al cargar el historial.",
+      );
+    } finally {
+      state = state.copyWith(cargando: false);
+    }
+  }
+
+  void buscar(String texto) {
+    if (texto.isEmpty) {
+      state = state.copyWith(historial: List.from(state.todos));
+    } else {
+      final busqueda = texto.toLowerCase();
+      state = state.copyWith(
+        historial: state.todos.where((evento) {
+          return evento.tipoEvento.toLowerCase().contains(busqueda) ||
+              evento.descripcion.toLowerCase().contains(busqueda);
+        }).toList(),
+      );
+    }
+  }
 
   void seleccionarLote(Lote lote) {
     if (lote.id == null) return;
 
-    loteIdSeleccionado = lote.id;
-    loteNombreSeleccionado = lote.nombre;
-    notifyListeners();
+    state = state.copyWith(
+      loteIdSeleccionado: lote.id,
+      loteNombreSeleccionado: lote.nombre,
+    );
 
     cargarHistorial(lote.id!);
   }
@@ -103,41 +140,36 @@ class HistoryProvider extends ChangeNotifier {
   /// donde solo se conoce el id). Si ya es el lote seleccionado, no
   /// repite la carga.
   void seleccionarLotePorId(int loteId, {String? nombre}) {
-    if (loteIdSeleccionado == loteId) return;
+    if (state.loteIdSeleccionado == loteId) return;
 
-    loteIdSeleccionado = loteId;
-    loteNombreSeleccionado = nombre ?? "Lote #$loteId";
-    notifyListeners();
+    state = state.copyWith(
+      loteIdSeleccionado: loteId,
+      loteNombreSeleccionado: nombre ?? "Lote #$loteId",
+    );
 
     cargarHistorial(loteId);
   }
 
-  DateTime? fechaInicioSeleccionada;
-  DateTime? fechaFinSeleccionada;
-
   void seleccionarFechaInicio(DateTime fecha) {
-    fechaInicioSeleccionada = fecha;
-    notifyListeners();
+    state = state.copyWith(fechaInicioSeleccionada: fecha);
   }
 
   void seleccionarFechaFin(DateTime fecha) {
-    fechaFinSeleccionada = fecha;
-    notifyListeners();
+    state = state.copyWith(fechaFinSeleccionada: fecha);
   }
 
   Future<void> solicitarPdf(BuildContext context) async {
-    final loteId = loteIdSeleccionado;
+    final loteId = state.loteIdSeleccionado;
 
     if (loteId == null) {
       _mostrarSnackBar(context, "Selecciona un lote para generar el PDF.", Colors.orange);
       return;
     }
 
-    solicitandoPdf = true;
-    notifyListeners();
+    state = state.copyWith(solicitandoPdf: true);
 
     try {
-      await _solicitarReporteUseCase(
+      await getIt<SolicitarReporteUseCase>()(
         idLote: loteId,
         tipoReporte: "historial",
         formato: "pdf",
@@ -159,8 +191,7 @@ class HistoryProvider extends ChangeNotifier {
         _mostrarSnackBar(context, "Ocurrió un error al solicitar el reporte.", Colors.red);
       }
     } finally {
-      solicitandoPdf = false;
-      notifyListeners();
+      state = state.copyWith(solicitandoPdf: false);
     }
   }
 
@@ -168,14 +199,5 @@ class HistoryProvider extends ChangeNotifier {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(mensaje), backgroundColor: color),
     );
-  }
-
-  @override
-  void dispose() {
-
-    searchController.dispose();
-
-    super.dispose();
-
   }
 }

@@ -1,7 +1,10 @@
+import 'package:injectable/injectable.dart';
+
 import '../../domain/entities/alerta_entity.dart';
 import '../../domain/repositories/alerts_repository.dart';
 import '../datasources/alerts_remote_datasource.dart';
 
+@LazySingleton(as: AlertsRepository)
 class AlertsRepositoryImpl implements AlertsRepository {
   final AlertsRemoteDataSource remoteDataSource;
 

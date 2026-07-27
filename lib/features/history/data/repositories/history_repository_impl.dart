@@ -1,7 +1,10 @@
+import 'package:injectable/injectable.dart';
+
 import '../../domain/entities/historial_evento_entity.dart';
 import '../../domain/repositories/history_repository.dart';
 import '../datasources/history_remote_datasource.dart';
 
+@LazySingleton(as: HistoryRepository)
 class HistoryRepositoryImpl implements HistoryRepository {
   final HistoryRemoteDataSource remoteDataSource;
 

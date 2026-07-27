@@ -3,13 +3,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../../core/storage/secure_storage.dart';
 import '../../../lots/presentation/providers/lot_provider.dart';
-import '../../data/datasources/reports_remote_datasource.dart';
-import '../../data/repositories/reports_repository_impl.dart';
 import '../../domain/entities/reporte_entity.dart';
 import '../../domain/entities/reporte_narrativo_entity.dart';
 import '../../domain/usecases/descargar_reporte_usecase.dart';
@@ -17,36 +16,104 @@ import '../../domain/usecases/get_reportes_usecase.dart';
 import '../../domain/usecases/obtener_reporte_narrativo_usecase.dart';
 import '../../domain/usecases/solicitar_reporte_usecase.dart';
 
-class ReportProvider extends ChangeNotifier {
+part 'report_provider.g.dart';
+
+class ReportState {
   /// Listado (GET /reportes)
-  bool isLoading = false;
-  String? errorMessage;
-  List<ReporteEntity> reportes = [];
+  final bool isLoading;
+  final String? errorMessage;
+  final List<ReporteEntity> reportes;
 
   /// Lote elegido para la solicitud (POST /reportes)
-  int? loteIdSeleccionado;
-  String? loteNombreSeleccionado;
+  final int? loteIdSeleccionado;
+  final String? loteNombreSeleccionado;
 
-  /// Tipos de reporte. tipo_reporte es texto libre en el backend
-  /// (validate:"required", sin oneof), así que estos 4 valores no son
-  /// un enum cerrado — son simplemente las opciones que ofrece la UI.
-  final List<String> tipos = [
-    "Producción",
-    "Temperatura",
-    "Humedad",
-    "Predicción",
-  ];
-  String? tipoReporte;
+  /// Tipo de reporte elegido. tipo_reporte es texto libre en el backend
+  /// (validate:"required", sin oneof), así que no es un enum cerrado.
+  final String? tipoReporte;
 
   /// Formato: los únicos dos valores que acepta el backend.
-  String formato = "pdf";
+  final String formato;
 
-  bool solicitando = false;
+  final bool solicitando;
 
   /// Id del reporte cuyo archivo se está descargando ahora mismo (null si
   /// no hay ninguna descarga en curso).
-  int? idDescargando;
+  final int? idDescargando;
 
+  /// Reporte NLG (texto en lenguaje natural, generado al momento) del lote
+  /// seleccionado en el formulario -- distinto del PDF/Excel de arriba.
+  final bool cargandoNarrativo;
+  final String? errorNarrativo;
+  final ReporteNarrativoEntity? reporteNarrativo;
+
+  const ReportState({
+    this.isLoading = false,
+    this.errorMessage,
+    this.reportes = const [],
+    this.loteIdSeleccionado,
+    this.loteNombreSeleccionado,
+    this.tipoReporte,
+    this.formato = "pdf",
+    this.solicitando = false,
+    this.idDescargando,
+    this.cargandoNarrativo = false,
+    this.errorNarrativo,
+    this.reporteNarrativo,
+  });
+
+  ReportState copyWith({
+    bool? isLoading,
+    String? errorMessage,
+    bool clearError = false,
+    List<ReporteEntity>? reportes,
+    int? loteIdSeleccionado,
+    String? loteNombreSeleccionado,
+    String? tipoReporte,
+    String? formato,
+    bool? solicitando,
+    int? idDescargando,
+    bool clearIdDescargando = false,
+    bool? cargandoNarrativo,
+    String? errorNarrativo,
+    bool clearErrorNarrativo = false,
+    ReporteNarrativoEntity? reporteNarrativo,
+    bool clearReporteNarrativo = false,
+  }) {
+    return ReportState(
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      reportes: reportes ?? this.reportes,
+      loteIdSeleccionado: loteIdSeleccionado ?? this.loteIdSeleccionado,
+      loteNombreSeleccionado:
+          loteNombreSeleccionado ?? this.loteNombreSeleccionado,
+      tipoReporte: tipoReporte ?? this.tipoReporte,
+      formato: formato ?? this.formato,
+      solicitando: solicitando ?? this.solicitando,
+      idDescargando:
+          clearIdDescargando ? null : (idDescargando ?? this.idDescargando),
+      cargandoNarrativo: cargandoNarrativo ?? this.cargandoNarrativo,
+      errorNarrativo: clearErrorNarrativo
+          ? null
+          : (errorNarrativo ?? this.errorNarrativo),
+      reporteNarrativo: clearReporteNarrativo
+          ? null
+          : (reporteNarrativo ?? this.reporteNarrativo),
+    );
+  }
+}
+
+/// Tipos de reporte que ofrece la UI (no un enum del backend, ver
+/// [ReportState.tipoReporte]).
+const List<String> tiposReporte = [
+  "Producción",
+  "Temperatura",
+  "Humedad",
+  "Predicción",
+];
+
+@riverpod
+class ReportController extends _$ReportController {
   /// El backend genera el archivo en background: mientras haya reportes
   /// con url_archivo null, se refresca la lista cada pocos segundos hasta
   /// que aparezca o se agoten los intentos.
@@ -55,78 +122,70 @@ class ReportProvider extends ChangeNotifier {
   static const _pollIntervalo = Duration(seconds: 3);
   static const _pollMaxIntentos = 40; // ~2 minutos
 
-  late final ReportsRepositoryImpl _repository = ReportsRepositoryImpl(
-    ReportsRemoteDataSourceImpl(ApiClient(), SecureStorage()),
-  );
-
-  late final GetReportesUseCase _getReportesUseCase = GetReportesUseCase(
-    _repository,
-  );
-
-  late final SolicitarReporteUseCase _solicitarReporteUseCase =
-      SolicitarReporteUseCase(_repository);
-
-  late final DescargarReporteUseCase _descargarReporteUseCase =
-      DescargarReporteUseCase(_repository);
-
-  late final ObtenerReporteNarrativoUseCase _obtenerReporteNarrativoUseCase =
-      ObtenerReporteNarrativoUseCase(_repository);
-
-  /// Reporte NLG (texto en lenguaje natural, generado al momento) del lote
-  /// seleccionado en el formulario -- distinto del PDF/Excel de arriba.
-  bool cargandoNarrativo = false;
-  String? errorNarrativo;
-  ReporteNarrativoEntity? reporteNarrativo;
+  @override
+  ReportState build() {
+    ref.onDispose(() {
+      _pollTimer?.cancel();
+    });
+    return const ReportState();
+  }
 
   Future<void> cargarReporteNarrativo(BuildContext context) async {
-    final loteId = loteIdSeleccionado;
+    final loteId = state.loteIdSeleccionado;
     if (loteId == null) {
       _mostrarSnackBar(context, "Selecciona un lote.", Colors.orange);
       return;
     }
 
-    cargandoNarrativo = true;
-    errorNarrativo = null;
-    reporteNarrativo = null;
-    notifyListeners();
+    state = state.copyWith(
+      cargandoNarrativo: true,
+      clearErrorNarrativo: true,
+      clearReporteNarrativo: true,
+    );
 
     try {
-      reporteNarrativo = await _obtenerReporteNarrativoUseCase(loteId);
+      final reporte = await getIt<ObtenerReporteNarrativoUseCase>()(loteId);
+      state = state.copyWith(reporteNarrativo: reporte);
     } on ApiException catch (e) {
-      errorNarrativo = e.statusCode == 401
-          ? "Tu sesión expiró. Inicia sesión de nuevo."
-          : e.message;
+      state = state.copyWith(
+        errorNarrativo: e.statusCode == 401
+            ? "Tu sesión expiró. Inicia sesión de nuevo."
+            : e.message,
+      );
     } catch (_) {
-      errorNarrativo = "Ocurrió un error al generar el reporte narrativo.";
+      state = state.copyWith(
+        errorNarrativo: "Ocurrió un error al generar el reporte narrativo.",
+      );
     } finally {
-      cargandoNarrativo = false;
-      notifyListeners();
+      state = state.copyWith(cargandoNarrativo: false);
     }
   }
 
   Future<void> cargarReportes() async {
-    isLoading = true;
-    errorMessage = null;
-    notifyListeners();
+    state = state.copyWith(isLoading: true, clearError: true);
 
     try {
-      reportes = await _getReportesUseCase();
+      final reportes = await getIt<GetReportesUseCase>()();
+      state = state.copyWith(reportes: reportes);
       _pollIntentos = 0;
       _gestionarPolling();
     } on ApiException catch (e) {
-      errorMessage = e.statusCode == 401
-          ? "Tu sesión expiró. Inicia sesión de nuevo."
-          : "No se pudo conectar. Intenta de nuevo";
+      state = state.copyWith(
+        errorMessage: e.statusCode == 401
+            ? "Tu sesión expiró. Inicia sesión de nuevo."
+            : "No se pudo conectar. Intenta de nuevo",
+      );
     } catch (_) {
-      errorMessage = "Ocurrió un error al cargar los reportes.";
+      state = state.copyWith(
+        errorMessage: "Ocurrió un error al cargar los reportes.",
+      );
     } finally {
-      isLoading = false;
-      notifyListeners();
+      state = state.copyWith(isLoading: false);
     }
   }
 
   void _gestionarPolling() {
-    final hayPendientes = reportes.any((r) => r.urlArchivo == null);
+    final hayPendientes = state.reportes.any((r) => r.urlArchivo == null);
 
     if (!hayPendientes || _pollIntentos >= _pollMaxIntentos) {
       _pollTimer?.cancel();
@@ -141,8 +200,8 @@ class ReportProvider extends ChangeNotifier {
     _pollIntentos++;
 
     try {
-      reportes = await _getReportesUseCase();
-      notifyListeners();
+      final reportes = await getIt<GetReportesUseCase>()();
+      state = state.copyWith(reportes: reportes);
     } catch (_) {
       // Se reintenta en el próximo tick; no se sobreescribe errorMessage
       // para no romper una lista que ya se había mostrado bien.
@@ -154,24 +213,23 @@ class ReportProvider extends ChangeNotifier {
   void seleccionarLote(Lote lote) {
     if (lote.id == null) return;
 
-    loteIdSeleccionado = lote.id;
-    loteNombreSeleccionado = lote.nombre;
-    notifyListeners();
+    state = state.copyWith(
+      loteIdSeleccionado: lote.id,
+      loteNombreSeleccionado: lote.nombre,
+    );
   }
 
   void seleccionarTipo(String? tipo) {
-    tipoReporte = tipo;
-    notifyListeners();
+    state = state.copyWith(tipoReporte: tipo);
   }
 
   void seleccionarFormato(String value) {
-    formato = value;
-    notifyListeners();
+    state = state.copyWith(formato: value);
   }
 
   Future<void> generarReporte(BuildContext context) async {
-    final loteId = loteIdSeleccionado;
-    final tipo = tipoReporte;
+    final loteId = state.loteIdSeleccionado;
+    final tipo = state.tipoReporte;
 
     if (loteId == null) {
       _mostrarSnackBar(context, "Selecciona un lote.", Colors.orange);
@@ -183,17 +241,16 @@ class ReportProvider extends ChangeNotifier {
       return;
     }
 
-    solicitando = true;
-    notifyListeners();
+    state = state.copyWith(solicitando: true);
 
     try {
-      final nuevo = await _solicitarReporteUseCase(
+      final nuevo = await getIt<SolicitarReporteUseCase>()(
         idLote: loteId,
         tipoReporte: tipo,
-        formato: formato,
+        formato: state.formato,
       );
 
-      reportes = [nuevo, ...reportes];
+      state = state.copyWith(reportes: [nuevo, ...state.reportes]);
       _pollIntentos = 0;
       _gestionarPolling();
 
@@ -213,8 +270,7 @@ class ReportProvider extends ChangeNotifier {
         );
       }
     } finally {
-      solicitando = false;
-      notifyListeners();
+      state = state.copyWith(solicitando: false);
     }
   }
 
@@ -222,11 +278,10 @@ class ReportProvider extends ChangeNotifier {
     final url = reporte.urlArchivo;
     if (url == null) return;
 
-    idDescargando = reporte.id;
-    notifyListeners();
+    state = state.copyWith(idDescargando: reporte.id);
 
     try {
-      final archivo = await _descargarReporteUseCase(url);
+      final archivo = await getIt<DescargarReporteUseCase>()(url);
 
       final directorio = await getTemporaryDirectory();
       final extension = reporte.formato.toLowerCase() == 'excel' ? 'xlsx' : 'pdf';
@@ -248,8 +303,7 @@ class ReportProvider extends ChangeNotifier {
         _mostrarSnackBar(context, "No se pudo descargar el archivo.", Colors.red);
       }
     } finally {
-      idDescargando = null;
-      notifyListeners();
+      state = state.copyWith(clearIdDescargando: true);
     }
   }
 
@@ -257,11 +311,5 @@ class ReportProvider extends ChangeNotifier {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(mensaje), backgroundColor: color),
     );
-  }
-
-  @override
-  void dispose() {
-    _pollTimer?.cancel();
-    super.dispose();
   }
 }

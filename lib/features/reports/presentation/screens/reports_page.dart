@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_drawer.dart';
 
@@ -7,25 +7,26 @@ import '../providers/report_provider.dart';
 import '../widgets/report_form.dart';
 import '../widgets/report_history.dart';
 
-class ReportsPage extends StatefulWidget {
+class ReportsPage extends ConsumerStatefulWidget {
   const ReportsPage({super.key});
 
   @override
-  State<ReportsPage> createState() => _ReportsPageState();
+  ConsumerState<ReportsPage> createState() => _ReportsPageState();
 }
 
-class _ReportsPageState extends State<ReportsPage> {
+class _ReportsPageState extends ConsumerState<ReportsPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ReportProvider>().cargarReportes();
+      ref.read(reportControllerProvider.notifier).cargarReportes();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<ReportProvider>(context);
+    final state = ref.watch(reportControllerProvider);
+    final controller = ref.read(reportControllerProvider.notifier);
 
     return Scaffold(
       drawer: const AppDrawer(),
@@ -40,11 +41,11 @@ class _ReportsPageState extends State<ReportsPage> {
         child: Column(
           children: [
 
-            ReportForm(provider: provider),
+            const ReportForm(),
 
             const SizedBox(height: 20),
 
-            ReportHistory(provider: provider),
+            ReportHistory(state: state, controller: controller),
 
           ],
         ),

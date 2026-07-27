@@ -1,6 +1,9 @@
+import 'package:injectable/injectable.dart';
+
 import '../entities/reporte_entity.dart';
 import '../repositories/reports_repository.dart';
 
+@injectable
 class SolicitarReporteUseCase {
   final ReportsRepository repository;
 

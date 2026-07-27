@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import '../providers/history_provider.dart';
 
 class HistoryTable extends StatelessWidget {
-  final HistoryProvider provider;
+  final HistoryState state;
 
   const HistoryTable({
     super.key,
-    required this.provider,
+    required this.state,
   });
 
   String _formatearFecha(String iso) {
@@ -25,7 +25,7 @@ class HistoryTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    if (provider.historial.isEmpty) {
+    if (state.historial.isEmpty) {
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -41,7 +41,7 @@ class HistoryTable extends StatelessWidget {
     }
 
     return Column(
-      children: provider.historial.map((evento) {
+      children: state.historial.map((evento) {
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: Padding(

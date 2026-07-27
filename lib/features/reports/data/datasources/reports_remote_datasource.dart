@@ -1,3 +1,5 @@
+import 'package:injectable/injectable.dart';
+
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../models/reporte_model.dart';
@@ -24,6 +26,7 @@ abstract class ReportsRemoteDataSource {
   Future<ReporteNarrativoModel> obtenerReporteNarrativo(int idLote);
 }
 
+@LazySingleton(as: ReportsRemoteDataSource)
 class ReportsRemoteDataSourceImpl implements ReportsRemoteDataSource {
   final ApiClient apiClient;
   final SecureStorage secureStorage;

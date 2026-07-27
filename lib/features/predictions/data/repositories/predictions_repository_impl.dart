@@ -1,8 +1,11 @@
+import 'package:injectable/injectable.dart';
+
 import '../../domain/entities/prediccion_entity.dart';
 import '../../domain/entities/recomendacion_entity.dart';
 import '../../domain/repositories/predictions_repository.dart';
 import '../datasources/predictions_remote_datasource.dart';
 
+@LazySingleton(as: PredictionsRepository)
 class PredictionsRepositoryImpl implements PredictionsRepository {
   final PredictionsRemoteDataSource remoteDataSource;
 

@@ -1,3 +1,5 @@
+import 'package:injectable/injectable.dart';
+
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../models/historial_evento_model.dart';
@@ -7,6 +9,7 @@ abstract class HistoryRemoteDataSource {
   Future<List<HistorialEventoModel>> getHistorial(int loteId);
 }
 
+@LazySingleton(as: HistoryRemoteDataSource)
 class HistoryRemoteDataSourceImpl implements HistoryRemoteDataSource {
   final ApiClient apiClient;
   final SecureStorage secureStorage;

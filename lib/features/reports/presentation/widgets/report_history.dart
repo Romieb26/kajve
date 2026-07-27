@@ -4,11 +4,13 @@ import '../providers/report_provider.dart';
 import '../widgets/report_item.dart';
 
 class ReportHistory extends StatelessWidget {
-  final ReportProvider provider;
+  final ReportState state;
+  final ReportController controller;
 
   const ReportHistory({
     super.key,
-    required this.provider,
+    required this.state,
+    required this.controller,
   });
 
   @override
@@ -34,11 +36,11 @@ class ReportHistory extends StatelessWidget {
   }
 
   Widget _buildBody(ThemeData theme) {
-    if (provider.isLoading && provider.reportes.isEmpty) {
+    if (state.isLoading && state.reportes.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (provider.errorMessage != null && provider.reportes.isEmpty) {
+    if (state.errorMessage != null && state.reportes.isEmpty) {
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -48,13 +50,13 @@ class ReportHistory extends StatelessWidget {
               Icon(Icons.cloud_off, size: 40, color: theme.textTheme.bodySmall?.color),
               const SizedBox(height: 12),
               Text(
-                provider.errorMessage!,
+                state.errorMessage!,
                 style: theme.textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: provider.cargarReportes,
+                onPressed: controller.cargarReportes,
                 child: const Text("Reintentar"),
               ),
             ],
@@ -63,7 +65,7 @@ class ReportHistory extends StatelessWidget {
       );
     }
 
-    if (provider.reportes.isEmpty) {
+    if (state.reportes.isEmpty) {
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -81,11 +83,12 @@ class ReportHistory extends StatelessWidget {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: provider.reportes.length,
+      itemCount: state.reportes.length,
       itemBuilder: (context, index) {
         return ReportItem(
-          reporte: provider.reportes[index],
-          provider: provider,
+          reporte: state.reportes[index],
+          state: state,
+          controller: controller,
         );
       },
     );

@@ -1,3 +1,5 @@
+import 'package:injectable/injectable.dart';
+
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../models/prediccion_model.dart';
@@ -10,6 +12,7 @@ abstract class PredictionsRemoteDataSource {
   Future<List<RecomendacionModel>> getRecomendaciones(int loteId);
 }
 
+@LazySingleton(as: PredictionsRemoteDataSource)
 class PredictionsRemoteDataSourceImpl implements PredictionsRemoteDataSource {
   final ApiClient apiClient;
   final SecureStorage secureStorage;

@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 import '../providers/history_provider.dart';
 
 class SearchHistory extends StatelessWidget {
-  final HistoryProvider provider;
+  final HistoryController controller;
 
   const SearchHistory({
     super.key,
-    required this.provider,
+    required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: provider.searchController,
-      onChanged: provider.buscar,
+      controller: controller.searchController,
+      onChanged: controller.buscar,
       decoration: InputDecoration(
         hintText: "Buscar evento...",
         prefixIcon: const Icon(Icons.search),

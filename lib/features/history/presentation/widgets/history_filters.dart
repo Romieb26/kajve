@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/lote_selector_sheet.dart';
 import '../providers/history_provider.dart';
 
-class HistoryFilters extends StatelessWidget {
-  final HistoryProvider provider;
+class HistoryFilters extends ConsumerWidget {
+  final HistoryState state;
+  final HistoryController controller;
 
   const HistoryFilters({
     super.key,
-    required this.provider,
+    required this.state,
+    required this.controller,
   });
 
   String _formatearFecha(DateTime fecha) {
@@ -32,7 +35,7 @@ class HistoryFilters extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(15),
@@ -43,10 +46,11 @@ class HistoryFilters extends StatelessWidget {
               readOnly: true,
               onTap: () => showLoteSelector(
                 context,
-                onSelected: provider.seleccionarLote,
+                ref,
+                onSelected: controller.seleccionarLote,
               ),
               decoration: InputDecoration(
-                labelText: provider.loteNombreSeleccionado ?? "Seleccionar lote",
+                labelText: state.loteNombreSeleccionado ?? "Seleccionar lote",
                 prefixIcon: const Icon(Icons.agriculture_outlined),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -64,12 +68,12 @@ class HistoryFilters extends StatelessWidget {
                     readOnly: true,
                     onTap: () => _elegirFecha(
                       context,
-                      provider.fechaInicioSeleccionada,
-                      provider.seleccionarFechaInicio,
+                      state.fechaInicioSeleccionada,
+                      controller.seleccionarFechaInicio,
                     ),
                     decoration: InputDecoration(
-                      labelText: provider.fechaInicioSeleccionada != null
-                          ? _formatearFecha(provider.fechaInicioSeleccionada!)
+                      labelText: state.fechaInicioSeleccionada != null
+                          ? _formatearFecha(state.fechaInicioSeleccionada!)
                           : "Fecha inicio",
                       prefixIcon: const Icon(Icons.calendar_today),
                       border: OutlineInputBorder(
@@ -86,12 +90,12 @@ class HistoryFilters extends StatelessWidget {
                     readOnly: true,
                     onTap: () => _elegirFecha(
                       context,
-                      provider.fechaFinSeleccionada,
-                      provider.seleccionarFechaFin,
+                      state.fechaFinSeleccionada,
+                      controller.seleccionarFechaFin,
                     ),
                     decoration: InputDecoration(
-                      labelText: provider.fechaFinSeleccionada != null
-                          ? _formatearFecha(provider.fechaFinSeleccionada!)
+                      labelText: state.fechaFinSeleccionada != null
+                          ? _formatearFecha(state.fechaFinSeleccionada!)
                           : "Fecha fin",
                       prefixIcon: const Icon(Icons.calendar_today),
                       border: OutlineInputBorder(
@@ -109,10 +113,10 @@ class HistoryFilters extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: provider.solicitandoPdf
+                onPressed: state.solicitandoPdf
                     ? null
-                    : () => provider.solicitarPdf(context),
-                icon: provider.solicitandoPdf
+                    : () => controller.solicitarPdf(context),
+                icon: state.solicitandoPdf
                     ? const SizedBox(
                         width: 16,
                         height: 16,
@@ -120,7 +124,7 @@ class HistoryFilters extends StatelessWidget {
                       )
                     : const Icon(Icons.picture_as_pdf),
                 label: Text(
-                  provider.solicitandoPdf ? "Solicitando..." : "PDF",
+                  state.solicitandoPdf ? "Solicitando..." : "PDF",
                 ),
               ),
             ),

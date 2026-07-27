@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/lote_selector_sheet.dart';
 import '../providers/report_provider.dart';
 
-class ReportForm extends StatelessWidget {
-  final ReportProvider provider;
-
-  const ReportForm({
-    super.key,
-    required this.provider,
-  });
+class ReportForm extends ConsumerWidget {
+  const ReportForm({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final provider = ref.watch(reportControllerProvider);
+    final controller = ref.read(reportControllerProvider.notifier);
 
     return Card(
       child: Padding(
@@ -35,7 +33,8 @@ class ReportForm extends StatelessWidget {
               readOnly: true,
               onTap: () => showLoteSelector(
                 context,
-                onSelected: provider.seleccionarLote,
+                ref,
+                onSelected: controller.seleccionarLote,
               ),
               decoration: InputDecoration(
                 labelText: provider.loteNombreSeleccionado ?? "Seleccionar lote",
@@ -57,13 +56,13 @@ class ReportForm extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              items: provider.tipos.map((tipo) {
+              items: tiposReporte.map((tipo) {
                 return DropdownMenuItem(
                   value: tipo,
                   child: Text(tipo),
                 );
               }).toList(),
-              onChanged: provider.seleccionarTipo,
+              onChanged: controller.seleccionarTipo,
             ),
 
             const SizedBox(height: 20),
@@ -81,12 +80,12 @@ class ReportForm extends StatelessWidget {
                 ChoiceChip(
                   label: const Text("PDF"),
                   selected: provider.formato == "pdf",
-                  onSelected: (_) => provider.seleccionarFormato("pdf"),
+                  onSelected: (_) => controller.seleccionarFormato("pdf"),
                 ),
                 ChoiceChip(
                   label: const Text("Excel"),
                   selected: provider.formato == "excel",
-                  onSelected: (_) => provider.seleccionarFormato("excel"),
+                  onSelected: (_) => controller.seleccionarFormato("excel"),
                 ),
               ],
             ),
@@ -98,7 +97,7 @@ class ReportForm extends StatelessWidget {
               child: FilledButton.icon(
                 onPressed: provider.solicitando
                     ? null
-                    : () => provider.generarReporte(context),
+                    : () => controller.generarReporte(context),
                 icon: provider.solicitando
                     ? const SizedBox(
                         width: 18,
@@ -123,7 +122,7 @@ class ReportForm extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: provider.cargandoNarrativo
                     ? null
-                    : () => _verReporteNarrativo(context, provider),
+                    : () => _verReporteNarrativo(context, ref),
                 icon: provider.cargandoNarrativo
                     ? const SizedBox(
                         width: 18,
@@ -147,13 +146,14 @@ class ReportForm extends StatelessWidget {
 
   Future<void> _verReporteNarrativo(
     BuildContext context,
-    ReportProvider provider,
+    WidgetRef ref,
   ) async {
-    await provider.cargarReporteNarrativo(context);
+    await ref.read(reportControllerProvider.notifier).cargarReporteNarrativo(context);
     if (!context.mounted) return;
 
-    final reporte = provider.reporteNarrativo;
-    final error = provider.errorNarrativo;
+    final state = ref.read(reportControllerProvider);
+    final reporte = state.reporteNarrativo;
+    final error = state.errorNarrativo;
     if (reporte == null && error == null) return; // faltaba seleccionar lote
 
     showDialog(

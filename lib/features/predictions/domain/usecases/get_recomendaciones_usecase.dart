@@ -1,6 +1,9 @@
+import 'package:injectable/injectable.dart';
+
 import '../entities/recomendacion_entity.dart';
 import '../repositories/predictions_repository.dart';
 
+@injectable
 class GetRecomendacionesUseCase {
   final PredictionsRepository repository;
 

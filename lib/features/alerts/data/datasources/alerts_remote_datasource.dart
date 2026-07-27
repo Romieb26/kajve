@@ -1,3 +1,5 @@
+import 'package:injectable/injectable.dart';
+
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../models/alerta_model.dart';
@@ -9,6 +11,7 @@ abstract class AlertsRemoteDataSource {
   Future<AlertaModel> atenderAlerta(int alertaId);
 }
 
+@LazySingleton(as: AlertsRemoteDataSource)
 class AlertsRemoteDataSourceImpl implements AlertsRemoteDataSource {
   final ApiClient apiClient;
   final SecureStorage secureStorage;

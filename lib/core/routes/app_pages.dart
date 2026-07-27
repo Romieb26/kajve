@@ -32,6 +32,9 @@ import '../../features/sensors/presentation/pages/sensors_page.dart';
 
 import '../../features/sensors/presentation/pages/create_sensor_page.dart';
 
+import '../../features/sensors/data/models/sensor_model.dart';
+import '../../features/sensors/presentation/pages/sensor_detail_page.dart';
+
 import '../routes/app_routes.dart';
 
 
@@ -70,6 +73,10 @@ class AppPages {
     AppRoutes.sensors: (_) => const SensorsPage(),
 
     AppRoutes.createSensor: (_) => const CreateSensorPage(),
+
+    AppRoutes.sensorDetail: (context) => SensorDetailPage(
+          sensor: ModalRoute.of(context)!.settings.arguments as SensorModel,
+        ),
 
   };
 }

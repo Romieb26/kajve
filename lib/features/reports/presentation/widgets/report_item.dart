@@ -5,12 +5,14 @@ import '../providers/report_provider.dart';
 
 class ReportItem extends StatelessWidget {
   final ReporteEntity reporte;
-  final ReportProvider provider;
+  final ReportState state;
+  final ReportController controller;
 
   const ReportItem({
     super.key,
     required this.reporte,
-    required this.provider,
+    required this.state,
+    required this.controller,
   });
 
   /// El backend solo llena url_archivo una vez que el archivo existe,
@@ -32,7 +34,7 @@ class ReportItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final descargando = provider.idDescargando == reporte.id;
+    final descargando = state.idDescargando == reporte.id;
 
     return Card(
 
@@ -91,7 +93,7 @@ class ReportItem extends StatelessWidget {
                 : IconButton(
                     icon: Icon(Icons.download, color: theme.colorScheme.primary),
                     tooltip: "Descargar",
-                    onPressed: () => provider.descargarReporte(context, reporte),
+                    onPressed: () => controller.descargarReporte(context, reporte),
                   ),
 
       ),

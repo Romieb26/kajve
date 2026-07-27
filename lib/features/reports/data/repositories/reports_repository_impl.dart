@@ -1,9 +1,12 @@
+import 'package:injectable/injectable.dart';
+
 import '../../domain/entities/archivo_descargado_entity.dart';
 import '../../domain/entities/reporte_entity.dart';
 import '../../domain/entities/reporte_narrativo_entity.dart';
 import '../../domain/repositories/reports_repository.dart';
 import '../datasources/reports_remote_datasource.dart';
 
+@LazySingleton(as: ReportsRepository)
 class ReportsRepositoryImpl implements ReportsRepository {
   final ReportsRemoteDataSource remoteDataSource;
 

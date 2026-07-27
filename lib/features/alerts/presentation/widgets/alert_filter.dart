@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../providers/alerts_provider.dart';
 
 class AlertFilter extends StatelessWidget {
-  final AlertsProvider provider;
+  final AlertsState state;
+  final AlertsController controller;
 
   const AlertFilter({
     super.key,
-    required this.provider,
+    required this.state,
+    required this.controller,
   });
 
   @override
@@ -29,10 +31,10 @@ class AlertFilter extends StatelessWidget {
 
           label: Text(filtro),
 
-          selected: provider.filtro == filtro,
+          selected: state.filtro == filtro,
 
           onSelected: (_) {
-            provider.filtrar(filtro);
+            controller.filtrar(filtro);
           },
 
         );

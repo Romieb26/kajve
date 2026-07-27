@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import '../providers/history_provider.dart';
 
 class HistoryStatistics extends StatelessWidget {
-  final HistoryProvider provider;
+  final HistoryState state;
 
   const HistoryStatistics({
     super.key,
-    required this.provider,
+    required this.state,
   });
 
   @override
   Widget build(BuildContext context) {
-    final total = provider.historial.length;
+    final total = state.historial.length;
 
     final theme = Theme.of(context);
 

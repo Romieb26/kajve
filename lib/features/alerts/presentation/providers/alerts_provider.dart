@@ -1,68 +1,90 @@
-import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../../core/storage/secure_storage.dart';
-import '../../data/datasources/alerts_remote_datasource.dart';
-import '../../data/repositories/alerts_repository_impl.dart';
 import '../../domain/entities/alerta_entity.dart';
 import '../../domain/usecases/atender_alerta_usecase.dart';
 import '../../domain/usecases/get_alertas_usecase.dart';
 
-class AlertsProvider extends ChangeNotifier {
-  bool isLoading = false;
-  String? errorMessage;
+part 'alerts_provider.g.dart';
 
-  List<AlertaEntity> _alertas = [];
-  List<AlertaEntity> alertas = [];
+class AlertsState {
+  final bool isLoading;
+  final String? errorMessage;
+  final List<AlertaEntity> alertasSinFiltrar;
+  final List<AlertaEntity> alertas;
+  final String filtro;
 
-  String filtro = "Todas";
+  const AlertsState({
+    this.isLoading = false,
+    this.errorMessage,
+    this.alertasSinFiltrar = const [],
+    this.alertas = const [],
+    this.filtro = "Todas",
+  });
 
+  AlertsState copyWith({
+    bool? isLoading,
+    String? errorMessage,
+    bool clearError = false,
+    List<AlertaEntity>? alertasSinFiltrar,
+    List<AlertaEntity>? alertas,
+    String? filtro,
+  }) {
+    return AlertsState(
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      alertasSinFiltrar: alertasSinFiltrar ?? this.alertasSinFiltrar,
+      alertas: alertas ?? this.alertas,
+      filtro: filtro ?? this.filtro,
+    );
+  }
+}
+
+@riverpod
+class AlertsController extends _$AlertsController {
   int? _loteId;
 
-  late final AlertsRepositoryImpl _repository = AlertsRepositoryImpl(
-    AlertsRemoteDataSourceImpl(ApiClient(), SecureStorage()),
-  );
-
-  late final GetAlertasUseCase _getAlertasUseCase = GetAlertasUseCase(
-    _repository,
-  );
-
-  late final AtenderAlertaUseCase _atenderAlertaUseCase = AtenderAlertaUseCase(
-    _repository,
-  );
+  @override
+  AlertsState build() => const AlertsState();
 
   Future<void> cargarDatos(int loteId) async {
     _loteId = loteId;
-    isLoading = true;
-    errorMessage = null;
-    notifyListeners();
+    state = state.copyWith(isLoading: true, clearError: true);
 
     try {
-      _alertas = await _getAlertasUseCase(loteId);
+      final alertasSinFiltrar = await getIt<GetAlertasUseCase>()(loteId);
+      state = state.copyWith(alertasSinFiltrar: alertasSinFiltrar);
       _aplicarFiltro();
     } on ApiException catch (e) {
-      errorMessage = e.statusCode == 401
-          ? "Tu sesión expiró. Inicia sesión de nuevo."
-          : "No se pudo conectar. Intenta de nuevo";
+      state = state.copyWith(
+        errorMessage: e.statusCode == 401
+            ? "Tu sesión expiró. Inicia sesión de nuevo."
+            : "No se pudo conectar. Intenta de nuevo",
+      );
     } catch (_) {
-      errorMessage = "Ocurrió un error al cargar las alertas.";
+      state = state.copyWith(
+        errorMessage: "Ocurrió un error al cargar las alertas.",
+      );
     } finally {
-      isLoading = false;
-      notifyListeners();
+      state = state.copyWith(isLoading: false);
     }
   }
 
   void filtrar(String nivel) {
-    filtro = nivel;
+    state = state.copyWith(filtro: nivel);
     _aplicarFiltro();
-    notifyListeners();
   }
 
   void _aplicarFiltro() {
-    if (filtro == "Todas") {
-      alertas = List.from(_alertas);
+    if (state.filtro == "Todas") {
+      state = state.copyWith(alertas: List.from(state.alertasSinFiltrar));
     } else {
-      alertas = _alertas.where((a) => a.nivelSeveridad == filtro).toList();
+      state = state.copyWith(
+        alertas: state.alertasSinFiltrar
+            .where((a) => a.nivelSeveridad == state.filtro)
+            .toList(),
+      );
     }
   }
 
@@ -71,20 +93,24 @@ class AlertsProvider extends ChangeNotifier {
     if (loteId == null) return;
 
     try {
-      await _atenderAlertaUseCase(alertaId);
+      await getIt<AtenderAlertaUseCase>()(alertaId);
       await cargarDatos(loteId);
     } on ApiException catch (e) {
       if (e.statusCode == 404) {
-        errorMessage = "Esta alerta ya no existe.";
+        state = state.copyWith(errorMessage: "Esta alerta ya no existe.");
       } else if (e.statusCode == 403) {
-        errorMessage = "No tienes permiso sobre este lote.";
+        state = state.copyWith(
+          errorMessage: "No tienes permiso sobre este lote.",
+        );
       } else {
-        errorMessage = "No se pudo atender la alerta. Intenta de nuevo.";
+        state = state.copyWith(
+          errorMessage: "No se pudo atender la alerta. Intenta de nuevo.",
+        );
       }
-      notifyListeners();
     } catch (_) {
-      errorMessage = "Ocurrió un error al atender la alerta.";
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: "Ocurrió un error al atender la alerta.",
+      );
     }
   }
 }

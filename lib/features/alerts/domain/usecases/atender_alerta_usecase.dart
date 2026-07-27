@@ -1,5 +1,8 @@
+import 'package:injectable/injectable.dart';
+
 import '../repositories/alerts_repository.dart';
 
+@injectable
 class AtenderAlertaUseCase {
   final AlertsRepository repository;
 

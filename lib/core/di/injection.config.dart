@@ -16,6 +16,16 @@ import 'package:kajve/core/di/app_module.dart' as _i892;
 import 'package:kajve/core/messaging/fcm_service.dart' as _i675;
 import 'package:kajve/core/network/api_client.dart' as _i954;
 import 'package:kajve/core/storage/secure_storage.dart' as _i665;
+import 'package:kajve/features/alerts/data/datasources/alerts_remote_datasource.dart'
+    as _i129;
+import 'package:kajve/features/alerts/data/repositories/alerts_repository_impl.dart'
+    as _i1029;
+import 'package:kajve/features/alerts/domain/repositories/alerts_repository.dart'
+    as _i767;
+import 'package:kajve/features/alerts/domain/usecases/atender_alerta_usecase.dart'
+    as _i440;
+import 'package:kajve/features/alerts/domain/usecases/get_alertas_usecase.dart'
+    as _i103;
 import 'package:kajve/features/auth/data/datasources/auth_remote_datasource.dart'
     as _i376;
 import 'package:kajve/features/auth/data/repositories/auth_repository_impl.dart'
@@ -38,6 +48,14 @@ import 'package:kajve/features/dashboard/domain/get_dashboard_usecase.dart'
     as _i1070;
 import 'package:kajve/features/dashboard/domain/repositories/dashboard_repository.dart'
     as _i310;
+import 'package:kajve/features/history/data/datasources/history_remote_datasource.dart'
+    as _i242;
+import 'package:kajve/features/history/data/repositories/history_repository_impl.dart'
+    as _i671;
+import 'package:kajve/features/history/domain/repositories/history_repository.dart'
+    as _i238;
+import 'package:kajve/features/history/domain/usecases/get_historial_usecase.dart'
+    as _i842;
 import 'package:kajve/features/lots/data/datasources/lot_remote_datasource.dart'
     as _i417;
 import 'package:kajve/features/lots/data/datasources/lote_reclamo_remote_datasource.dart'
@@ -74,6 +92,16 @@ import 'package:kajve/features/monitoring/domain/usecases/get_lecturas_usecase.d
     as _i782;
 import 'package:kajve/features/monitoring/domain/usecases/get_resumen_lote_usecase.dart'
     as _i984;
+import 'package:kajve/features/predictions/data/datasources/predictions_remote_datasource.dart'
+    as _i43;
+import 'package:kajve/features/predictions/data/repositories/predictions_repository_impl.dart'
+    as _i4;
+import 'package:kajve/features/predictions/domain/repositories/predictions_repository.dart'
+    as _i548;
+import 'package:kajve/features/predictions/domain/usecases/get_predicciones_usecase.dart'
+    as _i315;
+import 'package:kajve/features/predictions/domain/usecases/get_recomendaciones_usecase.dart'
+    as _i658;
 import 'package:kajve/features/profile/data/datasources/profile_remote_datasource.dart'
     as _i354;
 import 'package:kajve/features/profile/data/repositories/profile_repository_impl.dart'
@@ -88,6 +116,20 @@ import 'package:kajve/features/profile/domain/usecases/update_perfil_usecase.dar
     as _i94;
 import 'package:kajve/features/realtime/data/datasources/realtime_ws_datasource.dart'
     as _i202;
+import 'package:kajve/features/reports/data/datasources/reports_remote_datasource.dart'
+    as _i516;
+import 'package:kajve/features/reports/data/repositories/reports_repository_impl.dart'
+    as _i646;
+import 'package:kajve/features/reports/domain/repositories/reports_repository.dart'
+    as _i535;
+import 'package:kajve/features/reports/domain/usecases/descargar_reporte_usecase.dart'
+    as _i825;
+import 'package:kajve/features/reports/domain/usecases/get_reportes_usecase.dart'
+    as _i721;
+import 'package:kajve/features/reports/domain/usecases/obtener_reporte_narrativo_usecase.dart'
+    as _i99;
+import 'package:kajve/features/reports/domain/usecases/solicitar_reporte_usecase.dart'
+    as _i444;
 import 'package:kajve/features/sensors/data/datasources/sensor_status_remote_datasource.dart'
     as _i279;
 import 'package:kajve/features/sensors/data/repositories/sensors_repository_impl.dart'
@@ -136,6 +178,24 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i665.SecureStorage>(),
       ),
     );
+    gh.lazySingleton<_i129.AlertsRemoteDataSource>(
+      () => _i129.AlertsRemoteDataSourceImpl(
+        gh<_i954.ApiClient>(),
+        gh<_i665.SecureStorage>(),
+      ),
+    );
+    gh.lazySingleton<_i242.HistoryRemoteDataSource>(
+      () => _i242.HistoryRemoteDataSourceImpl(
+        gh<_i954.ApiClient>(),
+        gh<_i665.SecureStorage>(),
+      ),
+    );
+    gh.lazySingleton<_i767.AlertsRepository>(
+      () => _i1029.AlertsRepositoryImpl(gh<_i129.AlertsRemoteDataSource>()),
+    );
+    gh.lazySingleton<_i238.HistoryRepository>(
+      () => _i671.HistoryRepositoryImpl(gh<_i242.HistoryRemoteDataSource>()),
+    );
     gh.lazySingleton<_i718.DashboardRemoteDataSource>(
       () => _i718.DashboardRemoteDataSourceImpl(
         gh<_i954.ApiClient>(),
@@ -152,17 +212,57 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i665.SecureStorage>(),
       ),
     );
+    gh.lazySingleton<_i43.PredictionsRemoteDataSource>(
+      () => _i43.PredictionsRemoteDataSourceImpl(
+        gh<_i954.ApiClient>(),
+        gh<_i665.SecureStorage>(),
+      ),
+    );
     gh.lazySingleton<_i354.ProfileRemoteDataSource>(
       () => _i354.ProfileRemoteDataSourceImpl(
         gh<_i954.ApiClient>(),
         gh<_i665.SecureStorage>(),
       ),
     );
+    gh.factory<_i842.GetHistorialUseCase>(
+      () => _i842.GetHistorialUseCase(gh<_i238.HistoryRepository>()),
+    );
+    gh.lazySingleton<_i516.ReportsRemoteDataSource>(
+      () => _i516.ReportsRemoteDataSourceImpl(
+        gh<_i954.ApiClient>(),
+        gh<_i665.SecureStorage>(),
+      ),
+    );
+    gh.lazySingleton<_i548.PredictionsRepository>(
+      () =>
+          _i4.PredictionsRepositoryImpl(gh<_i43.PredictionsRemoteDataSource>()),
+    );
+    gh.factory<_i440.AtenderAlertaUseCase>(
+      () => _i440.AtenderAlertaUseCase(gh<_i767.AlertsRepository>()),
+    );
+    gh.factory<_i103.GetAlertasUseCase>(
+      () => _i103.GetAlertasUseCase(gh<_i767.AlertsRepository>()),
+    );
     gh.lazySingleton<_i88.SensorsRepository>(
       () => _i510.SensorsRepositoryImpl(gh<_i279.SensorStatusDataSource>()),
     );
+    gh.lazySingleton<_i535.ReportsRepository>(
+      () => _i646.ReportsRepositoryImpl(gh<_i516.ReportsRemoteDataSource>()),
+    );
     gh.lazySingleton<_i376.AuthRemoteDataSource>(
       () => _i376.AuthRemoteDataSourceImpl(gh<_i954.ApiClient>()),
+    );
+    gh.factory<_i825.DescargarReporteUseCase>(
+      () => _i825.DescargarReporteUseCase(gh<_i535.ReportsRepository>()),
+    );
+    gh.factory<_i721.GetReportesUseCase>(
+      () => _i721.GetReportesUseCase(gh<_i535.ReportsRepository>()),
+    );
+    gh.factory<_i99.ObtenerReporteNarrativoUseCase>(
+      () => _i99.ObtenerReporteNarrativoUseCase(gh<_i535.ReportsRepository>()),
+    );
+    gh.factory<_i444.SolicitarReporteUseCase>(
+      () => _i444.SolicitarReporteUseCase(gh<_i535.ReportsRepository>()),
     );
     gh.lazySingleton<_i83.MonitoringRepository>(
       () => _i554.MonitoringRepositoryImpl(
@@ -195,6 +295,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i339.LotRepository>(
       () => _i767.LotRepositoryImpl(gh<_i417.LotRemoteDataSource>()),
+    );
+    gh.factory<_i315.GetPrediccionesUseCase>(
+      () => _i315.GetPrediccionesUseCase(gh<_i548.PredictionsRepository>()),
+    );
+    gh.factory<_i658.GetRecomendacionesUseCase>(
+      () => _i658.GetRecomendacionesUseCase(gh<_i548.PredictionsRepository>()),
     );
     gh.lazySingleton<_i1052.AuthRepository>(
       () => _i37.AuthRepositoryImpl(
