@@ -1,8 +1,11 @@
+import 'package:injectable/injectable.dart';
+
 import '../../domain/entities/lote_entity.dart';
 import '../../domain/repositories/lots_repository.dart';
 import '../datasources/lots_remote_datasource.dart';
 import '../models/create_lote_request_model.dart';
 
+@LazySingleton(as: LotsRepository)
 class LotsRepositoryImpl implements LotsRepository {
   final LotsRemoteDataSource remoteDataSource;
 

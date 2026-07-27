@@ -1,6 +1,6 @@
 //libs/features/realtime/presentation/screens/realtime_page.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_drawer.dart';
 
@@ -11,26 +11,17 @@ import '../widgets/sensor_grid.dart';
 import '../widgets/environment_card.dart';
 import '../widgets/chart_card.dart';
 
-class RealtimePage extends StatefulWidget {
+class RealtimePage extends ConsumerStatefulWidget {
   const RealtimePage({super.key});
 
   @override
-  State<RealtimePage> createState() => _RealtimePageState();
+  ConsumerState<RealtimePage> createState() => _RealtimePageState();
 }
 
-class _RealtimePageState extends State<RealtimePage>
+class _RealtimePageState extends ConsumerState<RealtimePage>
     with WidgetsBindingObserver {
   int? _loteId;
   bool _inicializado = false;
-
-  // Referencia al provider guardada mientras el context todavía está
-  // activo (ver didChangeDependencies), para poder usarla de forma segura
-  // en dispose(). Llamar context.read<T>() DENTRO de dispose() puede
-  // lanzar "Looking up a deactivated widget's ancestor is unsafe": para
-  // ese momento el árbol de widgets ya puede estar desactivado (ej. al
-  // salir de la pantalla), y context.read internamente hace una búsqueda
-  // en el árbol de ancestros que ya no es válida.
-  RealtimeProvider? _provider;
 
   @override
   void initState() {
@@ -42,8 +33,6 @@ class _RealtimePageState extends State<RealtimePage>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _provider = context.read<RealtimeProvider>();
-
     if (_inicializado) return;
     _inicializado = true;
 
@@ -53,7 +42,7 @@ class _RealtimePageState extends State<RealtimePage>
     final loteId = _loteId;
     if (loteId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _provider?.iniciarTiempoReal(loteId);
+        ref.read(realtimeControllerProvider.notifier).iniciarTiempoReal(loteId);
       });
     }
   }
@@ -69,7 +58,7 @@ class _RealtimePageState extends State<RealtimePage>
     if (state == AppLifecycleState.resumed) {
       final loteId = _loteId;
       if (loteId != null) {
-        _provider?.iniciarTiempoReal(loteId);
+        ref.read(realtimeControllerProvider.notifier).iniciarTiempoReal(loteId);
       }
     }
   }
@@ -77,13 +66,13 @@ class _RealtimePageState extends State<RealtimePage>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    // El provider vive a nivel de app (registrado una sola vez en
-    // main.dart), así que si no se detiene aquí el WebSocket y el
-    // refresco de estadísticas seguirían corriendo en segundo plano tras
-    // salir de la pantalla. Se usa la referencia guardada en
-    // didChangeDependencies, no un context.read nuevo (ver comentario del
-    // campo _provider).
-    _provider?.detenerTiempoReal();
+    // El controller vive con autoDispose (Riverpod lo destruye cuando
+    // nadie más lo observa), pero el WebSocket y el Timer de refresco
+    // deben cortarse explícitamente al salir de la pantalla, no esperar
+    // a que Riverpod decida limpiar el provider. `ref` sigue siendo
+    // válido dentro de dispose() en un ConsumerStatefulWidget (a
+    // diferencia de context.read con el paquete provider).
+    ref.read(realtimeControllerProvider.notifier).detenerTiempoReal();
     super.dispose();
   }
 
@@ -104,8 +93,10 @@ class _RealtimePageState extends State<RealtimePage>
               icono: Icons.error_outline,
               mensaje: "No se especificó el lote a mostrar.",
             )
-          : Consumer<RealtimeProvider>(
-              builder: (context, provider, child) {
+          : Builder(
+              builder: (_) {
+                final provider = ref.watch(realtimeControllerProvider);
+
                 // El WebSocket de ws-gateway (histórico + lecturas en vivo)
                 // no depende de /lotes/{id}/estadisticas: son dos fuentes
                 // distintas. Antes, si /estadisticas fallaba (ej. la API
@@ -125,7 +116,9 @@ class _RealtimePageState extends State<RealtimePage>
                   return _MensajeCentrado(
                     icono: Icons.cloud_off,
                     mensaje: provider.errorMessage!,
-                    onReintentar: () => provider.iniciarTiempoReal(loteId),
+                    onReintentar: () => ref
+                        .read(realtimeControllerProvider.notifier)
+                        .iniciarTiempoReal(loteId),
                   );
                 }
 
@@ -139,7 +132,9 @@ class _RealtimePageState extends State<RealtimePage>
                 // entrar. Deslizar hacia abajo desde arriba del todo ahora
                 // reinicia la conexión sin salir de la vista.
                 return RefreshIndicator(
-                  onRefresh: () => provider.iniciarTiempoReal(loteId),
+                  onRefresh: () => ref
+                      .read(realtimeControllerProvider.notifier)
+                      .iniciarTiempoReal(loteId),
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(16),

@@ -1,37 +1,62 @@
 import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../../core/storage/secure_storage.dart';
-import '../../data/datasources/auth_remote_datasource.dart';
-import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/usecases/register_usecase.dart';
 
-class RegisterProvider extends ChangeNotifier {
-  final TextEditingController nombreController = TextEditingController();
-  final TextEditingController correoController = TextEditingController();
-  final TextEditingController telefonoController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmarController = TextEditingController();
+part 'register_provider.g.dart';
 
-  bool ocultarPassword = true;
-  bool ocultarConfirmacion = true;
-  bool cargando = false;
+class RegisterFormState {
+  final bool ocultarPassword;
+  final bool ocultarConfirmacion;
+  final bool cargando;
 
-  late final RegisterUseCase _registerUseCase = RegisterUseCase(
-    AuthRepositoryImpl(
-      AuthRemoteDataSourceImpl(ApiClient()),
-      SecureStorage(),
-    ),
-  );
+  const RegisterFormState({
+    this.ocultarPassword = true,
+    this.ocultarConfirmacion = true,
+    this.cargando = false,
+  });
+
+  RegisterFormState copyWith({
+    bool? ocultarPassword,
+    bool? ocultarConfirmacion,
+    bool? cargando,
+  }) {
+    return RegisterFormState(
+      ocultarPassword: ocultarPassword ?? this.ocultarPassword,
+      ocultarConfirmacion: ocultarConfirmacion ?? this.ocultarConfirmacion,
+      cargando: cargando ?? this.cargando,
+    );
+  }
+}
+
+@riverpod
+class RegisterController extends _$RegisterController {
+  final nombreController = TextEditingController();
+  final correoController = TextEditingController();
+  final telefonoController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmarController = TextEditingController();
+
+  @override
+  RegisterFormState build() {
+    ref.onDispose(() {
+      nombreController.dispose();
+      correoController.dispose();
+      telefonoController.dispose();
+      passwordController.dispose();
+      confirmarController.dispose();
+    });
+    return const RegisterFormState();
+  }
 
   void cambiarPassword() {
-    ocultarPassword = !ocultarPassword;
-    notifyListeners();
+    state = state.copyWith(ocultarPassword: !state.ocultarPassword);
   }
 
   void cambiarConfirmacion() {
-    ocultarConfirmacion = !ocultarConfirmacion;
-    notifyListeners();
+    state = state.copyWith(ocultarConfirmacion: !state.ocultarConfirmacion);
   }
 
   bool _esEmailValido(String email) =>
@@ -65,11 +90,10 @@ class RegisterProvider extends ChangeNotifier {
       return;
     }
 
-    cargando = true;
-    notifyListeners();
+    state = state.copyWith(cargando: true);
 
     try {
-      await _registerUseCase(
+      await getIt<RegisterUseCase>()(
         nombre: nombreController.text.trim(),
         email: correoController.text.trim(),
         password: passwordController.text,
@@ -94,8 +118,7 @@ class RegisterProvider extends ChangeNotifier {
         _mostrarSnackBar(context, mensaje, Colors.red);
       }
     } finally {
-      cargando = false;
-      notifyListeners();
+      state = state.copyWith(cargando: false);
     }
   }
 
@@ -103,15 +126,5 @@ class RegisterProvider extends ChangeNotifier {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(mensaje), backgroundColor: color),
     );
-  }
-
-  @override
-  void dispose() {
-    nombreController.dispose();
-    correoController.dispose();
-    telefonoController.dispose();
-    passwordController.dispose();
-    confirmarController.dispose();
-    super.dispose();
   }
 }

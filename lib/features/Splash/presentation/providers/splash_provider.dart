@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/di/injection.dart';
+import '../../../../core/messaging/fcm_service.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/storage/secure_storage.dart';
-import '../../../auth/data/datasources/auth_remote_datasource.dart';
-import '../../../auth/data/repositories/auth_repository_impl.dart';
 import '../../../auth/domain/usecases/refresh_token_usecase.dart';
-import '../../../../core/messaging/fcm_service.dart';
 
-class SplashProvider extends ChangeNotifier {
-  final SecureStorage _secureStorage = SecureStorage();
+part 'splash_provider.g.dart';
 
-  late final RefreshTokenUseCase _refreshTokenUseCase = RefreshTokenUseCase(
-    AuthRepositoryImpl(
-      AuthRemoteDataSourceImpl(ApiClient()),
-      _secureStorage,
-    ),
-  );
+@riverpod
+class SplashController extends _$SplashController {
+  @override
+  void build() {}
 
   Future<void> iniciar(BuildContext context) async {
     final tiempoMinimo = Future.delayed(const Duration(seconds: 3));
@@ -26,7 +23,8 @@ class SplashProvider extends ChangeNotifier {
     if (!context.mounted) return;
 
     if (destino == AppRoutes.dashboard) {
-      final loteIdPendiente = FcmService().consumirLotePendienteAlertas();
+      final loteIdPendiente =
+          getIt<FcmService>().consumirLotePendienteAlertas();
       if (loteIdPendiente != null) {
         Navigator.pushReplacementNamed(
           context,
@@ -50,16 +48,18 @@ class SplashProvider extends ChangeNotifier {
   /// no confirma que la sesión sea inválida, así que no debe cerrarla
   /// por un problema transitorio.
   Future<String> _resolverDestino() async {
-    final refreshToken = await _secureStorage.getRefreshToken();
+    final secureStorage = getIt<SecureStorage>();
+    final refreshToken = await secureStorage.getRefreshToken();
     if (refreshToken == null) return AppRoutes.login;
 
     try {
-      final nuevoAccessToken = await _refreshTokenUseCase(refreshToken);
-      await _secureStorage.saveAccessToken(nuevoAccessToken);
+      final refreshTokenUseCase = getIt<RefreshTokenUseCase>();
+      final nuevoAccessToken = await refreshTokenUseCase(refreshToken);
+      await secureStorage.saveAccessToken(nuevoAccessToken);
       return AppRoutes.dashboard;
     } on ApiException catch (e) {
       if (e.statusCode == 401) {
-        await _secureStorage.clear();
+        await secureStorage.clear();
         return AppRoutes.login;
       }
       return AppRoutes.dashboard;

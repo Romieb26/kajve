@@ -1,7 +1,10 @@
 //lib/features/monitoring/domain/usecases/get_lecturas_usecase.dart
+import 'package:injectable/injectable.dart';
+
 import '../entities/lectura_entity.dart';
 import '../repositories/monitoring_repository.dart';
 
+@injectable
 class GetLecturasUseCase {
   final MonitoringRepository repository;
 

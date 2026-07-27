@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../providers/register_provider.dart';
 
 class RegisterForm extends StatelessWidget {
-  final RegisterProvider provider;
+  final RegisterFormState state;
+  final RegisterController controller;
 
   const RegisterForm({
     super.key,
-    required this.provider,
+    required this.state,
+    required this.controller,
   });
 
   @override
@@ -23,7 +25,7 @@ class RegisterForm extends StatelessWidget {
           children: [
 
             TextField(
-              controller: provider.nombreController,
+              controller: controller.nombreController,
               decoration: const InputDecoration(
                 labelText: "Nombre completo",
                 prefixIcon: Icon(Icons.person),
@@ -33,7 +35,7 @@ class RegisterForm extends StatelessWidget {
             const SizedBox(height: 18),
 
             TextField(
-              controller: provider.correoController,
+              controller: controller.correoController,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
                 labelText: "Correo electrónico",
@@ -44,7 +46,7 @@ class RegisterForm extends StatelessWidget {
             const SizedBox(height: 18),
 
             TextField(
-              controller: provider.telefonoController,
+              controller: controller.telefonoController,
               keyboardType: TextInputType.phone,
               decoration: const InputDecoration(
                 labelText: "Teléfono",
@@ -55,18 +57,18 @@ class RegisterForm extends StatelessWidget {
             const SizedBox(height: 18),
 
             TextField(
-              controller: provider.passwordController,
-              obscureText: provider.ocultarPassword,
+              controller: controller.passwordController,
+              obscureText: state.ocultarPassword,
               decoration: InputDecoration(
                 labelText: "Contraseña",
                 prefixIcon: const Icon(Icons.lock),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    provider.ocultarPassword
+                    state.ocultarPassword
                         ? Icons.visibility
                         : Icons.visibility_off,
                   ),
-                  onPressed: provider.cambiarPassword,
+                  onPressed: controller.cambiarPassword,
                 ),
               ),
             ),
@@ -74,18 +76,18 @@ class RegisterForm extends StatelessWidget {
             const SizedBox(height: 18),
 
             TextField(
-              controller: provider.confirmarController,
-              obscureText: provider.ocultarConfirmacion,
+              controller: controller.confirmarController,
+              obscureText: state.ocultarConfirmacion,
               decoration: InputDecoration(
                 labelText: "Confirmar contraseña",
                 prefixIcon: const Icon(Icons.lock_outline),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    provider.ocultarConfirmacion
+                    state.ocultarConfirmacion
                         ? Icons.visibility
                         : Icons.visibility_off,
                   ),
-                  onPressed: provider.cambiarConfirmacion,
+                  onPressed: controller.cambiarConfirmacion,
                 ),
               ),
             ),

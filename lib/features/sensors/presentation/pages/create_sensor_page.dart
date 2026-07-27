@@ -1,65 +1,63 @@
 //libs/features/sensors/presentation/pages/create_sensor_page.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_drawer.dart';
 
 import '../providers/sensor_provider.dart';
 import '../widgets/sensor_form.dart';
 
-class CreateSensorPage extends StatelessWidget {
+class CreateSensorPage extends ConsumerWidget {
   const CreateSensorPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer<SensorProvider>(
-      builder: (context, provider, child) {
-        return Scaffold(
-          drawer: const AppDrawer(),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.read(sensorControllerProvider.notifier);
 
-          appBar: AppBar(
-            title: const Text("Registrar Sensor"),
-            centerTitle: true,
-          ),
+    return Scaffold(
+      drawer: const AppDrawer(),
 
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: const Text("Registrar Sensor"),
+        centerTitle: true,
+      ),
 
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
 
-                /// Formulario
-                const SensorForm(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
 
-                const SizedBox(height: 30),
+            /// Formulario
+            const SensorForm(),
 
-                FilledButton.icon(
-                  icon: const Icon(Icons.save),
+            const SizedBox(height: 30),
 
-                  label: const Text("Guardar sensor"),
+            FilledButton.icon(
+              icon: const Icon(Icons.save),
 
-                  onPressed: () {
+              label: const Text("Guardar sensor"),
 
-                    provider.guardarSensor();
+              onPressed: () {
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          "Sensor registrado correctamente.",
-                        ),
-                      ),
-                    );
+                controller.guardarSensor();
 
-                    Navigator.pop(context);
-                  },
-                ),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Sensor registrado correctamente.",
+                    ),
+                  ),
+                );
 
-              ],
+                Navigator.pop(context);
+              },
             ),
-          ),
-        );
-      },
+
+          ],
+        ),
+      ),
     );
   }
 }

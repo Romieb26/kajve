@@ -1,6 +1,9 @@
+import 'package:injectable/injectable.dart';
+
 import 'entities/lote_entity.dart';
 import 'repositories/lots_repository.dart';
 
+@injectable
 class CreateLoteUseCase {
   final LotsRepository repository;
 

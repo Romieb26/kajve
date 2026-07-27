@@ -1,6 +1,7 @@
 //lib/features/realtime/data/datasources/realtime_ws_datasource.dart
 import 'dart:convert';
 
+import 'package:injectable/injectable.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../domain/entities/lectura_tiempo_real_entity.dart';
@@ -29,6 +30,7 @@ class RealtimeWsMessage {
 /// A diferencia del resto de las llamadas de la app (que van por
 /// ApiClient/REST contra el dominio de api-mobile), esto habla
 /// directamente con el WebSocket Gateway.
+@injectable
 class RealtimeWsDataSource {
   // ws-gateway desplegado en el servidor, detrás de TLS — ya no apunta a
   // la IP local de una PC en la misma red Wi-Fi.

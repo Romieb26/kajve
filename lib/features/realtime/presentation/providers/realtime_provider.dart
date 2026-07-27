@@ -1,36 +1,66 @@
 //libs/features/realtime/presentation/providers/realtime_provider.dart
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../../core/network/api_client.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../core/storage/secure_storage.dart';
-import '../../../monitoring/data/datasources/monitoring_remote_datasource.dart';
-import '../../../monitoring/data/repositories/monitoring_repository_impl.dart';
 import '../../../monitoring/domain/entities/estadisticas_entity.dart';
 import '../../../monitoring/domain/usecases/get_estadisticas_usecase.dart';
 import '../../data/datasources/realtime_ws_datasource.dart';
 import '../../domain/entities/lectura_tiempo_real_entity.dart';
 
-class RealtimeProvider extends ChangeNotifier {
-  bool isLoading = false;
-  String? errorMessage;
+part 'realtime_provider.g.dart';
 
-  EstadisticasEntity? estadisticas;
+class RealtimeState {
+  final bool isLoading;
+  final String? errorMessage;
+
+  final EstadisticasEntity? estadisticas;
 
   /// Serie de lecturas en vivo que llega por el WebSocket de ws-gateway:
   /// el primer mensaje ("historial") la puebla de golpe, y cada evento
   /// ("osil.data.updated") le agrega un punto nuevo. Acotada a los
-  /// últimos [_maxPuntos] para no crecer sin límite mientras la pantalla
-  /// esté abierta.
-  List<LecturaTiempoRealEntity> serieTiempoReal = [];
+  /// últimos [RealtimeController._maxPuntos] para no crecer sin límite
+  /// mientras la pantalla esté abierta.
+  final List<LecturaTiempoRealEntity> serieTiempoReal;
 
   /// true mientras el WebSocket esté conectado y recibiendo datos; false
   /// si aún no conecta o se cayó. El histórico y las estadísticas siguen
   /// funcionando aunque esto sea false (ws-gateway sirve el histórico aun
   /// sin Redis disponible).
-  bool wsConectado = false;
+  final bool wsConectado;
 
+  const RealtimeState({
+    this.isLoading = false,
+    this.errorMessage,
+    this.estadisticas,
+    this.serieTiempoReal = const [],
+    this.wsConectado = false,
+  });
+
+  RealtimeState copyWith({
+    bool? isLoading,
+    String? errorMessage,
+    bool clearError = false,
+    EstadisticasEntity? estadisticas,
+    bool clearEstadisticas = false,
+    List<LecturaTiempoRealEntity>? serieTiempoReal,
+    bool? wsConectado,
+  }) {
+    return RealtimeState(
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      estadisticas:
+          clearEstadisticas ? null : (estadisticas ?? this.estadisticas),
+      serieTiempoReal: serieTiempoReal ?? this.serieTiempoReal,
+      wsConectado: wsConectado ?? this.wsConectado,
+    );
+  }
+}
+
+@riverpod
+class RealtimeController extends _$RealtimeController {
   static const int _maxPuntos = 60;
 
   /// Cuánto esperar antes de reintentar el WebSocket cuando se cae solo
@@ -42,27 +72,25 @@ class RealtimeProvider extends ChangeNotifier {
   Timer? _refrescoEstadisticasTimer;
   Timer? _reconexionWsTimer;
 
-  final RealtimeWsDataSource _wsDataSource = RealtimeWsDataSource();
-  final SecureStorage _secureStorage = SecureStorage();
+  final RealtimeWsDataSource _wsDataSource = getIt<RealtimeWsDataSource>();
+  final SecureStorage _secureStorage = getIt<SecureStorage>();
 
-  late final MonitoringRepositoryImpl _repository = MonitoringRepositoryImpl(
-    MonitoringRemoteDataSourceImpl(ApiClient(), _secureStorage),
-  );
-
-  late final GetEstadisticasUseCase _getEstadisticasUseCase =
-      GetEstadisticasUseCase(_repository);
+  @override
+  RealtimeState build() {
+    ref.onDispose(detenerTiempoReal);
+    return const RealtimeState();
+  }
 
   Future<void> cargarEstadisticas(int loteId) async {
     if (loteId != _loteIdActual) {
-      estadisticas = null;
+      state = state.copyWith(clearEstadisticas: true);
     }
 
-    isLoading = true;
-    errorMessage = null;
-    notifyListeners();
+    state = state.copyWith(isLoading: true, clearError: true);
 
     try {
-      estadisticas = await _getEstadisticasUseCase(loteId);
+      final estadisticas = await getIt<GetEstadisticasUseCase>()(loteId);
+      state = state.copyWith(estadisticas: estadisticas);
     } catch (_) {
       // Silencioso a propósito, igual que la pantalla de Sensores: si
       // /estadisticas falla (ej. api-mobile caído o con una consulta
@@ -73,11 +101,10 @@ class RealtimeProvider extends ChangeNotifier {
       // _refrescoEstadisticasTimer). Si el backend se arregla, el
       // encabezado se llena solo en el siguiente refresco sin que el
       // usuario tenga que hacer nada.
-      estadisticas = null;
+      state = state.copyWith(clearEstadisticas: true);
     } finally {
       _loteIdActual = loteId;
-      isLoading = false;
-      notifyListeners();
+      state = state.copyWith(isLoading: false);
     }
   }
 
@@ -99,12 +126,13 @@ class RealtimeProvider extends ChangeNotifier {
 
     final token = await _secureStorage.getAccessToken();
     if (token == null) {
-      errorMessage = "Tu sesión expiró. Inicia sesión de nuevo.";
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: "Tu sesión expiró. Inicia sesión de nuevo.",
+      );
       return;
     }
 
-    serieTiempoReal = [];
+    state = state.copyWith(serieTiempoReal: []);
 
     _suscribirWs(loteId, token);
   }
@@ -112,26 +140,23 @@ class RealtimeProvider extends ChangeNotifier {
   void _suscribirWs(int loteId, String token) {
     _wsSubscription = _wsDataSource.connect(loteId, token).listen(
       (mensaje) {
+        List<LecturaTiempoRealEntity> serie = state.serieTiempoReal;
         if (mensaje.esHistorial) {
-          serieTiempoReal = mensaje.historial;
+          serie = mensaje.historial;
         } else if (mensaje.lectura != null) {
-          serieTiempoReal = [...serieTiempoReal, mensaje.lectura!];
-          if (serieTiempoReal.length > _maxPuntos) {
-            serieTiempoReal =
-                serieTiempoReal.sublist(serieTiempoReal.length - _maxPuntos);
+          serie = [...serie, mensaje.lectura!];
+          if (serie.length > _maxPuntos) {
+            serie = serie.sublist(serie.length - _maxPuntos);
           }
         }
-        wsConectado = true;
-        notifyListeners();
+        state = state.copyWith(serieTiempoReal: serie, wsConectado: true);
       },
       onError: (_) {
-        wsConectado = false;
-        notifyListeners();
+        state = state.copyWith(wsConectado: false);
         _programarReconexionWs(loteId);
       },
       onDone: () {
-        wsConectado = false;
-        notifyListeners();
+        state = state.copyWith(wsConectado: false);
         _programarReconexionWs(loteId);
       },
     );
@@ -159,8 +184,9 @@ class RealtimeProvider extends ChangeNotifier {
       try {
         final token = await _secureStorage.getAccessToken();
         if (token == null) {
-          errorMessage = "Tu sesión expiró. Inicia sesión de nuevo.";
-          notifyListeners();
+          state = state.copyWith(
+            errorMessage: "Tu sesión expiró. Inicia sesión de nuevo.",
+          );
           return;
         }
 
@@ -184,12 +210,6 @@ class RealtimeProvider extends ChangeNotifier {
     _wsSubscription?.cancel();
     _wsSubscription = null;
     _wsDataSource.disconnect();
-    wsConectado = false;
-  }
-
-  @override
-  void dispose() {
-    detenerTiempoReal();
-    super.dispose();
+    state = state.copyWith(wsConectado: false);
   }
 }

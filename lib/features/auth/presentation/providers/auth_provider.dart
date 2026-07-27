@@ -1,36 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/di/injection.dart';
+import '../../../../core/messaging/fcm_service.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/storage/secure_storage.dart';
-import '../../../../core/messaging/fcm_service.dart';
-import '../../data/datasources/auth_remote_datasource.dart';
-import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/usuario_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 
-class AuthProvider extends ChangeNotifier {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+part 'auth_provider.g.dart';
 
-  bool ocultarPassword = true;
-  bool cargando = false;
+class AuthFormState {
+  final bool ocultarPassword;
+  final bool cargando;
+  final UsuarioEntity? usuario;
 
-  UsuarioEntity? usuario;
+  const AuthFormState({
+    this.ocultarPassword = true,
+    this.cargando = false,
+    this.usuario,
+  });
 
-  final SecureStorage _secureStorage = SecureStorage();
+  AuthFormState copyWith({
+    bool? ocultarPassword,
+    bool? cargando,
+    UsuarioEntity? usuario,
+  }) {
+    return AuthFormState(
+      ocultarPassword: ocultarPassword ?? this.ocultarPassword,
+      cargando: cargando ?? this.cargando,
+      usuario: usuario ?? this.usuario,
+    );
+  }
+}
 
-  late final LoginUseCase _loginUseCase = LoginUseCase(
-    AuthRepositoryImpl(
-      AuthRemoteDataSourceImpl(ApiClient()),
-      _secureStorage,
-    ),
-  );
+@riverpod
+class AuthController extends _$AuthController {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  @override
+  AuthFormState build() {
+    ref.onDispose(() {
+      emailController.dispose();
+      passwordController.dispose();
+    });
+    return const AuthFormState();
+  }
 
   void cambiarVisibilidad() {
-    ocultarPassword = !ocultarPassword;
-    notifyListeners();
+    state = state.copyWith(ocultarPassword: !state.ocultarPassword);
   }
 
   bool _esEmailValido(String email) =>
@@ -54,26 +75,27 @@ class AuthProvider extends ChangeNotifier {
       return;
     }
 
-    cargando = true;
-    notifyListeners();
+    state = state.copyWith(cargando: true);
 
     try {
-      final AuthSession session = await _loginUseCase(
+      final AuthSession session = await getIt<LoginUseCase>()(
         email: email,
         password: password,
       );
 
-      await _secureStorage.saveSession(
+      final secureStorage = getIt<SecureStorage>();
+      await secureStorage.saveSession(
         accessToken: session.accessToken,
         refreshToken: session.refreshToken,
         idUsuario: session.usuario.id,
       );
 
-      await FcmService().registrarTokenPendienteSiExiste();
+      await getIt<FcmService>().registrarTokenPendienteSiExiste();
 
-      usuario = session.usuario;
+      state = state.copyWith(usuario: session.usuario);
 
-      final loteIdPendiente = FcmService().consumirLotePendienteAlertas();
+      final loteIdPendiente =
+          getIt<FcmService>().consumirLotePendienteAlertas();
 
       if (context.mounted) {
         if (loteIdPendiente != null) {
@@ -105,8 +127,7 @@ class AuthProvider extends ChangeNotifier {
         );
       }
     } finally {
-      cargando = false;
-      notifyListeners();
+      state = state.copyWith(cargando: false);
     }
   }
 
@@ -114,12 +135,5 @@ class AuthProvider extends ChangeNotifier {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(mensaje), backgroundColor: color),
     );
-  }
-
-  @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
   }
 }

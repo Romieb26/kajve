@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/widgets/app_drawer.dart';
@@ -8,62 +8,61 @@ import '../providers/lot_provider.dart';
 import '../widgets/lot_card.dart';
 import '../widgets/search_bar_widget.dart';
 
-class LotsPage extends StatefulWidget {
+class LotsPage extends ConsumerStatefulWidget {
   const LotsPage({super.key});
 
   @override
-  State<LotsPage> createState() => _LotsPageState();
+  ConsumerState<LotsPage> createState() => _LotsPageState();
 }
 
-class _LotsPageState extends State<LotsPage> {
+class _LotsPageState extends ConsumerState<LotsPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LotProvider>().cargarLotes();
+      ref.read(lotControllerProvider.notifier).cargarLotes();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LotProvider>(
-      builder: (context, provider, child) {
-        return Scaffold(
-          drawer: const AppDrawer(),
+    final state = ref.watch(lotControllerProvider);
+    final controller = ref.read(lotControllerProvider.notifier);
 
-          appBar: AppBar(
-            title: const Text("Lista de Lotes"),
-            centerTitle: true,
-          ),
+    return Scaffold(
+      drawer: const AppDrawer(),
 
-          body: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                SearchBarWidget(
-                  controller: provider.searchController,
-                  onChanged: provider.buscar,
-                ),
+      appBar: AppBar(
+        title: const Text("Lista de Lotes"),
+        centerTitle: true,
+      ),
 
-                const SizedBox(height: 20),
-
-                Expanded(
-                  child: _buildBody(context, provider),
-                ),
-              ],
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            SearchBarWidget(
+              controller: controller.searchController,
+              onChanged: controller.buscar,
             ),
-          ),
-        );
-      },
+
+            const SizedBox(height: 20),
+
+            Expanded(
+              child: _buildBody(context, state, controller),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildBody(BuildContext context, LotProvider provider) {
-    if (provider.cargandoLotes && provider.lotes.isEmpty) {
+  Widget _buildBody(BuildContext context, LotState state, LotController controller) {
+    if (state.cargandoLotes && state.lotes.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (provider.errorLotes != null && provider.lotes.isEmpty) {
+    if (state.errorLotes != null && state.lotes.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -72,10 +71,10 @@ class _LotsPageState extends State<LotsPage> {
             children: [
               const Icon(Icons.cloud_off, size: 48, color: Colors.grey),
               const SizedBox(height: 12),
-              Text(provider.errorLotes!, textAlign: TextAlign.center),
+              Text(state.errorLotes!, textAlign: TextAlign.center),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () => provider.cargarLotes(),
+                onPressed: () => controller.cargarLotes(),
                 child: const Text("Reintentar"),
               ),
             ],
@@ -84,7 +83,7 @@ class _LotsPageState extends State<LotsPage> {
       );
     }
 
-    if (provider.lotes.isEmpty) {
+    if (state.lotes.isEmpty) {
       return const Center(
         child: Text(
           "No tienes lotes registrados aún.",
@@ -94,12 +93,12 @@ class _LotsPageState extends State<LotsPage> {
     }
 
     return RefreshIndicator(
-      onRefresh: provider.cargarLotes,
+      onRefresh: controller.cargarLotes,
       child: ListView.separated(
-        itemCount: provider.lotes.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 15),
+        itemCount: state.lotes.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 15),
         itemBuilder: (context, index) {
-          final lote = provider.lotes[index];
+          final lote = state.lotes[index];
 
           return ClipRRect(
             borderRadius: BorderRadius.circular(20),

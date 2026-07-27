@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:screen_protector/screen_protector.dart';
 
 import '../providers/register_provider.dart';
@@ -7,14 +8,14 @@ import '../widgets/register_button.dart';
 import '../widgets/register_form.dart';
 import '../../../auth/presentation/widgets/logo_login.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   void initState() {
     super.initState();
@@ -29,7 +30,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<RegisterProvider>(context);
+    final state = ref.watch(registerControllerProvider);
+    final controller = ref.read(registerControllerProvider.notifier);
 
     return Scaffold(
       body: Container(
@@ -48,7 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(24.r),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     minHeight: constraints.maxHeight,
@@ -57,30 +59,30 @@ class _RegisterPageState extends State<RegisterPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
 
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
                       const LogoLogin(),
 
-                      const SizedBox(height: 30),
+                      SizedBox(height: 30.h),
 
-                      const Text(
+                      Text(
                         "Crear cuenta",
                         style: TextStyle(
-                          fontSize: 26,
+                          fontSize: 26.sp,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
 
-                      const SizedBox(height: 25),
+                      SizedBox(height: 25.h),
 
-                      RegisterForm(provider: provider),
+                      RegisterForm(state: state, controller: controller),
 
-                      const SizedBox(height: 25),
+                      SizedBox(height: 25.h),
 
-                      RegisterButton(provider: provider),
+                      RegisterButton(state: state, controller: controller),
 
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
                       TextButton(
                         onPressed: () {

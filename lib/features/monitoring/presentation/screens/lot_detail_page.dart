@@ -1,6 +1,6 @@
 //lib/features/monitoring/presentation/screens/Iot_detail_page.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_drawer.dart';
 
@@ -10,14 +10,14 @@ import '../widgets/info_card.dart';
 import '../widgets/environment_card.dart';
 import '../widgets/resumen_lote_card.dart';
 
-class LotDetailPage extends StatefulWidget {
+class LotDetailPage extends ConsumerStatefulWidget {
   const LotDetailPage({super.key});
 
   @override
-  State<LotDetailPage> createState() => _LotDetailPageState();
+  ConsumerState<LotDetailPage> createState() => _LotDetailPageState();
 }
 
-class _LotDetailPageState extends State<LotDetailPage> {
+class _LotDetailPageState extends ConsumerState<LotDetailPage> {
   int? _loteId;
 
   @override
@@ -30,7 +30,7 @@ class _LotDetailPageState extends State<LotDetailPage> {
     final loteId = _loteId;
     if (loteId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<MonitoringProvider>().cargarDatos(loteId);
+        ref.read(monitoringControllerProvider.notifier).cargarDatos(loteId);
       });
     }
   }
@@ -52,8 +52,10 @@ class _LotDetailPageState extends State<LotDetailPage> {
               icono: Icons.error_outline,
               mensaje: "No se especificó el lote a mostrar.",
             )
-          : Consumer<MonitoringProvider>(
-              builder: (context, provider, child) {
+          : Builder(
+              builder: (_) {
+                final provider = ref.watch(monitoringControllerProvider);
+
                 // El resumen (ws-gateway/Postgres) no depende de
                 // /lotes/{id}/estadisticas (api-mobile): si ese endpoint
                 // sigue caído pero el resumen sí cargó, se muestra igual
@@ -69,7 +71,9 @@ class _LotDetailPageState extends State<LotDetailPage> {
                   return _MensajeCentrado(
                     icono: Icons.cloud_off,
                     mensaje: provider.errorMessage!,
-                    onReintentar: () => provider.cargarDatos(loteId),
+                    onReintentar: () => ref
+                        .read(monitoringControllerProvider.notifier)
+                        .cargarDatos(loteId),
                   );
                 }
 

@@ -1,6 +1,7 @@
 //lib/core/messaging/fcm_service.dart
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:injectable/injectable.dart';
 
 import '../network/api_client.dart';
 import '../storage/secure_storage.dart';
@@ -17,6 +18,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint('FCM background message: ${message.messageId}');
 }
 
+@lazySingleton
 class FcmService {
   // Compartido entre instancias (mismo patrón que SecureStorage): main.dart
   // crea un FcmService antes de cualquier login, AuthProvider crea otro al

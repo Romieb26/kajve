@@ -1,3 +1,5 @@
+import 'package:injectable/injectable.dart';
+
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../models/dashboard_response_model.dart';
@@ -7,6 +9,7 @@ abstract class DashboardRemoteDataSource {
   Future<DashboardResponseModel> getDashboard();
 }
 
+@LazySingleton(as: DashboardRemoteDataSource)
 class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   final ApiClient apiClient;
   final SecureStorage secureStorage;

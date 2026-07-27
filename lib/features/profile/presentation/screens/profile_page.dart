@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_drawer.dart';
 
@@ -11,54 +11,56 @@ import '../widgets/plan_card.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/password_card.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  ConsumerState<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends ConsumerState<ProfilePage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProfileProvider>().cargarPerfil();
+      ref.read(profileControllerProvider.notifier).cargarPerfil();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = context.watch<ThemeProvider>();
+    final themeMode = ref.watch(themeModeControllerProvider);
+    final themeController = ref.read(themeModeControllerProvider.notifier);
+    final state = ref.watch(profileControllerProvider);
+    final controller = ref.read(profileControllerProvider.notifier);
 
-    return Consumer<ProfileProvider>(
-      builder: (context, provider, child) {
-        return Scaffold(
-          drawer: const AppDrawer(),
+    return Scaffold(
+      drawer: const AppDrawer(),
 
-          appBar: AppBar(
-            title: const Text("Mi Perfil"),
-            centerTitle: true,
-          ),
+      appBar: AppBar(
+        title: const Text("Mi Perfil"),
+        centerTitle: true,
+      ),
 
-          body: _buildBody(context, provider, themeProvider),
-        );
-      },
+      body: _buildBody(context, state, controller, themeMode, themeController),
     );
   }
 
   Widget _buildBody(
     BuildContext context,
-    ProfileProvider provider,
-    ThemeProvider themeProvider,
+    ProfileState state,
+    ProfileController controller,
+    ThemeMode themeMode,
+    ThemeModeController themeController,
   ) {
     final theme = Theme.of(context);
+    final modoOscuro = themeMode == ThemeMode.dark;
 
-    if (provider.cargando && provider.perfil == null) {
+    if (state.cargando && state.perfil == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (provider.errorMessage != null && provider.perfil == null) {
+    if (state.errorMessage != null && state.perfil == null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -68,13 +70,13 @@ class _ProfilePageState extends State<ProfilePage> {
               Icon(Icons.cloud_off, size: 48, color: theme.textTheme.bodySmall?.color),
               const SizedBox(height: 12),
               Text(
-                provider.errorMessage!,
+                state.errorMessage!,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: provider.cargarPerfil,
+                onPressed: controller.cargarPerfil,
                 child: const Text("Reintentar"),
               ),
             ],
@@ -96,33 +98,31 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 20),
 
           /// Plan / estado de suscripción
-          PlanCard(provider: provider),
+          PlanCard(state: state),
 
           const SizedBox(height: 20),
 
           /// Información personal
-          ProfileCard(provider: provider),
+          ProfileCard(state: state, controller: controller),
 
           const SizedBox(height: 20),
 
           /// Cambiar contraseña
-          PasswordCard(provider: provider),
+          PasswordCard(state: state, controller: controller),
 
           const SizedBox(height: 20),
 
           /// Modo claro / oscuro
           Card(
             child: SwitchListTile(
-              value: themeProvider.modoOscuro,
-              onChanged: themeProvider.cambiarTema,
+              value: modoOscuro,
+              onChanged: themeController.cambiarTema,
               title: const Text("Modo oscuro"),
               subtitle: const Text(
                 "Cambia el tema manualmente, sin depender del sistema.",
               ),
               secondary: Icon(
-                themeProvider.modoOscuro
-                    ? Icons.dark_mode
-                    : Icons.light_mode,
+                modoOscuro ? Icons.dark_mode : Icons.light_mode,
               ),
             ),
           ),
@@ -132,7 +132,7 @@ class _ProfilePageState extends State<ProfilePage> {
           /// Cerrar sesión
           OutlinedButton.icon(
             onPressed: () {
-              provider.cerrarSesion(context);
+              controller.cerrarSesion(context);
             },
             icon: const Icon(Icons.logout),
             label: const Text("Cerrar sesión"),

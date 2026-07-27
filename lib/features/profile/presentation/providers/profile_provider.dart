@@ -1,90 +1,128 @@
 import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/routes/app_routes.dart';
-import '../../../../core/storage/secure_storage.dart';
-import '../../../auth/data/datasources/auth_remote_datasource.dart';
-import '../../../auth/data/repositories/auth_repository_impl.dart';
-import '../../../auth/domain/usecases/logout_usecase.dart';
 import '../../../../core/messaging/fcm_service.dart';
-import '../../data/datasources/profile_remote_datasource.dart';
-import '../../data/repositories/profile_repository_impl.dart';
+import '../../../auth/domain/usecases/logout_usecase.dart';
 import '../../domain/entities/perfil_entity.dart';
 import '../../domain/usecases/change_password_usecase.dart';
 import '../../domain/usecases/get_perfil_usecase.dart';
 import '../../domain/usecases/update_perfil_usecase.dart';
 
-class ProfileProvider extends ChangeNotifier {
-  /// Controladores — información personal
-  final TextEditingController nombreController = TextEditingController();
-  final TextEditingController correoController = TextEditingController();
-  final TextEditingController telefonoController = TextEditingController();
+part 'profile_provider.g.dart';
 
-  /// Controladores — cambio de contraseña
-  final TextEditingController passwordActualController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
-
-  late final ProfileRepositoryImpl _repository = ProfileRepositoryImpl(
-    ProfileRemoteDataSourceImpl(ApiClient(), SecureStorage()),
-  );
-
-  late final GetPerfilUseCase _getPerfilUseCase = GetPerfilUseCase(_repository);
-  late final UpdatePerfilUseCase _updatePerfilUseCase = UpdatePerfilUseCase(_repository);
-  late final ChangePasswordUseCase _changePasswordUseCase = ChangePasswordUseCase(_repository);
-
-  late final LogoutUseCase _logoutUseCase = LogoutUseCase(
-    AuthRepositoryImpl(AuthRemoteDataSourceImpl(ApiClient()), SecureStorage()),
-  );
-
+class ProfileState {
   /// Perfil (GET /perfil)
-  PerfilEntity? perfil;
-  bool cargando = false;
-  String? errorMessage;
+  final PerfilEntity? perfil;
+  final bool cargando;
+  final String? errorMessage;
 
   /// Guardar información personal (PUT /perfil)
-  bool guardando = false;
+  final bool guardando;
 
   /// Cambiar contraseña (PUT /perfil/password)
-  bool cambiandoPassword = false;
+  final bool cambiandoPassword;
 
   /// Visibilidad de los 3 campos de contraseña
-  bool ocultarPasswordActual = true;
-  bool ocultarPassword = true;
-  bool ocultarConfirmacion = true;
+  final bool ocultarPasswordActual;
+  final bool ocultarPassword;
+  final bool ocultarConfirmacion;
+
+  const ProfileState({
+    this.perfil,
+    this.cargando = false,
+    this.errorMessage,
+    this.guardando = false,
+    this.cambiandoPassword = false,
+    this.ocultarPasswordActual = true,
+    this.ocultarPassword = true,
+    this.ocultarConfirmacion = true,
+  });
+
+  ProfileState copyWith({
+    PerfilEntity? perfil,
+    bool? cargando,
+    String? errorMessage,
+    bool? guardando,
+    bool? cambiandoPassword,
+    bool? ocultarPasswordActual,
+    bool? ocultarPassword,
+    bool? ocultarConfirmacion,
+  }) {
+    return ProfileState(
+      perfil: perfil ?? this.perfil,
+      cargando: cargando ?? this.cargando,
+      errorMessage: errorMessage,
+      guardando: guardando ?? this.guardando,
+      cambiandoPassword: cambiandoPassword ?? this.cambiandoPassword,
+      ocultarPasswordActual:
+          ocultarPasswordActual ?? this.ocultarPasswordActual,
+      ocultarPassword: ocultarPassword ?? this.ocultarPassword,
+      ocultarConfirmacion: ocultarConfirmacion ?? this.ocultarConfirmacion,
+    );
+  }
+}
+
+@riverpod
+class ProfileController extends _$ProfileController {
+  /// Controladores — información personal
+  final nombreController = TextEditingController();
+  final correoController = TextEditingController();
+  final telefonoController = TextEditingController();
+
+  /// Controladores — cambio de contraseña
+  final passwordActualController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+
+  @override
+  ProfileState build() {
+    ref.onDispose(() {
+      nombreController.dispose();
+      correoController.dispose();
+      telefonoController.dispose();
+      passwordActualController.dispose();
+      passwordController.dispose();
+      confirmPasswordController.dispose();
+    });
+    return const ProfileState();
+  }
 
   void cambiarVisibilidadPasswordActual() {
-    ocultarPasswordActual = !ocultarPasswordActual;
-    notifyListeners();
+    state = state.copyWith(
+      ocultarPasswordActual: !state.ocultarPasswordActual,
+    );
   }
 
   void cambiarVisibilidadPassword() {
-    ocultarPassword = !ocultarPassword;
-    notifyListeners();
+    state = state.copyWith(ocultarPassword: !state.ocultarPassword);
   }
 
   void cambiarVisibilidadConfirmacion() {
-    ocultarConfirmacion = !ocultarConfirmacion;
-    notifyListeners();
+    state = state.copyWith(ocultarConfirmacion: !state.ocultarConfirmacion);
   }
 
   Future<void> cargarPerfil() async {
-    cargando = true;
-    errorMessage = null;
-    notifyListeners();
+    state = state.copyWith(cargando: true, errorMessage: null);
 
     try {
-      perfil = await _getPerfilUseCase();
-      _llenarControladores(perfil!);
+      final perfil = await getIt<GetPerfilUseCase>()();
+      _llenarControladores(perfil);
+      state = state.copyWith(perfil: perfil);
     } on ApiException catch (e) {
-      errorMessage = e.statusCode == 401
-          ? "Tu sesión expiró. Inicia sesión de nuevo."
-          : "No se pudo conectar. Intenta de nuevo";
+      state = state.copyWith(
+        errorMessage: e.statusCode == 401
+            ? "Tu sesión expiró. Inicia sesión de nuevo."
+            : "No se pudo conectar. Intenta de nuevo",
+      );
     } catch (_) {
-      errorMessage = "Ocurrió un error al cargar tu perfil.";
+      state = state.copyWith(
+        errorMessage: "Ocurrió un error al cargar tu perfil.",
+      );
     } finally {
-      cargando = false;
-      notifyListeners();
+      state = state.copyWith(cargando: false);
     }
   }
 
@@ -106,15 +144,22 @@ class ProfileProvider extends ChangeNotifier {
       return;
     }
 
-    guardando = true;
-    notifyListeners();
+    state = state.copyWith(guardando: true);
 
     try {
-      perfil = await _updatePerfilUseCase(nombre: nombre, telefono: telefono);
-      _llenarControladores(perfil!);
+      final perfil = await getIt<UpdatePerfilUseCase>()(
+        nombre: nombre,
+        telefono: telefono,
+      );
+      _llenarControladores(perfil);
+      state = state.copyWith(perfil: perfil);
 
       if (context.mounted) {
-        _mostrarSnackBar(context, "Perfil actualizado correctamente.", Colors.green);
+        _mostrarSnackBar(
+          context,
+          "Perfil actualizado correctamente.",
+          Colors.green,
+        );
       }
     } on ApiException catch (e) {
       if (context.mounted) {
@@ -122,11 +167,14 @@ class ProfileProvider extends ChangeNotifier {
       }
     } catch (_) {
       if (context.mounted) {
-        _mostrarSnackBar(context, "Ocurrió un error al actualizar tu perfil.", Colors.red);
+        _mostrarSnackBar(
+          context,
+          "Ocurrió un error al actualizar tu perfil.",
+          Colors.red,
+        );
       }
     } finally {
-      guardando = false;
-      notifyListeners();
+      state = state.copyWith(guardando: false);
     }
   }
 
@@ -136,12 +184,20 @@ class ProfileProvider extends ChangeNotifier {
     final confirmacion = confirmPasswordController.text;
 
     if (actual.isEmpty || nueva.isEmpty || confirmacion.isEmpty) {
-      _mostrarSnackBar(context, "Completa los 3 campos de contraseña.", Colors.orange);
+      _mostrarSnackBar(
+        context,
+        "Completa los 3 campos de contraseña.",
+        Colors.orange,
+      );
       return;
     }
 
     if (nueva.length < 8) {
-      _mostrarSnackBar(context, "La nueva contraseña debe tener al menos 8 caracteres.", Colors.orange);
+      _mostrarSnackBar(
+        context,
+        "La nueva contraseña debe tener al menos 8 caracteres.",
+        Colors.orange,
+      );
       return;
     }
 
@@ -150,18 +206,24 @@ class ProfileProvider extends ChangeNotifier {
       return;
     }
 
-    cambiandoPassword = true;
-    notifyListeners();
+    state = state.copyWith(cambiandoPassword: true);
 
     try {
-      await _changePasswordUseCase(passwordActual: actual, passwordNueva: nueva);
+      await getIt<ChangePasswordUseCase>()(
+        passwordActual: actual,
+        passwordNueva: nueva,
+      );
 
       passwordActualController.clear();
       passwordController.clear();
       confirmPasswordController.clear();
 
       if (context.mounted) {
-        _mostrarSnackBar(context, "Contraseña actualizada correctamente.", Colors.green);
+        _mostrarSnackBar(
+          context,
+          "Contraseña actualizada correctamente.",
+          Colors.green,
+        );
       }
     } on ApiException catch (e) {
       if (context.mounted) {
@@ -169,11 +231,14 @@ class ProfileProvider extends ChangeNotifier {
       }
     } catch (_) {
       if (context.mounted) {
-        _mostrarSnackBar(context, "Ocurrió un error al cambiar tu contraseña.", Colors.red);
+        _mostrarSnackBar(
+          context,
+          "Ocurrió un error al cambiar tu contraseña.",
+          Colors.red,
+        );
       }
     } finally {
-      cambiandoPassword = false;
-      notifyListeners();
+      state = state.copyWith(cambiandoPassword: false);
     }
   }
 
@@ -185,8 +250,8 @@ class ProfileProvider extends ChangeNotifier {
       ),
     );
 
-    await FcmService().desactivarDispositivoActual();
-    await _logoutUseCase();
+    await getIt<FcmService>().desactivarDispositivoActual();
+    await getIt<LogoutUseCase>()();
 
     if (context.mounted) {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
@@ -197,16 +262,5 @@ class ProfileProvider extends ChangeNotifier {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(mensaje), backgroundColor: color),
     );
-  }
-
-  @override
-  void dispose() {
-    nombreController.dispose();
-    correoController.dispose();
-    telefonoController.dispose();
-    passwordActualController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
-    super.dispose();
   }
 }

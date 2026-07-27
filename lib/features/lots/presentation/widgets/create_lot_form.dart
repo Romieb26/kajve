@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/lot_provider.dart';
 
-class CreateLotForm extends StatelessWidget {
+class CreateLotForm extends ConsumerWidget {
   const CreateLotForm({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final provider = Provider.of<LotProvider>(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(lotControllerProvider);
+    final provider = ref.read(lotControllerProvider.notifier);
     final theme = Theme.of(context);
 
     return Card(
@@ -69,7 +70,7 @@ class CreateLotForm extends StatelessWidget {
             const SizedBox(height: 15),
 
             DropdownButtonFormField<String>(
-              initialValue: provider.tipoProceso,
+              initialValue: state.tipoProceso,
               decoration: InputDecoration(
                 labelText: "Tipo de proceso",
                 prefixIcon: const Icon(Icons.science_outlined),

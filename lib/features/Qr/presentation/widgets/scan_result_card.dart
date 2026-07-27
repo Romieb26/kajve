@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import '../providers/qr_provider.dart';
 
 class ScanResultCard extends StatelessWidget {
-  final QrProvider provider;
+  final QrState state;
 
   const ScanResultCard({
     super.key,
-    required this.provider,
+    required this.state,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (provider.ultimoCodigo == null) {
+    if (state.ultimoCodigo == null) {
       return const SizedBox();
     }
 
@@ -62,7 +62,7 @@ class ScanResultCard extends StatelessWidget {
                   const SizedBox(height: 10),
 
                   SelectableText(
-                    provider.ultimoCodigo!,
+                    state.ultimoCodigo!,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 17,

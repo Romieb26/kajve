@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../../core/storage/secure_storage.dart';
-import '../../data/datasources/lot_remote_datasource.dart';
-import '../../data/datasources/lots_remote_datasource.dart';
-import '../../data/repositories/lot_repository_impl.dart';
-import '../../data/repositories/lots_repository_impl.dart';
 import '../../domain/create_lote_usecase.dart';
 import '../../domain/usecases/get_lots.dart';
+
+part 'lot_provider.g.dart';
 
 class Lote {
   // Id real devuelto por POST /lotes. Null en los lotes de ejemplo,
@@ -30,64 +29,97 @@ class Lote {
 /// Valores exactos que acepta tipo_proceso en el backend.
 const List<String> tiposProcesoValidos = ['lavado', 'honey', 'natural'];
 
-class LotProvider extends ChangeNotifier {
+class LotState {
+  final String? tipoProceso;
+  final bool cargando;
+  final String? codigoQrGenerado;
+
+  final List<Lote> todos;
+  final List<Lote> lotes;
+  final bool cargandoLotes;
+  final String? errorLotes;
+
+  const LotState({
+    this.tipoProceso,
+    this.cargando = false,
+    this.codigoQrGenerado,
+    this.todos = const [],
+    this.lotes = const [],
+    this.cargandoLotes = false,
+    this.errorLotes,
+  });
+
+  LotState copyWith({
+    String? tipoProceso,
+    bool clearTipoProceso = false,
+    bool? cargando,
+    String? codigoQrGenerado,
+    bool clearCodigoQr = false,
+    List<Lote>? todos,
+    List<Lote>? lotes,
+    bool? cargandoLotes,
+    String? errorLotes,
+    bool clearErrorLotes = false,
+  }) {
+    return LotState(
+      tipoProceso: clearTipoProceso ? null : (tipoProceso ?? this.tipoProceso),
+      cargando: cargando ?? this.cargando,
+      codigoQrGenerado:
+          clearCodigoQr ? null : (codigoQrGenerado ?? this.codigoQrGenerado),
+      todos: todos ?? this.todos,
+      lotes: lotes ?? this.lotes,
+      cargandoLotes: cargandoLotes ?? this.cargandoLotes,
+      errorLotes: clearErrorLotes ? null : (errorLotes ?? this.errorLotes),
+    );
+  }
+}
+
+@riverpod
+class LotController extends _$LotController {
   ///=========================
   /// Buscador
   ///=========================
-
-  final TextEditingController searchController = TextEditingController();
+  final searchController = TextEditingController();
 
   ///=========================
   /// Formulario
   ///=========================
+  final nombreController = TextEditingController();
+  final variedadController = TextEditingController();
+  final pesoController = TextEditingController();
+  final ubicacionController = TextEditingController();
+  final sensorIdController = TextEditingController();
 
-  final TextEditingController nombreController = TextEditingController();
-  final TextEditingController variedadController = TextEditingController();
-  final TextEditingController pesoController = TextEditingController();
-  final TextEditingController ubicacionController = TextEditingController();
-  final TextEditingController sensorIdController = TextEditingController();
-
-  String? tipoProceso;
-
-  bool cargando = false;
-  String? codigoQrGenerado;
-
-  late final CreateLoteUseCase _createLoteUseCase = CreateLoteUseCase(
-    LotsRepositoryImpl(
-      LotsRemoteDataSourceImpl(ApiClient(), SecureStorage()),
-    ),
-  );
-
-  late final GetLotsUseCase _getLotsUseCase = GetLotsUseCase(
-    LotRepositoryImpl(
-      LotRemoteDataSourceImpl(ApiClient(), SecureStorage()),
-    ),
-  );
+  @override
+  LotState build() {
+    ref.onDispose(() {
+      searchController.dispose();
+      nombreController.dispose();
+      variedadController.dispose();
+      pesoController.dispose();
+      ubicacionController.dispose();
+      sensorIdController.dispose();
+    });
+    return const LotState();
+  }
 
   void seleccionarTipoProceso(String? value) {
-    tipoProceso = value;
-    notifyListeners();
+    state = value == null
+        ? state.copyWith(clearTipoProceso: true)
+        : state.copyWith(tipoProceso: value);
   }
 
   ///=========================
   /// Listado de lotes (GET /lotes)
   ///=========================
 
-  List<Lote> _todos = [];
-  List<Lote> lotes = [];
-
-  bool cargandoLotes = false;
-  String? errorLotes;
-
   Future<void> cargarLotes() async {
-    cargandoLotes = true;
-    errorLotes = null;
-    notifyListeners();
+    state = state.copyWith(cargandoLotes: true, clearErrorLotes: true);
 
     try {
-      final resultado = await _getLotsUseCase();
+      final resultado = await getIt<GetLotsUseCase>()();
 
-      _todos = resultado
+      final todos = resultado
           .map(
             (lote) => Lote(
               id: lote.idLote,
@@ -101,16 +133,20 @@ class LotProvider extends ChangeNotifier {
           )
           .toList();
 
+      state = state.copyWith(todos: todos);
       buscar(searchController.text);
     } on ApiException catch (e) {
-      errorLotes = e.statusCode == 401
-          ? "Tu sesión expiró. Inicia sesión de nuevo."
-          : "No se pudo conectar. Intenta de nuevo";
+      state = state.copyWith(
+        errorLotes: e.statusCode == 401
+            ? "Tu sesión expiró. Inicia sesión de nuevo."
+            : "No se pudo conectar. Intenta de nuevo",
+      );
     } catch (_) {
-      errorLotes = "Ocurrió un error al cargar los lotes.";
+      state = state.copyWith(
+        errorLotes: "Ocurrió un error al cargar los lotes.",
+      );
     } finally {
-      cargandoLotes = false;
-      notifyListeners();
+      state = state.copyWith(cargandoLotes: false);
     }
   }
 
@@ -151,17 +187,13 @@ class LotProvider extends ChangeNotifier {
   ///=========================
 
   void buscar(String texto) {
-    if (texto.isEmpty) {
-      lotes = List.from(_todos);
-    } else {
-      lotes = _todos.where((lote) {
-        return lote.nombre.toLowerCase().contains(
-          texto.toLowerCase(),
-        );
-      }).toList();
-    }
+    final lotes = texto.isEmpty
+        ? List<Lote>.from(state.todos)
+        : state.todos
+            .where((lote) => lote.nombre.toLowerCase().contains(texto.toLowerCase()))
+            .toList();
 
-    notifyListeners();
+    state = state.copyWith(lotes: lotes);
   }
 
   ///=========================
@@ -177,6 +209,7 @@ class LotProvider extends ChangeNotifier {
       return;
     }
 
+    final tipoProceso = state.tipoProceso;
     if (tipoProceso == null || !tiposProcesoValidos.contains(tipoProceso)) {
       _mostrarSnackBar(
         context,
@@ -214,20 +247,19 @@ class LotProvider extends ChangeNotifier {
       }
     }
 
-    cargando = true;
-    notifyListeners();
+    state = state.copyWith(cargando: true);
 
     try {
-      final lote = await _createLoteUseCase(
+      final lote = await getIt<CreateLoteUseCase>()(
         nombreLote: nombreController.text.trim(),
         variedad: variedadController.text.trim(),
-        tipoProceso: tipoProceso!,
+        tipoProceso: tipoProceso,
         pesoKg: peso,
         ubicacion: ubicacionController.text.trim(),
         idSensor: idSensor,
       );
 
-      codigoQrGenerado = lote.codigoQr;
+      state = state.copyWith(codigoQrGenerado: lote.codigoQr);
 
       // Refresca desde GET /lotes en vez de simular el registro
       // localmente, para que la lista siempre refleje al backend.
@@ -238,7 +270,7 @@ class LotProvider extends ChangeNotifier {
       pesoController.clear();
       ubicacionController.clear();
       sensorIdController.clear();
-      tipoProceso = null;
+      state = state.copyWith(clearTipoProceso: true);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -253,8 +285,7 @@ class LotProvider extends ChangeNotifier {
         _mostrarSnackBar(context, e.message, Colors.red);
       }
     } finally {
-      cargando = false;
-      notifyListeners();
+      state = state.copyWith(cargando: false);
     }
   }
 
@@ -269,8 +300,7 @@ class LotProvider extends ChangeNotifier {
   ///=========================
 
   void ocultarQr() {
-    codigoQrGenerado = null;
-    notifyListeners();
+    state = state.copyWith(clearCodigoQr: true);
   }
 
   ///=========================
@@ -284,26 +314,6 @@ class LotProvider extends ChangeNotifier {
     ubicacionController.clear();
     sensorIdController.clear();
 
-    tipoProceso = null;
-    codigoQrGenerado = null;
-
-    notifyListeners();
-  }
-
-  ///=========================
-  /// Dispose
-  ///=========================
-
-  @override
-  void dispose() {
-    searchController.dispose();
-
-    nombreController.dispose();
-    variedadController.dispose();
-    pesoController.dispose();
-    ubicacionController.dispose();
-    sensorIdController.dispose();
-
-    super.dispose();
+    state = state.copyWith(clearTipoProceso: true, clearCodigoQr: true);
   }
 }

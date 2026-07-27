@@ -1,3 +1,5 @@
+import 'package:injectable/injectable.dart';
+
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../models/create_lote_request_model.dart';
@@ -8,6 +10,7 @@ abstract class LotsRemoteDataSource {
   Future<LoteResponseModel> createLote(CreateLoteRequestModel request);
 }
 
+@LazySingleton(as: LotsRemoteDataSource)
 class LotsRemoteDataSourceImpl implements LotsRemoteDataSource {
   final ApiClient apiClient;
   final SecureStorage secureStorage;

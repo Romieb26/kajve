@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:screen_protector/screen_protector.dart';
 
 import '../../../../core/routes/app_routes.dart';
@@ -9,14 +10,14 @@ import '../widgets/logo_login.dart';
 import '../widgets/login_form.dart';
 import '../widgets/login_button.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   void initState() {
     super.initState();
@@ -31,7 +32,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AuthProvider>(context);
+    final state = ref.watch(authControllerProvider);
+    final controller = ref.read(authControllerProvider.notifier);
 
     return Scaffold(
       body: Container(
@@ -50,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(24.r),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     minHeight: constraints.maxHeight,
@@ -58,26 +60,26 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
                       const LogoLogin(),
 
-                      const SizedBox(height: 30),
+                      SizedBox(height: 30.h),
 
-                      LoginForm(provider: provider),
+                      LoginForm(state: state, controller: controller),
 
-                      const SizedBox(height: 25),
+                      SizedBox(height: 25.h),
 
-                      LoginButton(provider: provider),
+                      LoginButton(state: state, controller: controller),
 
-                      const SizedBox(height: 30),
+                      SizedBox(height: 30.h),
 
-                      if (provider.cargando)
+                      if (state.cargando)
                         const CircularProgressIndicator(
                           color: Colors.white,
                         ),
 
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
                       TextButton(
                         onPressed: () {

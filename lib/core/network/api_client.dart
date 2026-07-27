@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:injectable/injectable.dart';
 
 /// Excepción centralizada para errores de red y de la API.
 class ApiException implements Exception {
@@ -26,6 +27,7 @@ class ApiFileResponse {
 }
 
 /// Wrapper de [http] con timeout y manejo de errores centralizado.
+@lazySingleton
 class ApiClient {
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 

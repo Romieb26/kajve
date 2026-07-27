@@ -2,15 +2,21 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:injectable/injectable.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../models/resumen_lote_model.dart';
 
+abstract class ResumenLoteRemoteDataSource {
+  Future<ResumenLoteModel> getResumen(int loteId);
+}
+
 /// Llama a `GET /lotes/{id}/resumen`, que vive en ws-gateway (NO en
 /// api-mobile) — igual que SensorStatusRemoteDataSource, por eso no usa el
 /// ApiClient normal, que apunta al dominio del gateway de api-mobile.
-class ResumenLoteRemoteDataSource {
+@LazySingleton(as: ResumenLoteRemoteDataSource)
+class ResumenLoteRemoteDataSourceImpl implements ResumenLoteRemoteDataSource {
   // Mismo host que RealtimeWsDataSource/SensorStatusRemoteDataSource:
   // ws-gateway desplegado en el servidor, detrás de TLS.
   static const String _host = 'ws.dnc-ed-denz.shop';
@@ -19,12 +25,9 @@ class ResumenLoteRemoteDataSource {
   final http.Client _client;
   final SecureStorage _secureStorage;
 
-  ResumenLoteRemoteDataSource({
-    http.Client? client,
-    SecureStorage? secureStorage,
-  })  : _client = client ?? http.Client(),
-        _secureStorage = secureStorage ?? SecureStorage();
+  ResumenLoteRemoteDataSourceImpl(this._client, this._secureStorage);
 
+  @override
   Future<ResumenLoteModel> getResumen(int loteId) async {
     final token = await _secureStorage.getAccessToken();
     if (token == null) {

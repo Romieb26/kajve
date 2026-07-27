@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../providers/sensor_provider.dart';
 
 class SearchSensor extends StatelessWidget {
-  final SensorProvider provider;
+  final SensorController provider;
 
   const SearchSensor({
     super.key,

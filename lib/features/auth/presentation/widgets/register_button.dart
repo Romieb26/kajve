@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../providers/register_provider.dart';
 
 class RegisterButton extends StatelessWidget {
-  final RegisterProvider provider;
+  final RegisterFormState state;
+  final RegisterController controller;
 
   const RegisterButton({
     super.key,
-    required this.provider,
+    required this.state,
+    required this.controller,
   });
 
   @override
@@ -16,11 +18,11 @@ class RegisterButton extends StatelessWidget {
       width: double.infinity,
       height: 55,
       child: FilledButton.icon(
-        onPressed: provider.cargando
+        onPressed: state.cargando
             ? null
-            : () => provider.registrar(context),
+            : () => controller.registrar(context),
 
-        icon: provider.cargando
+        icon: state.cargando
             ? const SizedBox(
           width: 20,
           height: 20,
@@ -32,7 +34,7 @@ class RegisterButton extends StatelessWidget {
             : const Icon(Icons.person_add),
 
         label: Text(
-          provider.cargando
+          state.cargando
               ? "Registrando..."
               : "Registrarse",
           style: const TextStyle(

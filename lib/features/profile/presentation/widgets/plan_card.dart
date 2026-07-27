@@ -5,17 +5,17 @@ import '../../../../shared/widgets/premium_upsell_sheet.dart';
 import '../providers/profile_provider.dart';
 
 class PlanCard extends StatelessWidget {
-  final ProfileProvider provider;
+  final ProfileState state;
 
   const PlanCard({
     super.key,
-    required this.provider,
+    required this.state,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final perfil = provider.perfil;
+    final perfil = state.perfil;
     final esPremium = perfil?.esPremium ?? false;
 
     return Card(

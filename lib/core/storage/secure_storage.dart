@@ -1,4 +1,6 @@
 //lib/core/storage/secure_storage.dart
+import 'package:injectable/injectable.dart';
+
 /// Almacenamiento de la sesión (tokens y usuario) SOLO EN MEMORIA.
 ///
 /// Los tokens nunca se escriben a disco: se guardan en campos estáticos
@@ -6,6 +8,7 @@
 /// plano). Si el usuario mata la app, el proceso termina y este estado
 /// se pierde, por lo que al volver a abrirla debe iniciar sesión de
 /// nuevo. Esto es intencional (requisito de seguridad), no un bug.
+@lazySingleton
 class SecureStorage {
   static String? _accessToken;
   static String? _refreshToken;

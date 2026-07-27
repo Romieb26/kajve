@@ -1,26 +1,23 @@
 //lib/shared/widgets/app_drawer.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_colors.dart';
-import '../../core/network/api_client.dart';
+import '../../core/di/injection.dart';
 import '../../core/routes/app_routes.dart';
-import '../../core/storage/secure_storage.dart';
-import '../../features/auth/data/datasources/auth_remote_datasource.dart';
-import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/profile/presentation/providers/profile_provider.dart';
 import 'lote_selector_sheet.dart';
 import 'premium_upsell_sheet.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Mientras el perfil no ha cargado todavía se trata como no-premium
     // (candados visibles) en vez de asumir acceso por defecto.
-    final esPremium = context.watch<ProfileProvider>().perfil?.esPremium ?? false;
+    final esPremium = ref.watch(profileControllerProvider).perfil?.esPremium ?? false;
 
     return Drawer(
       child: ListView(
@@ -74,6 +71,7 @@ class AppDrawer extends StatelessWidget {
 
           _selectorItem(
             context,
+            ref,
             icon: Icons.monitor_heart,
             title: "Monitoreo",
             route: AppRoutes.lotDetail,
@@ -88,6 +86,7 @@ class AppDrawer extends StatelessWidget {
 
           _selectorItem(
             context,
+            ref,
             icon: Icons.sensors,
             title: "Tiempo Real",
             route: AppRoutes.realtime,
@@ -103,6 +102,7 @@ class AppDrawer extends StatelessWidget {
 
           _selectorItem(
             context,
+            ref,
             icon: Icons.warning_amber,
             title: "Alertas",
             route: AppRoutes.alerts,
@@ -124,6 +124,7 @@ class AppDrawer extends StatelessWidget {
 
           _selectorItem(
             context,
+            ref,
             icon: Icons.show_chart,
             title: "Predicciones",
             route: AppRoutes.prediction,
@@ -162,9 +163,7 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.logout),
             title: const Text("Cerrar sesión"),
             onTap: () async {
-              await LogoutUseCase(
-                AuthRepositoryImpl(AuthRemoteDataSourceImpl(ApiClient()), SecureStorage()),
-              )();
+              await getIt<LogoutUseCase>()();
 
               if (context.mounted) {
                 Navigator.pushReplacementNamed(
@@ -212,7 +211,8 @@ class AppDrawer extends StatelessWidget {
   /// específico (monitoreo, tiempo real) y no tienen uno en contexto:
   /// primero muestra un selector de lotes en vez de navegar directo.
   static Widget _selectorItem(
-      BuildContext context, {
+      BuildContext context,
+      WidgetRef ref, {
         required IconData icon,
         required String title,
         required String route,
@@ -232,7 +232,7 @@ class AppDrawer extends StatelessWidget {
           return;
         }
 
-        showLoteSelector(context, route: route);
+        showLoteSelector(context, ref, route: route);
       },
     );
   }

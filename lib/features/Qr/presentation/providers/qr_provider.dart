@@ -1,40 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/routes/app_routes.dart';
-import '../../../../core/storage/secure_storage.dart';
-import '../../../lots/data/datasources/lote_reclamo_remote_datasource.dart';
-import '../../../lots/data/repositories/lote_reclamo_repository_impl.dart';
 import '../../../lots/domain/usecases/reclamar_lote_usecase.dart';
 
-class QrProvider extends ChangeNotifier {
-  late final ReclamarLoteUseCase _reclamarLoteUseCase = ReclamarLoteUseCase(
-    LoteReclamoRepositoryImpl(
-      LoteReclamoRemoteDataSourceImpl(ApiClient(), SecureStorage()),
-    ),
-  );
+part 'qr_provider.g.dart';
 
+class QrState {
   /// Estado del flash
-  bool flash = false;
+  final bool flash;
 
   /// Evita múltiples lecturas del mismo QR y pausa la cámara mientras
   /// se resuelve PUT /lotes/reclamar.
-  bool procesando = false;
+  final bool procesando;
 
   /// Último código leído
-  String? ultimoCodigo;
+  final String? ultimoCodigo;
+
+  const QrState({
+    this.flash = false,
+    this.procesando = false,
+    this.ultimoCodigo,
+  });
+
+  QrState copyWith({
+    bool? flash,
+    bool? procesando,
+    String? ultimoCodigo,
+    bool clearUltimoCodigo = false,
+  }) {
+    return QrState(
+      flash: flash ?? this.flash,
+      procesando: procesando ?? this.procesando,
+      ultimoCodigo:
+          clearUltimoCodigo ? null : (ultimoCodigo ?? this.ultimoCodigo),
+    );
+  }
+}
+
+@riverpod
+class QrController extends _$QrController {
+  @override
+  QrState build() => const QrState();
 
   /// Activa o desactiva el flash
   void toggleFlash() {
-    flash = !flash;
-    notifyListeners();
+    state = state.copyWith(flash: !state.flash);
   }
 
   /// Reinicia el escaneo (permite reintentar tras un error, ej. 409)
   void reiniciarEscaneo() {
-    procesando = false;
-    ultimoCodigo = null;
-    notifyListeners();
+    state = state.copyWith(procesando: false, clearUltimoCodigo: true);
   }
 
   /// Procesa el código QR detectado: lo envía tal cual (texto plano, no
@@ -44,14 +62,12 @@ class QrProvider extends ChangeNotifier {
     BuildContext context,
     String codigo,
   ) async {
-    if (procesando) return;
+    if (state.procesando) return;
 
-    procesando = true;
-    ultimoCodigo = codigo;
-    notifyListeners();
+    state = state.copyWith(procesando: true, ultimoCodigo: codigo);
 
     try {
-      final lote = await _reclamarLoteUseCase(codigo);
+      final lote = await getIt<ReclamarLoteUseCase>()(codigo);
 
       if (!context.mounted) return;
 
@@ -72,9 +88,7 @@ class QrProvider extends ChangeNotifier {
       // escaneo en vez de dejarlo congelado en "procesando".
       reiniciarEscaneo();
     } on ApiException catch (e) {
-      procesando = false;
-      ultimoCodigo = null;
-      notifyListeners();
+      state = state.copyWith(procesando: false, clearUltimoCodigo: true);
 
       if (!context.mounted) return;
 
@@ -85,9 +99,7 @@ class QrProvider extends ChangeNotifier {
         ),
       );
     } catch (_) {
-      procesando = false;
-      ultimoCodigo = null;
-      notifyListeners();
+      state = state.copyWith(procesando: false, clearUltimoCodigo: true);
 
       if (!context.mounted) return;
 

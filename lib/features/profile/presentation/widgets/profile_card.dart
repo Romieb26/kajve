@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../providers/profile_provider.dart';
 
 class ProfileCard extends StatelessWidget {
-  final ProfileProvider provider;
+  final ProfileState state;
+  final ProfileController controller;
 
   const ProfileCard({
     super.key,
-    required this.provider,
+    required this.state,
+    required this.controller,
   });
 
   @override
@@ -31,7 +33,7 @@ class ProfileCard extends StatelessWidget {
             const SizedBox(height: 20),
 
             TextField(
-              controller: provider.nombreController,
+              controller: controller.nombreController,
               keyboardType: TextInputType.name,
               decoration: InputDecoration(
                 labelText: "Nombre",
@@ -45,7 +47,7 @@ class ProfileCard extends StatelessWidget {
             const SizedBox(height: 20),
 
             TextField(
-              controller: provider.correoController,
+              controller: controller.correoController,
               readOnly: true,
               enabled: false,
               keyboardType: TextInputType.emailAddress,
@@ -62,7 +64,7 @@ class ProfileCard extends StatelessWidget {
             const SizedBox(height: 20),
 
             TextField(
-              controller: provider.telefonoController,
+              controller: controller.telefonoController,
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
                 labelText: "Teléfono",
@@ -78,10 +80,10 @@ class ProfileCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: provider.guardando
+                onPressed: state.guardando
                     ? null
-                    : () => provider.guardarCambios(context),
-                icon: provider.guardando
+                    : () => controller.guardarCambios(context),
+                icon: state.guardando
                     ? const SizedBox(
                         width: 18,
                         height: 18,
@@ -89,7 +91,7 @@ class ProfileCard extends StatelessWidget {
                       )
                     : const Icon(Icons.save),
                 label: Text(
-                  provider.guardando ? "Guardando..." : "Guardar cambios",
+                  state.guardando ? "Guardando..." : "Guardar cambios",
                 ),
               ),
             ),

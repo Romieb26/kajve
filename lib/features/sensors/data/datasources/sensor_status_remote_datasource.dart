@@ -2,16 +2,22 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:injectable/injectable.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../models/estado_sensor_model.dart';
 import '../models/sensor_model.dart';
 
+abstract class SensorStatusDataSource {
+  Future<List<SensorModel>> getEstadoSensores();
+}
+
 /// Llama a `GET /sensores/estado`, que vive en ws-gateway (NO en
 /// api-mobile) — por eso no usa el ApiClient normal, que apunta al
 /// dominio del gateway de api-mobile.
-class SensorStatusRemoteDataSource {
+@LazySingleton(as: SensorStatusDataSource)
+class SensorStatusRemoteDataSource implements SensorStatusDataSource {
   // Mismo host que RealtimeWsDataSource (features/realtime): ws-gateway
   // desplegado en el servidor, detrás de TLS.
   static const String _host = 'ws.dnc-ed-denz.shop';
@@ -26,6 +32,7 @@ class SensorStatusRemoteDataSource {
   })  : _client = client ?? http.Client(),
         _secureStorage = secureStorage ?? SecureStorage();
 
+  @override
   Future<List<SensorModel>> getEstadoSensores() async {
     final token = await _secureStorage.getAccessToken();
     if (token == null) {

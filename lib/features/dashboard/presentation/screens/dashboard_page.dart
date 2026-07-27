@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/widgets/app_drawer.dart';
@@ -16,29 +16,29 @@ import '../widgets/summary_card.dart';
 import '../widgets/recent_prediction_card.dart';
 import '../widgets/premium_banner.dart';
 
-class DashboardPage extends StatefulWidget {
+class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
 
   @override
-  State<DashboardPage> createState() => _DashboardPageState();
+  ConsumerState<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
+class _DashboardPageState extends ConsumerState<DashboardPage> {
   bool _bannerCerrado = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DashboardProvider>().loadDashboard();
+      ref.read(dashboardControllerProvider.notifier).loadDashboard();
       // Precarga los lotes reales para que showLoteSelector (accesos
       // rápidos de Predicciones/Tiempo Real) los tenga listos sin
       // depender de haber visitado antes la pantalla de Lotes.
-      context.read<LotProvider>().cargarLotes();
+      ref.read(lotControllerProvider.notifier).cargarLotes();
       // Precarga el perfil (incluye es_premium) para que el drawer y
       // este dashboard sepan si el usuario es premium sin depender de
       // haber visitado antes la pantalla de Perfil.
-      context.read<ProfileProvider>().cargarPerfil();
+      ref.read(profileControllerProvider.notifier).cargarPerfil();
     });
   }
 
@@ -51,12 +51,15 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     final nombreUsuario =
-        context.watch<AuthProvider>().usuario?.nombreCompleto ?? "Bienvenido";
+        ref.watch(authControllerProvider).usuario?.nombreCompleto ?? "Bienvenido";
 
     // Mientras el perfil no ha cargado todavía se trata como no-premium
     // (banner visible, accesos premium bloqueados) en vez de asumir
     // acceso por defecto.
-    final esPremium = context.watch<ProfileProvider>().perfil?.esPremium ?? false;
+    final esPremium =
+        ref.watch(profileControllerProvider).perfil?.esPremium ?? false;
+
+    final provider = ref.watch(dashboardControllerProvider);
 
     return Scaffold(
       drawer: const AppDrawer(),
@@ -66,8 +69,8 @@ class _DashboardPageState extends State<DashboardPage> {
         centerTitle: true,
       ),
 
-      body: Consumer<DashboardProvider>(
-        builder: (context, provider, _) {
+      body: Builder(
+        builder: (_) {
           if (provider.isLoading && provider.data == null) {
             return const Center(
               child: CircularProgressIndicator(),
@@ -97,7 +100,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(height: 16),
 
                     FilledButton(
-                      onPressed: () => provider.loadDashboard(),
+                      onPressed: () =>
+                          ref.read(dashboardControllerProvider.notifier).loadDashboard(),
                       child: const Text("Reintentar"),
                     ),
                   ],
@@ -282,7 +286,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           showPremiumUpsell(context);
                           return;
                         }
-                        showLoteSelector(context, route: AppRoutes.prediction);
+                        showLoteSelector(context, ref, route: AppRoutes.prediction);
                       },
                     ),
 
@@ -290,7 +294,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       titulo: "Tiempo Real",
                       icono: Icons.monitor_heart,
                       onTap: () {
-                        showLoteSelector(context, route: AppRoutes.realtime);
+                        showLoteSelector(context, ref, route: AppRoutes.realtime);
                       },
                     ),
 

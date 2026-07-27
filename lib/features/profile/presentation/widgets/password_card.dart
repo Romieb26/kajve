@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../providers/profile_provider.dart';
 
 class PasswordCard extends StatelessWidget {
-  final ProfileProvider provider;
+  final ProfileState state;
+  final ProfileController controller;
 
   const PasswordCard({
     super.key,
-    required this.provider,
+    required this.state,
+    required this.controller,
   });
 
   @override
@@ -38,8 +40,8 @@ class PasswordCard extends StatelessWidget {
             const SizedBox(height: 20),
 
             TextField(
-              controller: provider.passwordActualController,
-              obscureText: provider.ocultarPasswordActual,
+              controller: controller.passwordActualController,
+              obscureText: state.ocultarPasswordActual,
               enableSuggestions: false,
               autocorrect: false,
               decoration: InputDecoration(
@@ -50,11 +52,11 @@ class PasswordCard extends StatelessWidget {
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    provider.ocultarPasswordActual
+                    state.ocultarPasswordActual
                         ? Icons.visibility
                         : Icons.visibility_off,
                   ),
-                  onPressed: provider.cambiarVisibilidadPasswordActual,
+                  onPressed: controller.cambiarVisibilidadPasswordActual,
                 ),
               ),
             ),
@@ -62,8 +64,8 @@ class PasswordCard extends StatelessWidget {
             const SizedBox(height: 20),
 
             TextField(
-              controller: provider.passwordController,
-              obscureText: provider.ocultarPassword,
+              controller: controller.passwordController,
+              obscureText: state.ocultarPassword,
               enableSuggestions: false,
               autocorrect: false,
               decoration: InputDecoration(
@@ -74,11 +76,11 @@ class PasswordCard extends StatelessWidget {
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    provider.ocultarPassword
+                    state.ocultarPassword
                         ? Icons.visibility
                         : Icons.visibility_off,
                   ),
-                  onPressed: provider.cambiarVisibilidadPassword,
+                  onPressed: controller.cambiarVisibilidadPassword,
                 ),
               ),
             ),
@@ -86,8 +88,8 @@ class PasswordCard extends StatelessWidget {
             const SizedBox(height: 20),
 
             TextField(
-              controller: provider.confirmPasswordController,
-              obscureText: provider.ocultarConfirmacion,
+              controller: controller.confirmPasswordController,
+              obscureText: state.ocultarConfirmacion,
               enableSuggestions: false,
               autocorrect: false,
               decoration: InputDecoration(
@@ -98,12 +100,12 @@ class PasswordCard extends StatelessWidget {
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    provider.ocultarConfirmacion
+                    state.ocultarConfirmacion
                         ? Icons.visibility
                         : Icons.visibility_off,
                   ),
                   onPressed:
-                  provider.cambiarVisibilidadConfirmacion,
+                  controller.cambiarVisibilidadConfirmacion,
                 ),
               ),
             ),
@@ -113,10 +115,10 @@ class PasswordCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: provider.cambiandoPassword
+                onPressed: state.cambiandoPassword
                     ? null
-                    : () => provider.cambiarPassword(context),
-                icon: provider.cambiandoPassword
+                    : () => controller.cambiarPassword(context),
+                icon: state.cambiandoPassword
                     ? const SizedBox(
                         width: 18,
                         height: 18,
@@ -124,7 +126,7 @@ class PasswordCard extends StatelessWidget {
                       )
                     : const Icon(Icons.lock_reset),
                 label: Text(
-                  provider.cambiandoPassword ? "Cambiando..." : "Cambiar contraseña",
+                  state.cambiandoPassword ? "Cambiando..." : "Cambiar contraseña",
                 ),
               ),
             ),

@@ -1,6 +1,6 @@
 //lib/shared/widgets/lote_selector_sheet.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/lots/presentation/providers/lot_provider.dart';
 
@@ -13,7 +13,8 @@ import '../../features/lots/presentation/providers/lot_provider.dart';
 /// necesitan capturar el lote elegido sin salir de la pantalla (ej.
 /// Reportes). Debe pasarse exactamente uno de los dos.
 Future<void> showLoteSelector(
-  BuildContext context, {
+  BuildContext context,
+  WidgetRef ref, {
   String? route,
   ValueChanged<Lote>? onSelected,
 }) async {
@@ -22,7 +23,7 @@ Future<void> showLoteSelector(
     'showLoteSelector necesita exactamente uno de: route (para navegar) u onSelected (para recibir el lote elegido).',
   );
 
-  final lotProvider = Provider.of<LotProvider>(context, listen: false);
+  final lotState = ref.read(lotControllerProvider);
 
   // Se captura el Navigator ahora, mientras el context todavía es
   // válido con certeza. El Drawer que suele disparar este selector se
@@ -32,14 +33,14 @@ Future<void> showLoteSelector(
   // no depende de que el context original siga vivo.
   final navigator = Navigator.of(context);
 
-  if (lotProvider.cargandoLotes) {
+  if (lotState.cargandoLotes) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Cargando lotes, intenta de nuevo en un momento.")),
     );
     return;
   }
 
-  final lotes = lotProvider.lotes;
+  final lotes = lotState.lotes;
 
   if (lotes.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(

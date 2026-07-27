@@ -1,3 +1,5 @@
+import 'package:injectable/injectable.dart';
+
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../models/perfil_model.dart';
@@ -19,6 +21,7 @@ abstract class ProfileRemoteDataSource {
   });
 }
 
+@LazySingleton(as: ProfileRemoteDataSource)
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   final ApiClient apiClient;
   final SecureStorage secureStorage;

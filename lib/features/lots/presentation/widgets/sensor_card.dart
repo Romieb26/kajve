@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/lot_provider.dart';
 
-class SensorCard extends StatelessWidget {
+class SensorCard extends ConsumerWidget {
   const SensorCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final provider = Provider.of<LotProvider>(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = ref.read(lotControllerProvider.notifier);
     final theme = Theme.of(context);
 
     return Card(

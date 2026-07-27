@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../models/auth_response_model.dart';
@@ -20,6 +21,7 @@ abstract class AuthRemoteDataSource {
   Future<String> refreshToken(String refreshToken);
 }
 
+@LazySingleton(as: AuthRemoteDataSource)
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final ApiClient apiClient;
 

@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../providers/auth_provider.dart';
 
 class LoginButton extends StatelessWidget {
-  final AuthProvider provider;
+  final AuthFormState state;
+  final AuthController controller;
 
   const LoginButton({
     super.key,
-    required this.provider,
+    required this.state,
+    required this.controller,
   });
 
   @override
@@ -16,7 +18,7 @@ class LoginButton extends StatelessWidget {
       width: double.infinity,
       height: 55,
       child: FilledButton.icon(
-        icon: provider.cargando
+        icon: state.cargando
             ? const SizedBox(
           width: 22,
           height: 22,
@@ -27,17 +29,17 @@ class LoginButton extends StatelessWidget {
         )
             : const Icon(Icons.login),
         label: Text(
-          provider.cargando
+          state.cargando
               ? "Verificando..."
               : "Iniciar sesión",
           style: const TextStyle(
             fontSize: 18,
           ),
         ),
-        onPressed: provider.cargando
+        onPressed: state.cargando
             ? null
             : () {
-          provider.iniciarSesion(context);
+          controller.iniciarSesion(context);
         },
       ),
     );

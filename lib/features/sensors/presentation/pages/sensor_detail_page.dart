@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../../realtime/data/datasources/realtime_ws_datasource.dart';
 import '../../../realtime/domain/entities/lectura_tiempo_real_entity.dart';
@@ -40,8 +41,8 @@ class SensorDetailPage extends StatefulWidget {
 
 class _SensorDetailPageState extends State<SensorDetailPage>
     with WidgetsBindingObserver {
-  final RealtimeWsDataSource _wsDataSource = RealtimeWsDataSource();
-  final SecureStorage _secureStorage = SecureStorage();
+  final RealtimeWsDataSource _wsDataSource = getIt<RealtimeWsDataSource>();
+  final SecureStorage _secureStorage = getIt<SecureStorage>();
 
   StreamSubscription<RealtimeWsMessage>? _subscription;
   LecturaTiempoRealEntity? _ultimaLectura;

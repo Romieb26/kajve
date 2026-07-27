@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../providers/auth_provider.dart';
 
 class LoginForm extends StatelessWidget {
-  final AuthProvider provider;
+  final AuthFormState state;
+  final AuthController controller;
 
   const LoginForm({
     super.key,
-    required this.provider,
+    required this.state,
+    required this.controller,
   });
 
   @override
@@ -22,7 +24,7 @@ class LoginForm extends StatelessWidget {
         child: Column(
           children: [
             TextField(
-              controller: provider.emailController,
+              controller: controller.emailController,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 labelText: "Correo electrónico",
@@ -36,8 +38,8 @@ class LoginForm extends StatelessWidget {
             const SizedBox(height: 20),
 
             TextField(
-              controller: provider.passwordController,
-              obscureText: provider.ocultarPassword,
+              controller: controller.passwordController,
+              obscureText: state.ocultarPassword,
               enableSuggestions: false,
               autocorrect: false,
               decoration: InputDecoration(
@@ -48,11 +50,11 @@ class LoginForm extends StatelessWidget {
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    provider.ocultarPassword
+                    state.ocultarPassword
                         ? Icons.visibility
                         : Icons.visibility_off,
                   ),
-                  onPressed: provider.cambiarVisibilidad,
+                  onPressed: controller.cambiarVisibilidad,
                 ),
               ),
             ),

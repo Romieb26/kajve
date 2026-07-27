@@ -1,15 +1,16 @@
 //libs/features/sensors/presentation/widgets/sensor_form.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/sensor_provider.dart';
 
-class SensorForm extends StatelessWidget {
+class SensorForm extends ConsumerWidget {
   const SensorForm({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final provider = Provider.of<SensorProvider>(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(sensorControllerProvider);
+    final provider = ref.read(sensorControllerProvider.notifier);
     final theme = Theme.of(context);
 
     return Card(
@@ -85,7 +86,7 @@ class SensorForm extends StatelessWidget {
             const SizedBox(height: 20),
 
             SwitchListTile(
-              value: provider.conectado,
+              value: state.conectado,
               onChanged: provider.cambiarEstado,
               title: const Text("Sensor conectado"),
               secondary: Icon(Icons.wifi, color: theme.colorScheme.primary),

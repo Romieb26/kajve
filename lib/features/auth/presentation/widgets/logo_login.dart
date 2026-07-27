@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LogoLogin extends StatelessWidget {
   const LogoLogin({super.key});
@@ -9,38 +10,38 @@ class LogoLogin extends StatelessWidget {
       children: [
 
         Container(
-          width: 140,
-          height: 140,
+          width: 140.r,
+          height: 140.r,
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white,
           ),
           child: Image.asset(
             'assets/fokin2.png',
-            width: 80,
-            height: 80,
+            width: 80.r,
+            height: 80.r,
           ),
         ),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
 
-        const Text(
+        Text(
           "KAJVE",
           style: TextStyle(
-            fontSize: 36,
+            fontSize: 36.sp,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
 
-        const SizedBox(height: 10),
+        SizedBox(height: 10.h),
 
-        const Text(
+        Text(
           "Sistema Inteligente para el Monitoreo del Secado del Café",
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Colors.white70,
-            fontSize: 15,
+            fontSize: 15.sp,
           ),
         ),
 

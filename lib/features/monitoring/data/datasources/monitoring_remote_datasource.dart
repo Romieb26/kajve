@@ -1,4 +1,6 @@
 //lib/features/monitoring/data/datasources/monitoring_remote_datasource.dart
+import 'package:injectable/injectable.dart';
+
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../models/lectura_model.dart';
@@ -11,6 +13,7 @@ abstract class MonitoringRemoteDataSource {
   Future<EstadisticasModel> getEstadisticas(int loteId);
 }
 
+@LazySingleton(as: MonitoringRemoteDataSource)
 class MonitoringRemoteDataSourceImpl implements MonitoringRemoteDataSource {
   final ApiClient apiClient;
   final SecureStorage secureStorage;
