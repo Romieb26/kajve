@@ -1,10 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'qr_provider.dart';
 
-// **************************************************************************
-// RiverpodGenerator
-// **************************************************************************
+
 
 String _$qrControllerHash() => r'1dd27aa07b2a022d19d514331d9f9ec9832a021f';
 

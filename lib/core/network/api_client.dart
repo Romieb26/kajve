@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 
@@ -35,9 +36,9 @@ class ApiClient {
   // caso de falla del gateway el día de la demo: comentar la línea de abajo
   // y descomentar esta.
   // static const String baseUrl = 'https://api-mobile.dnc-ed-denz.shop';
-  static const String baseUrl = 'https://gateway.dnc-ed-denz.shop/mobile';
-  static const String mlBaseUrl = 'https://gateway.dnc-ed-denz.shop/ml/api/v1';
-  static const String apiV1BaseUrl = 'https://gateway.dnc-ed-denz.shop/api/v1';
+  static const String baseUrl = 'http://gateway.dnc-ed-denz.shop/mobile';
+  static const String mlBaseUrl = 'http://gateway.dnc-ed-denz.shop/ml/api/v1';
+  static const String apiV1BaseUrl = 'http://gateway.dnc-ed-denz.shop/api/v1';
   static const Duration _timeout = Duration(seconds: 10);
 
   final http.Client _client;
@@ -137,6 +138,8 @@ class ApiClient {
   }
 
   Map<String, String> _headers(String? token) {
+    // TODO(debug): quitar una vez identificado el origen del 401 post-login.
+    debugPrint('API CLIENT: token es ${token == null ? "NULL" : "presente (len=${token.length})"}');
     return {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
@@ -174,13 +177,22 @@ class ApiClient {
       throw const ApiException(
         'No se pudo conectar. Revisa tu conexión a internet.',
       );
-    } catch (_) {
+    } catch (e, st) {
+      // TODO(debug): quitar una vez identificado el origen del error de login.
+      debugPrint('API CLIENT RAW ERROR: $e');
+      debugPrint('$st');
       throw const ApiException('Ocurrió un error inesperado.');
     }
   }
 
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      // TODO(debug): quitar una vez identificado el origen del FormatException.
+      debugPrint('RESPONSE HEADERS: ${response.headers}');
+      debugPrint(
+        'RESPONSE FIRST BYTES: '
+        '${response.bodyBytes.take(16).map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')}',
+      );
       return response.body.isNotEmpty ? jsonDecode(response.body) : null;
     }
 

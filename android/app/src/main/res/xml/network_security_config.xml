@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Cleartext (HTTP) permitido solo para el gateway: se puso en modo
+         "DNS only" en Cloudflare y por ahora no tiene HTTPS. No se habilita
+         cleartext global para no exponer el resto del tráfico. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">gateway.dnc-ed-denz.shop</domain>
+    </domain-config>
+</network-security-config>

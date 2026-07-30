@@ -26,12 +26,17 @@ class FcmService {
   static String? _pendingToken;
   static int? _pendingLoteIdAlertas;
 
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  FirebaseMessaging get _messaging => FirebaseMessaging.instance;
   final SecureStorage _secureStorage = SecureStorage();
   final DevicesRemoteDataSource _devicesRemoteDataSource =
       DevicesRemoteDataSourceImpl(ApiClient(), SecureStorage());
 
   Future<String?> inicializar() async {
+    // Firebase no está configurado para web en este proyecto (main.dart
+    // salta Firebase.initializeApp() con kIsWeb) — sin esto, tocar
+    // FirebaseMessaging.instance aquí también reventaría.
+    if (kIsWeb) return null;
+
     final settings = await _messaging.requestPermission();
     debugPrint('FCM permiso: ${settings.authorizationStatus}');
 
@@ -128,7 +133,10 @@ class FcmService {
 
   /// Token FCM actual, para desactivarlo al cerrar sesión. Volver a
   /// pedirlo es idempotente (no genera uno nuevo).
-  Future<String?> obtenerTokenActual() => _messaging.getToken();
+  Future<String?> obtenerTokenActual() {
+    if (kIsWeb) return Future.value(null);
+    return _messaging.getToken();
+  }
 
   /// Se llama al cerrar sesión, antes de limpiar la sesión local, para
   /// que el backend deje de mandar push a este dispositivo. Un fallo

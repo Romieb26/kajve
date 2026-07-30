@@ -11,10 +11,14 @@ import 'core/messaging/fcm_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  if (!kIsWeb) {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  }
   await configureDependencies();
-  await getIt<FcmService>().inicializar();
+  if (!kIsWeb) {
+    await getIt<FcmService>().inicializar();
+  }
   runApp(
     // DevicePreview solo se activa fuera de modo Release (!kReleaseMode):
     // es una herramienta de desarrollo para probar distintos tamaños de
